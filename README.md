@@ -40,3 +40,34 @@ To check the results of these benchmarks, please refer to our paper:
 
 [**ATC**] Characterizing and Optimizing Remote Persistent Memory with RDMA and NVM. Xingda Wei and Xiating Xie and Rong Chen and Haibo Chen and Binyu Zang. 2021 USENIX Annual Technical Conference. 
 
+---
+
+记录:
+one sided: 
+```bash
+sudo ./command.sh 1111 true 10
+# 1111: port number
+# true: use_nvm=true
+# 10: nvm_size=10GB
+
+sudo ./command_client.sh 1111 true {payload_size}
+# 1111: port number
+# true: true ==> read, false ==> write
+
+```
+
+two sided:
+```bash
+sudo ./command_rrt.sh 1111 10 8 true
+# 1111: port number
+# 10: nvm_size=10GB
+# 8: num_threads=8
+# true: true ==> read, false ==> write
+
+sudo ./command_rrtcli.sh 1111 {payload_size} 8 true
+# 1111: port number
+# 8: num_threads=8
+# true: true ==> read, false ==> write
+```
+
+目前是在一个terminal内启动server，再在另一个terminal启动client，主要只针对payload跑过。
