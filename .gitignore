@@ -1,0 +1,10 @@
+third_party/
+libboost1.61-prefix/
+CMakeFiles/
+scripts/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+build/
+log/
+ddio_tools/*
