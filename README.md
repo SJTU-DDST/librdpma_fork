@@ -26,7 +26,7 @@ sudo ./scripts/nvm_server --host=localhost --port=8964 -use_nvm=false -touch_mem
 client 的一个示例参数：
 
 ```shell
-./scripts/nvm_client -addr="192.168.98.50:8964" --force_use_numa_node=false--use_numa_node=0 --threads=36 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=true -two_qps=false
+./scripts/nvm_client -addr="192.168.98.50:8964" --force_use_numa_node=false --use_numa_node=0 --threads=36 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=true -two_qp=false
 ```
 
 解释：

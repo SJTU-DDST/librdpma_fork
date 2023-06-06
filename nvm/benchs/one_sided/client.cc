@@ -14,7 +14,7 @@
 #include "../../huge_region.hh"
 
 DEFINE_int32(dimm_stride, 6, "");
-DEFINE_bool(two_qp, false, "use to QP in READ Read");
+DEFINE_bool(two_qp, false, "use twp QPs in READ Read");
 DEFINE_bool(cross_dimm, false, "");
 DEFINE_bool(round_up, false, "");
 DEFINE_uint32(round_payload, 256, "Roundup of the write payload");
