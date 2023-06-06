@@ -9,8 +9,8 @@ LibRDPMA provides a set of tools  to analyze the behavior when accessing NVM (i.
 Building the tools of librdpma is straightforward since it will automatically install dependencies. Specifically, using the following steps:
 
 - Clone the project with `git clone https://github.com/SJTU-IPADS/librdpma.git --recursive`
-- `sudo cmake -S . -B build`
-- `sudo cmake --build build`
+- `sudo cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=1`
+- `cd build && sudo make -j`
 
 > 不知道为啥，50上得sudo才能编译，有点怪
 
