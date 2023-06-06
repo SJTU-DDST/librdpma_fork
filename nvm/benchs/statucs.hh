@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 namespace nvm {
 
@@ -41,6 +42,7 @@ public:
                                    int epoches) __attribute__((optimize(0)))
   {
 
+    std::ofstream ofstr("aaa.txt");
     std::vector<Statics> old_statics(statics.size() + 1);
     LOG(4) << "size of report: " << sizeof(Statics);
     r2::Timer timer;
@@ -48,10 +50,8 @@ public:
       sleep(1);
       r2::compile_fence();
       u64 sum = 0;
-#if LAT
       double lat_cnt = 0;
       double lat = 0.0;
-#endif
 
       // now report the throughput
       for (uint i = 0; i < statics.size() - 1; ++i) {
@@ -60,25 +60,22 @@ public:
         // LOG(4) << "thread: " << i << " thpt: " << thread_thpt;
         sum += thread_thpt;
         old_statics[i].counter = temp;
-#if LAT
         if (statics[i].float_data != 0) {
 
           lat_cnt += 1;
           lat += statics[i].float_data;
         }
-#endif
       }
-#if LAT
       if (lat_cnt > 0)
         lat = lat / lat_cnt;
-#endif
       double passed_msec = timer.passed_msec();
       //      double passed_msec = 1000000;
       double res = static_cast<double>(sum) / passed_msec * 1000000.0;
       asm volatile("" : : : "memory");
       timer.reset();
+      ofstr << (uint64_t)res << ' ' << lat << std::endl;
 
-      RDMA_LOG(3) << "epoch @ " << epoch
+      RDMA_LOG(3) << "epoch @ " << epoch << ' ' << lat << ' ' 
                   << ": thpt: " << // format_value(res, 0)
         res << " reqs/sec, ";
     }

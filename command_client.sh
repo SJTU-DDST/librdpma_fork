@@ -1,2 +1,2 @@
 #!/usr/bin/bash
-./scripts/nvm_client -addr="localhost:$1" --coros=8  --id=0 --use_nic_idx=0 --use_read=$2 --payload=$3 --add_sync=false --address_space=2 --random=true
+./scripts/nvm_client -addr="192.168.98.50:8964" --force_use_numa_node=true --use_numa_node=0 --threads=$1 --coros=$3 --id=0 --use_nic_idx=0 --use_read=true --payload=$2 --add_sync=false --address_space=8 --random=true --force_use_numa_node=false -read_write=true

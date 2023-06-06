@@ -39,6 +39,10 @@ DEFINE_bool(random, true, "");
 DEFINE_bool(round_up, false, "");
 DEFINE_uint32(round_payload, 256, "Roundup of the write payload");
 
+DEFINE_bool (force_use_numa_node, false, "ff");
+DEFINE_uint64(use_numa_node, 0, "ffff");
+
+
 using namespace nvm;
 
 using namespace r2;
@@ -113,11 +117,20 @@ int BindToCore(int t_id) {
   }
 #else
   // bind ,andway
-  if (x >= per_socket_cores) {
-    // there is no other cores in the first socket
-    y = socket_1[x - per_socket_cores];
+   if (FLAGS_force_use_numa_node) {
+    RDMA_ASSERT(x < per_socket_cores);
+    if (FLAGS_use_numa_node == 0) {
+      y = socket_0[x];
+    } else {
+      y = socket_1[x];
+    }
   } else {
-    y = socket_0[x];
+    if (x >= per_socket_cores) {
+      // there is no other cores in the first socket
+      y = socket_1[x - per_socket_cores];
+    } else {
+      y = socket_0[x];
+    }
   }
 
 #endif

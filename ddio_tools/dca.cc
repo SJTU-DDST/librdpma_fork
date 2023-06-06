@@ -67,9 +67,9 @@ void enable_dca(struct pci_dev *dev) {
   pci_write_long(dev, PCI_AFB, dca);
 }
 
-DEFINE_bool(modify, false, "");
+DEFINE_bool(modify, true, "");
 DEFINE_bool(enable, false, "");
-DEFINE_bool(disable, false, "");
+DEFINE_bool(disable, true, "");
 
 int main(int argc, char **argv) {
 

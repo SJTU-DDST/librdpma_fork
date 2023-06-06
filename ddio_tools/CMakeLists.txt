@@ -1,3 +1,5 @@
+set(CMAKE_CXX_COMPILER /opt/rh/devtoolset-9/root/usr/bin/g++)
+
 cmake_minimum_required(VERSION 3.2)
 
 ADD_DEFINITIONS( -std=c++17)

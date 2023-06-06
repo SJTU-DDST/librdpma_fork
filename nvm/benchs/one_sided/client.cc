@@ -1,5 +1,7 @@
 #include <gflags/gflags.h>
+#include <new>
 
+#include "r2/src/libroutine.hh"
 #include "rlib/core/lib.hh"
 
 #include "r2/src/rdma/sop.hh"
@@ -12,6 +14,7 @@
 #include "../../huge_region.hh"
 
 DEFINE_int32(dimm_stride, 6, "");
+DEFINE_bool(two_qp, false, "use to QP in READ Read");
 DEFINE_bool(cross_dimm, false, "");
 DEFINE_bool(round_up, false, "");
 DEFINE_uint32(round_payload, 256, "Roundup of the write payload");
@@ -20,8 +23,7 @@ DEFINE_int64(use_nic_idx, 0, "Which NIC to create QP");
 DEFINE_int64(remote_nic_idx, 0, "Which NIC to create QP");
 DEFINE_int64(reg_nic_name, 73, "The name to register an opened NIC at rctrl.");
 DEFINE_int64(reg_mem_name, 73, "The name to register an MR at rctrl.");
-DEFINE_uint64(address_space,
-              1,
+DEFINE_uint64(address_space, 1,
               "The random read/write space of the registered memory (in GB)");
 
 DEFINE_uint32(seq_payload, 2, "The sequential read/write payload (in MB)");
@@ -40,6 +42,9 @@ DEFINE_bool(add_sync, false, "");
 DEFINE_bool(random, false, "");
 
 DEFINE_uint64(coros, 8, "Number of coroutine used per thread.");
+DEFINE_bool(force_use_numa_node, false, "ff");
+DEFINE_uint64(use_numa_node, 0, "ffff");
+DEFINE_bool(read_write, false, "rw");
 
 using namespace rdmaio;
 using namespace rdmaio::rmem;
@@ -54,18 +59,18 @@ using namespace r2::rdma;
 
 volatile bool running = true;
 
-static const int per_socket_cores = 12; // TODO!! hard coded
+static const int per_socket_cores = 36; // TODO!! hard coded
 // const int per_socket_cores = 8;//reserve 2 cores
 
-static int socket_0[] = { 0,  2,  4,  6,  8,  10, 12, 14, 16, 18, 20, 22,
-                          24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46 };
+static int socket_0[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+                         12, 13, 14, 15, 16, 17, 36, 37, 38, 39, 40, 41,
+                         42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53};
 
-static int socket_1[] = { 1,  3,  5,  7,  9,  11, 13, 15, 17, 19, 21, 23,
-                          25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47 };
+static int socket_1[] = {18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                         30, 31, 32, 33, 34, 35, 54, 55, 56, 57, 58, 59,
+                         60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71};
 
-int
-BindToCore(int t_id)
-{
+int BindToCore(int t_id) {
 
   if (t_id >= (per_socket_cores * 2))
     return 0;
@@ -86,11 +91,20 @@ BindToCore(int t_id)
   }
 #else
   // bind ,andway
-  if (x >= per_socket_cores) {
-    // there is no other cores in the first socket
-    y = socket_1[x - per_socket_cores];
+  if (FLAGS_force_use_numa_node) {
+    RDMA_ASSERT(x < per_socket_cores);
+    if (FLAGS_use_numa_node == 0) {
+      y = socket_0[x];
+    } else {
+      y = socket_1[x];
+    }
   } else {
-    y = socket_0[x];
+    if (x >= per_socket_cores) {
+      // there is no other cores in the first socket
+      y = socket_1[x - per_socket_cores];
+    } else {
+      y = socket_0[x];
+    }
   }
 
 #endif
@@ -104,26 +118,23 @@ BindToCore(int t_id)
   return 0;
 }
 
-template<typename T>
-static constexpr T
-round_up(const T& num, const T& multiple)
-{
+template <typename T>
+static constexpr T round_up(const T &num, const T &multiple) {
   assert(multiple && ((multiple & (multiple - 1)) == 0));
   return (num + multiple - 1) & -multiple;
 }
 
 // issue RDMA requests in a window
-template<usize window_sz>
-void
-rdma_window_read(RC* qp, u64* start_buf, FastRandom& rand, u64& pending_reqs)
-{
+template <usize window_sz>
+void rdma_window_read(RC *qp, u64 *start_buf, FastRandom &rand,
+                      u64 &pending_reqs) {
 
   const auto address_space =
-    static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L) -
-    FLAGS_payload;
+      static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L) -
+      FLAGS_payload;
   // const auto address_space = 14080 * 1024 - FLAGS_payload;
 
-  u64* buf = start_buf;
+  u64 *buf = start_buf;
   for (uint i = 0; i < window_sz; ++i) {
     buf[i] = rand.next();
     u64 remote_addr = rand.next() % address_space;
@@ -140,13 +151,13 @@ rdma_window_read(RC* qp, u64* start_buf, FastRandom& rand, u64& pending_reqs)
                                   .imm_data = 0});
 #else
     auto res_s = qp->send_normal(
-      { .op = IBV_WR_RDMA_READ,
-        .flags = 0 | ((pending_reqs == 0) ? (IBV_SEND_SIGNALED) : 0),
-        .len = FLAGS_payload,
-        .wr_id = 0 },
-      { .local_addr = reinterpret_cast<RMem::raw_ptr_t>(&(buf[i])),
-        .remote_addr = remote_addr,
-        .imm_data = 0 });
+        {.op = IBV_WR_RDMA_READ,
+         .flags = 0 | ((pending_reqs == 0) ? (IBV_SEND_SIGNALED) : 0),
+         .len = static_cast<u32>(FLAGS_payload),
+         .wr_id = 0},
+        {.local_addr = reinterpret_cast<RMem::raw_ptr_t>(&(buf[i])),
+         .remote_addr = remote_addr,
+         .imm_data = 0});
 #endif
     RDMA_ASSERT(res_s == IOCode::Ok) << " error: " << res_s.desc;
 
@@ -160,17 +171,16 @@ rdma_window_read(RC* qp, u64* start_buf, FastRandom& rand, u64& pending_reqs)
   }
 }
 
-template<usize window_sz>
-void
-rdma_window_write(RC* qp, u64* start_buf, FastRandom& rand, u64& pending_reqs)
-{
+template <usize window_sz>
+void rdma_window_write(RC *qp, u64 *start_buf, FastRandom &rand,
+                       u64 &pending_reqs) {
 
   const auto address_space =
-    static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L);
+      static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L);
 
   // const auto address_space = 14080 * 1024 - FLAGS_payload;
 
-  u64* buf = start_buf;
+  u64 *buf = start_buf;
   for (uint i = 0; i < window_sz; ++i) {
     buf[i] = rand.next();
     u64 remote_addr = rand.next() % address_space;
@@ -179,23 +189,23 @@ rdma_window_write(RC* qp, u64* start_buf, FastRandom& rand, u64& pending_reqs)
 
 #if 1 // write case
     auto res_s = qp->send_normal(
-      { .op = IBV_WR_RDMA_WRITE,
-        .flags =
-          IBV_SEND_INLINE | ((pending_reqs == 0) ? (IBV_SEND_SIGNALED) : 0),
-        .len = sizeof(u64),
-        .wr_id = 0 },
-      { .local_addr = reinterpret_cast<RMem::raw_ptr_t>(&(buf[i])),
-        .remote_addr = remote_addr,
-        .imm_data = 0 });
+        {.op = IBV_WR_RDMA_WRITE,
+         .flags =
+             IBV_SEND_INLINE | ((pending_reqs == 0) ? (IBV_SEND_SIGNALED) : 0),
+         .len = sizeof(u64),
+         .wr_id = 0},
+        {.local_addr = reinterpret_cast<RMem::raw_ptr_t>(&(buf[i])),
+         .remote_addr = remote_addr,
+         .imm_data = 0});
 #else
     auto res_s = qp->send_normal(
-      { .op = IBV_WR_RDMA_READ,
-        .flags = 0 | ((pending_reqs == 0) ? (IBV_SEND_SIGNALED) : 0),
-        .len = 8,
-        .wr_id = 0 },
-      { .local_addr = reinterpret_cast<RMem::raw_ptr_t>(&(buf[i])),
-        .remote_addr = remote_addr,
-        .imm_data = 0 });
+        {.op = IBV_WR_RDMA_READ,
+         .flags = 0 | ((pending_reqs == 0) ? (IBV_SEND_SIGNALED) : 0),
+         .len = 8,
+         .wr_id = 0},
+        {.local_addr = reinterpret_cast<RMem::raw_ptr_t>(&(buf[i])),
+         .remote_addr = remote_addr,
+         .imm_data = 0});
 #endif
     RDMA_ASSERT(res_s == IOCode::Ok) << " error: " << res_s.desc;
 
@@ -209,12 +219,9 @@ rdma_window_write(RC* qp, u64* start_buf, FastRandom& rand, u64& pending_reqs)
   }
 }
 
-void
-seq_bench();
+void seq_bench();
 
-int
-main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
 
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -232,8 +239,8 @@ main(int argc, char** argv)
   std::vector<Statics> statics(FLAGS_threads + 1);
 
   auto address_space =
-    static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L) -
-    FLAGS_payload;
+      static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L) -
+      FLAGS_payload;
 
   if (FLAGS_use_read) {
     RDMA_LOG(4) << "eval use one-sided READ";
@@ -244,21 +251,20 @@ main(int argc, char** argv)
 
   for (uint thread_id = 0; thread_id < FLAGS_threads; ++thread_id) {
 
-    threads.push_back(std::make_unique<TThread>([thread_id,
-                                                 address_space,
+    threads.push_back(std::make_unique<TThread>([thread_id, address_space,
                                                  &statics]() -> int {
       // use huge page to for local RDMA buffer
       // auto huge_region = HugeRegion::create(2 * 1024 * 1024).value();
       auto huge_region = std::make_shared<DRAMRegion>(2 * 1024 * 1024);
       auto local_mem = std::make_shared<RMem>( // nvm_region->size(),
-        huge_region->size(),
-        [&huge_region](u64 s) -> RMem::raw_ptr_t {
-          return huge_region->start_ptr();
-        },
-        [](RMem::raw_ptr_t ptr) {
-          // currently we donot free the resource,
-          // since the region will use to the end
-        });
+          huge_region->size(),
+          [&huge_region](u64 s) -> RMem::raw_ptr_t {
+            return huge_region->start_ptr();
+          },
+          [](RMem::raw_ptr_t ptr) {
+            // currently we donot free the resource,
+            // since the region will use to the end
+          });
 
       BindToCore(thread_id);
       // 1. create a local QP to use
@@ -271,6 +277,7 @@ main(int argc, char** argv)
       auto nic = RNic::create(RNicInfo::query_dev_names().at(idx)).value();
 
       auto qp = RC::create(nic, QPConfig()).value();
+      auto qp2 = RC::create(nic, QPConfig()).value();
 
       // 2. create the pair QP at server using CM
       ConnectManager cm(FLAGS_addr);
@@ -286,12 +293,16 @@ main(int argc, char** argv)
 
       // int rnic_idx = idx;
       int rnic_idx = FLAGS_remote_nic_idx;
-//      int rnic_idx = 0;
+      //      int rnic_idx = 0;
       // LOG(4) << "client use nic idx: " << rnic_idx << " @thread:" <<
       // thread_id;
       auto qp_res = cm.cc_rc(qp_name, qp, rnic_idx, QPConfig());
       RDMA_ASSERT(qp_res == IOCode::Ok) << std::get<0>(qp_res.desc);
       // RDMA_LOG(4) << "client fetch QP authentical key: " << key;
+      /**/
+      snprintf(qp_name, 64, "%rc:%d:@%d_2", thread_id, FLAGS_id);
+      auto qp_res2 = cm.cc_rc(qp_name, qp2, rnic_idx, QPConfig());
+      RDMA_ASSERT(qp_res2 == IOCode::Ok) << std::get<0>(qp_res2.desc);
 
       // 3. create the local MR for usage, and create the remote MR for usage
 
@@ -311,6 +322,8 @@ main(int argc, char** argv)
       qp->bind_remote_mr(remote_attr);
       auto local_attr = local_mr->get_reg_attr().value();
       qp->bind_local_mr(local_attr);
+      qp2->bind_local_mr(local_attr);
+      qp2->bind_remote_mr(remote_attr);
 
       // the benchmark code
 
@@ -331,34 +344,27 @@ main(int argc, char** argv)
       // RDMA_LOG(4) << "all done, start bench code!";
       // coroutine version
       SScheduler ssched;
-      u64* test_buf = (u64*)(local_mem->raw_ptr);
+      u64 *test_buf = (u64 *)(local_mem->raw_ptr);
 
       for (uint i = 0; i < FLAGS_coros; ++i) {
-        ssched.spawn([local_attr,
-                      remote_attr,
-                      thread_id,
-                      test_buf,
-                      qp,
-                      &rand,
-                      four_h_mb,
-                      address_space,
-                      &statics,
-                      &rgen,
-                      &dram_mr,
-                      &sgen](R2_ASYNC) {
+        ssched.spawn([local_attr, remote_attr, thread_id, test_buf, qp, qp2,
+                      &rand, four_h_mb, address_space, &statics, &rgen,
+                      &dram_mr, &sgen](R2_ASYNC) {
           // auto my_buf_off = FLAGS_payload * thread_id;
           // u64 *my_buf = (u64 *)(my_buf_off + (char *)test_buf);
-          u64* my_buf = (u64*)((char*)test_buf + R2_COR_ID() * 4096);
+          u64 *my_buf = (u64 *)((char *)test_buf + R2_COR_ID() * 4096);
+          u64 *my_buf1 = (u64 *)((char *)test_buf + R2_COR_ID() * 4096 + 2048);
 
           const auto address_space =
-            static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L) -
-            FLAGS_payload;
+              static_cast<u64>(FLAGS_address_space) * (1024 * 1024 * 1024L) -
+              FLAGS_payload;
 
           if (FLAGS_add_sync) // add sync must be used with write
             assert(!FLAGS_use_read);
 
           // const u64 four_h_mb = 400 * 1024 * 1024;
           SROp op;
+          SROp op2;
 
           FlatLatRecorder lats; // used to record lat
 
@@ -379,57 +385,14 @@ main(int argc, char** argv)
             cur_off = 0;
           }
 
+          usize processed_ = 0;
+
           while (running) {
-#if 0
-            // add the riing-buffer style test
-            const usize nslots = 2000;
-            const int fourK = 4 * 1024;
-            const usize slot_span = fourK * 6; // nvm has 6 DIMMs
-            auto slot_num = rand.next() % nslots;
-
-            auto base = fourK - FLAGS_payload * 2;
-            usize naddr = 0;
-            if (base > 0) {
-              naddr = rand.next() % (base);
-            }
-
-            if (FLAGS_round_up) {
-              naddr = round_up<usize>(naddr, FLAGS_round_payload);
-            }
-
-            auto req_addr = slot_num * slot_span + naddr;
-
-            // then read/write
-            // normal case read/write
-            op.set_payload(&my_buf[0], FLAGS_payload).set_remote_addr(req_addr);
-
-            int write_flag = 0;
-            if (FLAGS_use_read) {
-              op.set_read();
-            } else {
-              // write_flag |= (FLAGS_payload < 64 ? IBV_SEND_INLINE : 0);
-              op.set_write();
-            }
-            // write path
-            if (1) {
-              qp->bind_remote_mr(remote_attr);
-              auto ret =
-                op.execute(qp, IBV_SEND_SIGNALED | write_flag, R2_ASYNC_WAIT);
-              ASSERT(ret == IOCode::Ok)
-                << RC::wc_status(ret.desc) << " " << ret.code.name();
-            }
-
-            statics[thread_id].inc(1);
-            R2_YIELD;
-            continue;
-#endif
             /*
               We only record latency at the first thread.
               This is because latency timing using timer has overhead.
               Restricting the number of threads can minimize this overhead.
             */
-            if (thread_id == 0)
-              t.reset();
 
             u64 write_addr = 0;
 #if 1
@@ -465,7 +428,10 @@ main(int argc, char** argv)
             if (!FLAGS_add_sync) {
               // normal case read/write
               op.set_payload(&my_buf[0], FLAGS_payload)
-                .set_remote_addr(write_addr);
+                  .set_remote_addr(write_addr);
+
+              op2.set_payload(&my_buf[0], 8).set_remote_addr(write_addr);
+              op2.set_write();
 
               int write_flag = 0;
               if (FLAGS_use_read) {
@@ -477,10 +443,34 @@ main(int argc, char** argv)
               // write path
               if (1) {
                 qp->bind_remote_mr(remote_attr);
-                auto ret =
-                  op.execute(qp, IBV_SEND_SIGNALED | write_flag, R2_ASYNC_WAIT);
-                ASSERT(ret == IOCode::Ok)
-                  << RC::wc_status(ret.desc) << " " << ret.code.name();
+                qp2->bind_remote_mr(remote_attr);
+                if (FLAGS_two_qp) {
+                  auto ret1 = op.execute_no_wait(
+                      qp, IBV_SEND_SIGNALED | write_flag, R2_ASYNC_WAIT);
+                  auto ret2 = op.execute_no_wait(
+                      qp2, IBV_SEND_SIGNALED | write_flag, R2_ASYNC_WAIT);
+                  op.wait_one(qp, R2_ASYNC_WAIT);
+                  op.wait_one(qp2, R2_ASYNC_WAIT);
+                } else if (FLAGS_read_write) {
+                  assert(!FLAGS_two_qp);
+                  auto ret1 =
+                      op.execute_no_wait(qp, IBV_SEND_SIGNALED, R2_ASYNC_WAIT);
+
+                  auto ret2 =
+                      op.execute_no_wait(qp2, IBV_SEND_SIGNALED, R2_ASYNC_WAIT);
+                  op.wait_one(qp2, R2_ASYNC_WAIT);
+                  op.wait_one(qp, R2_ASYNC_WAIT);
+                  auto ret3 = op2.execute(
+                      qp2, IBV_SEND_SIGNALED | IBV_SEND_INLINE, R2_ASYNC_WAIT);
+
+                } else {
+
+                  auto ret = op.execute(qp, IBV_SEND_SIGNALED | write_flag,
+                                        R2_ASYNC_WAIT);
+
+                  ASSERT(ret == IOCode::Ok)
+                      << RC::wc_status(ret.desc) << " " << ret.code.name();
+                }
               }
 
               // op.execute_sync(qp, write_flag | IBV_SEND_SIGNALED);
@@ -495,7 +485,7 @@ main(int argc, char** argv)
 
                 auto retr = op.execute(qp, IBV_SEND_SIGNALED, R2_ASYNC_WAIT);
                 ASSERT(retr == IOCode::Ok)
-                  << RC::wc_status(retr.desc) << " " << retr.code.name();
+                    << RC::wc_status(retr.desc) << " " << retr.code.name();
               }
 
               // retr = op.execute(qp, IBV_SEND_SIGNALED, R2_ASYNC_WAIT);
@@ -513,14 +503,15 @@ main(int argc, char** argv)
               // 1. setup the write WR
               doorbell.cur_wr().opcode = IBV_WR_RDMA_WRITE;
               doorbell.cur_wr().send_flags =
-                ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
+                  ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
               doorbell.cur_wr().wr.rdma.remote_addr =
-                remote_attr.buf + (write_addr);
+                  remote_attr.buf + (write_addr);
               doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
 
-              doorbell.cur_sge() = { .addr = (u64)(&my_buf[0]),
-                                     .length = FLAGS_payload,
-                                     .lkey = local_attr.key };
+              doorbell.cur_sge() = {.addr = (u64)(&my_buf[0]),
+                                    .length =
+                                        static_cast<uint32_t>(FLAGS_payload),
+                                    .lkey = local_attr.key};
 
               // 2. setup the read WR
               // this request ensure that the previous write request is flushed
@@ -530,16 +521,17 @@ main(int argc, char** argv)
 
                 doorbell.next();
 
-                auto& read_sr = doorbell.cur_wr();
-                auto& read_sge = doorbell.cur_sge();
+                auto &read_sr = doorbell.cur_wr();
+                auto &read_sge = doorbell.cur_sge();
 
                 read_sr.opcode = IBV_WR_RDMA_READ;
                 read_sr.send_flags = IBV_SEND_SIGNALED;
                 assert(FLAGS_payload >= sizeof(u8));
                 // read the last byte
                 read_sr.wr.rdma.remote_addr =
-                  // remote_attr.buf + write_addr + FLAGS_payload - sizeof(u8);
-                  dram_mr.buf + 4096 * thread_id * 64 * R2_COR_ID();
+                    // remote_attr.buf + write_addr + FLAGS_payload -
+                    // sizeof(u8);
+                    dram_mr.buf + 4096 * thread_id * 64 * R2_COR_ID();
 
                 /* XD: using a DRAM MR is ok, as the RDMA_send will also flush
                    the buffer This improve the performance of about 1us
@@ -562,7 +554,7 @@ main(int argc, char** argv)
               // 3. send the doorbell
               auto res_d = op.execute_doorbell(qp, doorbell, R2_ASYNC_WAIT);
               ASSERT(res_d == IOCode::Ok)
-                << "error: " << RC::wc_status(res_d.desc);
+                  << "error: " << RC::wc_status(res_d.desc);
 #endif
             }
 
@@ -572,6 +564,9 @@ main(int argc, char** argv)
             //            statics[thread_id].float_data = lats.get_lat();
             //}
             statics[thread_id].inc(1);
+            if (lats.counts % 100000 == 0) {
+              statics[thread_id].float_data = t.passed_msec() / lats.counts;
+            }
             R2_YIELD;
           }
           R2_RET;
@@ -590,23 +585,16 @@ main(int argc, char** argv)
     //<< "delete remote QP error: " << del_res.desc;
   }
 
-  for (auto& t : threads)
+  for (auto &t : threads)
     t->start();
   sleep(2);
-  Reporter::report_thpt(statics, 40);
+  Reporter::report_thpt(statics, 20);
 
   running = false;
-
-  for (auto& t : threads) {
-    t->join();
-  }
-
   return 0;
 }
 
-void
-seq_bench()
-{
+void seq_bench() {
 
   u64 M = 1024 * 1024;
   u64 seq_payload = FLAGS_seq_payload * M;
@@ -671,7 +659,7 @@ seq_bench()
 
   while (1) {
     // send the request
-    char* local_ptr = (char*)(huge_region->addr);
+    char *local_ptr = (char *)(huge_region->addr);
     SROp op;
     op.set_payload(local_ptr, static_cast<u32>(seq_payload)).set_remote_addr(0);
     if (FLAGS_use_read) {
@@ -687,7 +675,7 @@ seq_bench()
       // print the bandwidth
 
       double bandwidth =
-        (transfered / static_cast<double>(t.passed_msec())) * 1000000.0;
+          (transfered / static_cast<double>(t.passed_msec())) * 1000000.0;
       bandwidth /= (1024 * 1024 * 1024);
 
       LOG(4) << "mointor bandwidth: " << bandwidth << " GB/s";

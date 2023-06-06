@@ -16,6 +16,38 @@ Building the tools of librdpma is straightforward since it will automatically in
 
 ### Running benchmarks
 
+#### 20230606
+因为现在主要只需要单边，因此只考虑 nvm_server 和 nvm_client两个文件即可，server的参数和代码基本上不需要动，client的代码对应 nvm/benchs/one_sided/client.cc， numa的绑定也写死在这个文件里了
+```shell
+sudo ./scripts/nvm_server --host=localhost --port=8964 -use_nvm=false -touch_mem=true --nvm_sz=8 --nvm_file=/dev/dax12.0
+```
+
+client 的一个示例参数：
+
+```shell
+./scripts/nvm_client -addr="192.168.98.50:8964" --force_use_numa_node=false--use_numa_node=0 --threads=36 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=true -two_qps=false
+```
+
+解释：
+
+* force_use_numa_node 和 use_numa_node: 当前者为true时，仅使用编号为后者的numa node，如果core不够，则exit(1)
+* threads, coros: 线程数和协程数
+* id: 编号，设为0即可
+* use_nix_idx: 使用的RDMA 网卡编号
+* use_true: true：测RDMA read, false: 测 RDMA write
+* payload: READ read/write payload的大小
+* add_sync: 是否doorbell batching
+* address_space: 必须 <= server端的nvm_sz, 单位是GB。
+* random: 读/写的远端地址是固定的，还是随机一个地址
+
+* read_write 和 two_qps: 两个后续加的特殊的参数，二者都有些词不达意，所以重点解释下：
+    * 默认client的行为：根据use_read的真假不断执行payload 大小的 RDMA read/write, 其中每个coro一个QP
+    * two_qps: 为true时，每个coro开两个QP，根据 use_read的真假不断执行两个QP并发执行payload大小的RDMA read/write。此选项为true时，要求 read_write=false
+    * read_write: 为true时，每个coro开两个QP。每次操作为：先根据 use_read的真假不断执行两个QP并发执行payload大小的RDMA read/write，然后再用其中一个QP做一个8bytes的write，此选项为true时，要求 two_qps=false
+
+#### original
+
+
 For the built binaries, `./nvm_rrtserver` and ``./nvm_rrtclient` are used for evaluating two-sided performance, while `./nvm_server` and `./nvm_client` are used for evaluating one-sided performance. We provide scripts to run experiments. For how to configure these binaries, please use `binary --help` to check.
 
 We've also provide scripts to run experiments. For example, to run one-sided evaluations, use the following:
@@ -39,35 +71,3 @@ We provide some tools for make system configurations or monitor NVM statistics.
 To check the results of these benchmarks, please refer to our paper: 
 
 [**ATC**] Characterizing and Optimizing Remote Persistent Memory with RDMA and NVM. Xingda Wei and Xiating Xie and Rong Chen and Haibo Chen and Binyu Zang. 2021 USENIX Annual Technical Conference. 
-
----
-
-记录:
-one sided: 
-```bash
-sudo ./command.sh 1111 true 10
-# 1111: port number
-# true: use_nvm=true
-# 10: nvm_size=10GB
-
-sudo ./command_client.sh 1111 true {payload_size}
-# 1111: port number
-# true: true ==> read, false ==> write
-
-```
-
-two sided:
-```bash
-sudo ./command_rrt.sh 1111 10 8 true
-# 1111: port number
-# 10: nvm_size=10GB
-# 8: num_threads=8
-# true: true ==> read, false ==> write
-
-sudo ./command_rrtcli.sh 1111 {payload_size} 8 true
-# 1111: port number
-# 8: num_threads=8
-# true: true ==> read, false ==> write
-```
-
-目前是在一个terminal内启动server，再在另一个terminal启动client，主要只针对payload跑过。
