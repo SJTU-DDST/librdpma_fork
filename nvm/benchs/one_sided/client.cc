@@ -504,26 +504,26 @@ int main(int argc, char **argv) {
 // the doorbell version of the request
       // DoorbellHelper<2> *dp = new DoorbellHelper<2>(IBV_WR_RDMA_WRITE);
       // DoorbellHelper<2> &doorbell
-                  DoorbellHelper<2> doorbell(IBV_WR_RDMA_READ);
 
-                  doorbell.next();
+                  DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, FLAGS_batch);
 
-                  // 1. setup the write WR
-                  doorbell.cur_wr().opcode = IBV_WR_RDMA_READ;
-                  doorbell.cur_wr().send_flags = 0;
-                      // ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
-                  doorbell.cur_wr().wr.rdma.remote_addr =
-                      remote_attr.buf + (batch_addr[0]);
-                  doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
+                  for (int i=0; i<FLAGS_batch-1;++i)
+                  {
+                    doorbell.next();
 
-                  doorbell.cur_sge() = {.addr = (u64)(&my_buf[0]),
-                                        .length =
-                                            static_cast<uint32_t>(FLAGS_payload),
-                                        .lkey = local_attr.key};
+                    // 1. setup the write WR
+                    doorbell.cur_wr().opcode = IBV_WR_RDMA_READ;
+                    doorbell.cur_wr().send_flags = 0;
+                        // ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
+                    doorbell.cur_wr().wr.rdma.remote_addr =
+                        remote_attr.buf + (batch_addr[i]);
+                    doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
 
-                  // 2. setup the read WR
-                  // this request ensure that the previous write request is flushed
-                  // out of the NIC pipeline
+                    doorbell.cur_sge() = {.addr = (u64)(&my_buf[0]),
+                                          .length =
+                                              static_cast<uint32_t>(FLAGS_payload),
+                                          .lkey = local_attr.key};                   
+                  }
 
 
                   doorbell.next();

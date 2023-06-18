@@ -46,8 +46,8 @@ template <usize N = kNMaxDoorbell> struct DoorbellHelper {
                 "Index type's max value must be larger than the number of max "
                 "doorbell num");
 
-  explicit DoorbellHelper(const ibv_wr_opcode &op) {
-    for (uint i = 0; i < N; ++i) {
+  explicit DoorbellHelper(const ibv_wr_opcode &op, int num=N) {
+    for (uint i = 0; i < num; ++i) {
       wrs[i].opcode = op;
       wrs[i].num_sge = 1;
       // its fine to store an invalid pointer when i == N,
