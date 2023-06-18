@@ -19,6 +19,7 @@ DEFINE_bool(cross_dimm, false, "");
 DEFINE_bool(round_up, false, "");
 DEFINE_uint32(round_payload, 256, "Roundup of the write payload");
 DEFINE_string(addr, "localhost:8888", "Server address to connect to.");
+DEFINE_int64(numa_type, 0, "The layout of cpu id in the client");
 DEFINE_int64(use_nic_idx, 0, "Which NIC to create QP");
 DEFINE_int64(remote_nic_idx, 0, "Which NIC to create QP");
 DEFINE_int64(reg_nic_name, 73, "The name to register an opened NIC at rctrl.");
@@ -59,7 +60,7 @@ using namespace r2::rdma;
 
 volatile bool running = true;
 
-static const int per_socket_cores = 36; // TODO!! hard coded
+static const int per_socket_cores = 56; // TODO!! hard coded
 // const int per_socket_cores = 8;//reserve 2 cores
 
 static int socket_0[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
@@ -99,11 +100,34 @@ int BindToCore(int t_id) {
       y = socket_1[x];
     }
   } else {
-    if (x >= per_socket_cores) {
-      // there is no other cores in the first socket
-      y = socket_1[x - per_socket_cores];
-    } else {
-      y = socket_0[x];
+    if (FLAGS_numa_type == 1)
+    {
+      if (FLAGS_use_nic_idx == 0)
+      {
+        if (x >= per_socket_cores) {
+          // there is no other cores in the first socket
+          y = 2 * (x - per_socket_cores) + 1;
+        } else {
+          y = 2 * x;
+        }     
+      }
+      else{
+        if (x >= per_socket_cores) {
+          // there is no other cores in the first socket
+          y = 2 * (x - per_socket_cores);
+        } else {
+          y = 2 * x + 1;
+        }  
+      }      
+    }
+    else
+    {
+      if (x >= per_socket_cores) {
+        // there is no other cores in the first socket
+        y = socket_1[x - per_socket_cores];
+      } else {
+        y = socket_0[x];
+      }  
     }
   }
 
