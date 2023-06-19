@@ -510,7 +510,7 @@ int main(int argc, char **argv) {
 
                   DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, FLAGS_batch);
 
-                  for (int i=0; i<FLAGS_batch-1;++i)
+                  for (int i=0; i<FLAGS_batch;++i)
                   {
                     doorbell.next();
 
@@ -527,33 +527,14 @@ int main(int argc, char **argv) {
                                               static_cast<uint32_t>(FLAGS_payload),
                                           .lkey = local_attr.key};                   
                   }
-
-
-                  doorbell.next();
-
-                  // 1. setup the write WR
-                  doorbell.cur_wr().opcode = IBV_WR_RDMA_READ;
+ 
                   doorbell.cur_wr().send_flags = IBV_SEND_SIGNALED;
-                      // ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
-                  doorbell.cur_wr().wr.rdma.remote_addr =
-                      remote_attr.buf + (batch_addr[FLAGS_batch-1]);
-                  doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
-
-                  doorbell.cur_sge() = {.addr = (u64)(&my_buf[0] + FLAGS_payload * (FLAGS_batch - 1)),
-                                        .length =
-                                            static_cast<uint32_t>(FLAGS_payload),
-                                        .lkey = local_attr.key};
-
-                  
-
                   auto id = R2_COR_ID();
 
                   // 3. send the doorbell
                   auto res_d = op.execute_doorbell(qp, doorbell, R2_ASYNC_WAIT);
                   ASSERT(res_d == IOCode::Ok)
                       << "error: " << RC::wc_status(res_d.desc);
-         
-
                 }
                 else if (FLAGS_search){
                     DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, 2);
