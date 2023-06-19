@@ -519,7 +519,7 @@ int main(int argc, char **argv) {
                         remote_attr.buf + (batch_addr[i]);
                     doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
 
-                    doorbell.cur_sge() = {.addr = (u64)(&my_buf[0]),
+                    doorbell.cur_sge() = {.addr = (u64)(&my_buf[0] + FLAGS_payload * i),
                                           .length =
                                               static_cast<uint32_t>(FLAGS_payload),
                                           .lkey = local_attr.key};                   
@@ -533,10 +533,10 @@ int main(int argc, char **argv) {
                   doorbell.cur_wr().send_flags = IBV_SEND_SIGNALED;
                       // ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
                   doorbell.cur_wr().wr.rdma.remote_addr =
-                      remote_attr.buf + (batch_addr[1]);
+                      remote_attr.buf + (batch_addr[FLAGS_batch-1]);
                   doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
 
-                  doorbell.cur_sge() = {.addr = (u64)(&my_buf1[0]),
+                  doorbell.cur_sge() = {.addr = (u64)(&my_buf[0] + FLAGS_payload * (FLAGS_batch - 1)),
                                         .length =
                                             static_cast<uint32_t>(FLAGS_payload),
                                         .lkey = local_attr.key};
