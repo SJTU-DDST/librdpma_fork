@@ -40,6 +40,7 @@ DEFINE_int64(id, 0, "");
 
 DEFINE_bool(use_read, true, "");
 DEFINE_bool(search, false, "");
+DEFINE_bool(update, false, "");
 
 DEFINE_bool(add_sync, false, "");
 DEFINE_bool(random, false, "");
@@ -536,7 +537,7 @@ int main(int argc, char **argv) {
                   ASSERT(res_d == IOCode::Ok)
                       << "error: " << RC::wc_status(res_d.desc);
                 }
-                else if (FLAGS_search){
+                else if (FLAGS_search | FLAGS_update){
                     DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, 2);
 
                     doorbell.next();
@@ -572,8 +573,15 @@ int main(int argc, char **argv) {
                     auto res_d = op.execute_doorbell(qp, doorbell, R2_ASYNC_WAIT);
                     ASSERT(res_d == IOCode::Ok)
                         << "error: " << RC::wc_status(res_d.desc);
-
-
+                        
+                    if (FLAGS_update)
+                    {
+                      qp->bind_remote_mr(remote_attr);
+                      auto ret = op2.execute(qp, IBV_SEND_SIGNALED | write_flag,
+                      R2_ASYNC_WAIT);
+                      ASSERT(ret == IOCode::Ok)
+                          << RC::wc_status(ret.desc) << " " << ret.code.name();
+                    }
                 }
                 else {
 
