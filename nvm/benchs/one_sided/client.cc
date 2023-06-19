@@ -39,6 +39,7 @@ DEFINE_int64(payload, 256, "Number of payload to read/write");
 DEFINE_int64(id, 0, "");
 
 DEFINE_bool(use_read, true, "");
+DEFINE_bool(search, false, "");
 
 DEFINE_bool(add_sync, false, "");
 DEFINE_bool(random, false, "");
@@ -46,7 +47,7 @@ DEFINE_bool(random, false, "");
 DEFINE_uint64(coros, 8, "Number of coroutine used per thread.");
 DEFINE_bool(force_use_numa_node, false, "ff");
 DEFINE_uint64(use_numa_node, 0, "ffff");
-DEFINE_uint64(batch, 1, "ffff");
+DEFINE_uint64(batch, 2, "ffff");
 DEFINE_bool(read_write, false, "rw");
 DEFINE_bool(doorbell, false, "using doorbell batching");
 
@@ -422,6 +423,7 @@ int main(int argc, char **argv) {
             */
 
             u64 write_addr = 0;
+            u64 write_addr1 = 0;
             u64 batch_addr[FLAGS_batch];
 #if 1
             if (FLAGS_random) {
@@ -442,6 +444,7 @@ int main(int argc, char **argv) {
               if (!FLAGS_doorbell)
               {
                 write_addr = batch_addr[0];
+                write_addr1 = batch_addr[1];
               }
 
               // ASSERT(false);
@@ -550,6 +553,45 @@ int main(int argc, char **argv) {
                   ASSERT(res_d == IOCode::Ok)
                       << "error: " << RC::wc_status(res_d.desc);
          
+
+                }
+                else if (FLAGS_search){
+                    DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, 2);
+
+                    doorbell.next();
+
+                    // 1. setup the write WR
+                    doorbell.cur_wr().opcode = IBV_WR_RDMA_READ;
+                    doorbell.cur_wr().send_flags = 0;
+                        // ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
+                    doorbell.cur_wr().wr.rdma.remote_addr =
+                        remote_attr.buf + write_addr;
+                    doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
+
+                    doorbell.cur_sge() = {.addr = (u64)(&my_buf[0]),
+                                          .length =512,
+                                          .lkey = local_attr.key};                   
+                    
+                    doorbell.next();
+
+                    // 1. setup the write WR
+                    doorbell.cur_wr().opcode = IBV_WR_RDMA_READ;
+                    doorbell.cur_wr().send_flags = IBV_SEND_SIGNALED;
+                        // ((FLAGS_payload <= kMaxInlinSz) ? IBV_SEND_INLINE : 0);
+                    doorbell.cur_wr().wr.rdma.remote_addr =
+                        remote_attr.buf + write_addr1;
+                    doorbell.cur_wr().wr.rdma.rkey = remote_attr.key;
+
+                    doorbell.cur_sge() = {.addr = (u64)(&my_buf[0] + 512),
+                                          .length =256,
+                                          .lkey = local_attr.key};
+                    auto id = R2_COR_ID();
+
+                    // 3. send the doorbell
+                    auto res_d = op.execute_doorbell(qp, doorbell, R2_ASYNC_WAIT);
+                    ASSERT(res_d == IOCode::Ok)
+                        << "error: " << RC::wc_status(res_d.desc);
+
 
                 }
                 else {
