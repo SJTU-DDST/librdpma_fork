@@ -6,6 +6,7 @@
 #include "rlib/core/lib.hh"
 
 #include "r2/src/rdma/sop.hh"
+#include "rlib/core/qps/op.hh"
 
 #include "../gen_addr.hh"
 #include "../latency.hh"
@@ -41,6 +42,7 @@ DEFINE_int64(id, 0, "");
 DEFINE_bool(use_read, true, "");
 DEFINE_bool(search, false, "");
 DEFINE_bool(update, false, "");
+DEFINE_bool(CAS, false, "");
 
 DEFINE_bool(add_sync, false, "");
 DEFINE_bool(random, false, "");
@@ -580,8 +582,33 @@ int main(int argc, char **argv) {
                       auto ret = op2.execute(qp, IBV_SEND_SIGNALED | write_flag,
                       R2_ASYNC_WAIT);
                       ASSERT(ret == IOCode::Ok)
-                          << RC::wc_status(ret.desc) << " " << ret.code.name();
+                          << RC::wc_status(ret.desc) << " " << ret.code.name();                                        
                     }
+                }
+                else if (FLAGS_CAS)
+                {
+                  ::r2::rdma::Op<1> op_cas;
+                  u64 swap = 1;
+                  bool ok =
+                    op_cas
+                        .set_atomic_rbuf((u64 *)(remote_attr.buf + write_addr), remote_attr.key)
+                        .set_fetch_add((u64)swap)
+                        .set_flags(IBV_SEND_SIGNALED)
+                        .set_next(nullptr)
+                        .set_payload(&my_buf[0], sizeof(u64), local_attr.key);
+                  // bool ok =
+                  //   op_cas
+                  //       .set_rdma_rbuf((u64 *)(remote_attr.buf + write_addr), remote_attr.key)
+                  //       .set_write()
+                  //       .set_flags(IBV_SEND_SIGNALED)
+                  //       .set_payload(&my_buf[0], 8, local_attr.key);
+                  ASSERT(ok) << "error: " << ok;
+                  ibv_send_wr *bad_wr;
+                  auto ret = ibv_post_send(qp->qp, &op_cas.wr, &bad_wr);
+                  ASSERT(ret==0) << "error: " << ret;
+                  LOG(4) << "send 1 cas request";
+                  auto ret1 = qp->wait_one_comp();
+                  ASSERT(ret1.code==rdmaio::IOCode::Ok) << "error: " << (u32)ret1.desc.status;
                 }
                 else {
 
