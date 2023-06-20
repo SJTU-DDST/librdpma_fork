@@ -18,7 +18,7 @@
 DEFINE_int32(dimm_stride, 6, "");
 DEFINE_bool(two_qp, false, "use twp QPs in READ Read");
 DEFINE_bool(cross_dimm, false, "");
-DEFINE_bool(round_up, false, "");
+DEFINE_bool(round_up, true, "");
 DEFINE_uint32(round_payload, 256, "Roundup of the write payload");
 DEFINE_string(addr, "localhost:8888", "Server address to connect to.");
 DEFINE_int64(numa_type, 0, "The layout of cpu id in the client");
@@ -425,9 +425,9 @@ int main(int argc, char **argv) {
               Restricting the number of threads can minimize this overhead.
             */
 
-            u64 write_addr = 0;
-            u64 write_addr1 = 0;
-            u64 batch_addr[FLAGS_batch];
+            uintptr_t write_addr = 0;
+            uintptr_t write_addr1 = 0;
+            uintptr_t batch_addr[FLAGS_batch];
 #if 1
             if (FLAGS_random) {
               for (int i=0; i<FLAGS_batch; ++i)
@@ -587,28 +587,47 @@ int main(int argc, char **argv) {
                 }
                 else if (FLAGS_CAS)
                 {
-                  ::r2::rdma::Op<1> op_cas;
-                  u64 swap = 1;
-                  bool ok =
-                    op_cas
-                        .set_atomic_rbuf((u64 *)(remote_attr.buf + write_addr), remote_attr.key)
-                        .set_fetch_add((u64)swap)
-                        .set_flags(IBV_SEND_SIGNALED)
-                        .set_next(nullptr)
-                        .set_payload(&my_buf[0], sizeof(u64), local_attr.key);
+                  // ::r2::rdma::Op<1> op_cas;
+                  // u64 swap = 1;
+                  // bool ok =
+                  //   op_cas
+                  //       .set_atomic_rbuf((u64 *)(remote_attr.buf + write_addr), remote_attr.key)
+                  //       .set_fetch_add((u64)swap)
+                  //       .set_flags(IBV_SEND_SIGNALED)
+                  //       .set_next(nullptr)
+                  //       .set_payload(&my_buf[0], sizeof(u64), local_attr.key);
                   // bool ok =
                   //   op_cas
                   //       .set_rdma_rbuf((u64 *)(remote_attr.buf + write_addr), remote_attr.key)
                   //       .set_write()
                   //       .set_flags(IBV_SEND_SIGNALED)
                   //       .set_payload(&my_buf[0], 8, local_attr.key);
-                  ASSERT(ok) << "error: " << ok;
-                  ibv_send_wr *bad_wr;
-                  auto ret = ibv_post_send(qp->qp, &op_cas.wr, &bad_wr);
-                  ASSERT(ret==0) << "error: " << ret;
-                  LOG(4) << "send 1 cas request";
+                  // ASSERT(ok) << "error: " << ok;
+                  // ibv_send_wr *bad_wr;
+                  // auto ret = ibv_post_send(qp->qp, &op_cas.wr, &bad_wr);
+                  // ASSERT(ret==0) << "error: " << ret;
+                  // LOG(4) << "send 1 cas request";
+                  // auto ret1 = qp->wait_one_comp();
+                  // ASSERT(ret1.code==rdmaio::IOCode::Ok) << "error: " << (u32)ret1.desc.status;
+                        // An example of using Op to post an one-sided RDMA read.
+
+                  ::rdmaio::qp::Op op_cas;
+                  // op_cas.set_rdma_rbuf(remote_attr.buf + write_addr, remote_attr.key).set_read().set_imm(0);
+                  // op_cas.set_payload(my_buf, sizeof(u64), local_attr.key);
+                  // op_cas.set_atomic_rbuf((u64 *)(remote_attr.buf+write_addr), remote_attr.key).set_fetch_add(1);
+                  // op_cas.set_payload(my_buf, sizeof(u64), local_attr.key);
+                  op_cas.set_atomic_rbuf((u64 *)(remote_attr.buf+write_addr), remote_attr.key).set_cas(0,1);
+                  op_cas.set_payload(my_buf, sizeof(u64), local_attr.key);
+   
+                  // post the requests
+                  auto ret = op_cas.execute(qp, IBV_SEND_SIGNALED);
+                  // could use poll_comp for waiting the resut to finish
+                  ASSERT(ret == IOCode::Ok)
+                      << "error" << ret.desc;
+
                   auto ret1 = qp->wait_one_comp();
                   ASSERT(ret1.code==rdmaio::IOCode::Ok) << "error: " << (u32)ret1.desc.status;
+
                 }
                 else {
 
