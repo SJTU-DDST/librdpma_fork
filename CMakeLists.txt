@@ -21,6 +21,7 @@ include_directories(.)
 #include_directories(third_party/sparsehash-c11)
 include_directories(third_party)
 
+set(CMAKE_GENERATOR "Unix Makefiles" CACHE INTERNAL "" FORCE)
 
 
 ## seperate install
@@ -31,22 +32,33 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 set (MACRO_FLAGS "-DBASE_LINE")
 
 ## currently drtm in this codebase is not supported, i will fix this later 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLEVELDB_PLATFORM_POSIX -pthread -DOS_LINUX -mrtm -pthread -O2 -g ${MACRO_FLAGS} -msse3 -mavx -mavx512f")
 
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+  # DPU's SoC architecture is aarch64, which does not support compile flags for intel CPUs like sse, avx and rtm.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLEVELDB_PLATFORM_POSIX -pthread -DOS_LINUX -O2 -g ${MACRO_FLAGS}")
+  
+  # Ninja failed to recognize boost and compile in in DPU, idk why, but we can switch to Unix Makefiles
 
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLEVELDB_PLATFORM_POSIX -pthread -DOS_LINUX -mrtm -pthread -O2 -g ${MACRO_FLAGS} -msse3 -mavx -mavx512f")
+endif()
 
 add_executable(nvm_aclient ./nvm/benchs/one_sided/aclient.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 add_executable(nvm_client ./nvm/benchs/one_sided/client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 add_executable(nvm_server ./nvm/benchs/one_sided/server.cc)
+add_executable(nvm_userver ./nvm/benchs/one_sided/userver.cc)
 
-add_executable(nvm_tserver ./nvm/benchs/two_sided/server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-add_executable(nvm_tclient ./nvm/benchs/two_sided/client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+# two-sided benchmarks relies on some X86 only features. disable them to make sure there is no complication errors on DPU.
+if (NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+  add_executable(nvm_tserver ./nvm/benchs/two_sided/server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+  add_executable(nvm_tclient ./nvm/benchs/two_sided/client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 
-add_executable(nvm_rtserver ./nvm/benchs/two_sided/rc_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-add_executable(nvm_rtclient ./nvm/benchs/two_sided/rc_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+  add_executable(nvm_rtserver ./nvm/benchs/two_sided/rc_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+  add_executable(nvm_rtclient ./nvm/benchs/two_sided/rc_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 
-add_executable(nvm_rrtserver ./nvm/benchs/two_sided/ring_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-add_executable(nvm_rrtclient ./nvm/benchs/two_sided/ring_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+  add_executable(nvm_rrtserver ./nvm/benchs/two_sided/ring_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+  add_executable(nvm_rrtclient ./nvm/benchs/two_sided/ring_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+endif()
 
 
 
@@ -56,12 +68,18 @@ include(cmake/Dependencies.cmake)
 #
 #Configure binary linking
 #
-set(apps 
-     nvm_client nvm_server 
-     nvm_aclient 
-     nvm_tserver nvm_tclient 
-     nvm_rtserver nvm_rtclient 
-     nvm_rrtserver nvm_rrtclient )
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+  set(apps 
+       nvm_client nvm_server 
+       nvm_aclient nvm_userver)
+else()
+  set(apps 
+       nvm_client nvm_server 
+       nvm_aclient 
+       nvm_tserver nvm_tclient 
+       nvm_rtserver nvm_rtclient 
+       nvm_rrtserver nvm_rrtclient nvm_userver)
+endif()
 
 foreach(prog ${apps} )
   if( LINK_STATIC_LIB )

@@ -7,7 +7,10 @@
 #include <sys/types.h>
 
 #include <unistd.h>
+
+#if defined(__i386__) || defined(__x86_64__)
 #include <xmmintrin.h>
+#endif
 
 #include "./memory_region.hh"
 

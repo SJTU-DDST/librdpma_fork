@@ -432,15 +432,22 @@ int main(int argc, char **argv) {
             if (FLAGS_random) {
               for (int i=0; i<FLAGS_batch; ++i)
               {
-                 batch_addr[i] = rgen.gen(rand);
-                if (FLAGS_round_up) {
-                  batch_addr[i] = round_up<usize>(batch_addr[i], FLAGS_round_payload);
-                }
-                if (!FLAGS_cross_dimm) {
-                  auto start_addr = batch_addr[i] % 4096;
-                  if (start_addr + FLAGS_payload > 4096) {
-                    start_addr = 4096 - FLAGS_payload;
-                    batch_addr[i] = batch_addr[i] / 4096 + start_addr;
+                while (true) {
+                  batch_addr[i] = rgen.gen(rand);
+                  if (FLAGS_round_up) {
+                    batch_addr[i] = round_up<usize>(batch_addr[i], FLAGS_round_payload);
+                  }
+                  if (!FLAGS_cross_dimm) {
+                    auto start_addr = batch_addr[i] % 4096;
+                    if (start_addr + FLAGS_payload > 4096) {
+                      start_addr = 4096 - FLAGS_payload;
+                      batch_addr[i] = batch_addr[i] / 4096 + start_addr;
+                    }
+                  }
+                  
+                  // after round up, the addr may exceed the address space.
+                  if (batch_addr[i] < address_space) {
+                    break;
                   }
                 }
               }
