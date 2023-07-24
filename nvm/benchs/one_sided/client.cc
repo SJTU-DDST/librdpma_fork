@@ -79,6 +79,14 @@ static int socket_1[] = {18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
                          60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71};
 
 int BindToCore(int t_id) {
+  // DPU
+  if (FLAGS_numa_type == 3) {
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+    CPU_SET(t_id, &mask);
+    sched_setaffinity(0, sizeof(mask), &mask);
+    return 0;
+  }
 
   if (t_id >= (per_socket_cores * 2))
     return 0;
@@ -126,6 +134,10 @@ int BindToCore(int t_id) {
           y = 2 * x + 1;
         }  
       }      
+    }
+    else if (FLAGS_numa_type == 3) 
+    {
+      
     }
     else
     {
