@@ -135,12 +135,9 @@ int BindToCore(int t_id) {
         }  
       }      
     }
-    else if (FLAGS_numa_type == 3) 
-    {
-      
-    }
     else
     {
+      ASSERT(FLAGS_numa_type != 3);
       if (x >= per_socket_cores) {
         // there is no other cores in the first socket
         y = socket_1[x - per_socket_cores];
