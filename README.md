@@ -41,10 +41,16 @@ client 的一个示例参数：
 * address_space: 必须 <= server端的nvm_sz, 单位是GB。
 * random: 读/写的远端地址是固定的，还是随机一个地址
 
-* read_write 和 two_qp: 两个后续加的特殊的参数，二者都有些词不达意，所以重点解释下：
+* 两个后续加的特殊的参数，二者都有些词不达意，所以重点解释下：
     * 默认client的行为：根据use_read的真假不断执行payload 大小的 RDMA read/write, 其中每个coro一个QP
     * two_qp: 为true时，每个coro开两个QP，根据 use_read的真假不断执行两个QP并发执行payload大小的RDMA read/write。此选项为true时，要求 read_write=false
     * read_write: 为true时，每个coro开两个QP。每次操作为：先根据 use_read的真假不断执行两个QP并发执行payload大小的RDMA read/write，然后再用其中一个QP做一个8bytes的write，此选项为true时，要求 two_qp=false
+    * doorbell: 为true时，使用doorbell batching来增加并行性。要求two_qp和read_write为false。且设置batch参数，指定doorbell batching的数量。
+    * search/update: 为true时，模拟learned index的search和update行为
+    * CAS：为true时，测试CAS的性能
+    * To do：建议用bench=1,2,3,4,...来替代上面的选项
+
+* 运行脚本在./scripts/
 
 #### original
 

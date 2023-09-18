@@ -386,6 +386,7 @@ int main(int argc, char **argv) {
       SScheduler ssched;
       u64 *test_buf = (u64 *)(local_mem->raw_ptr);
 
+      // 4. Execute RDMA operations
       for (uint i = 0; i < FLAGS_coros; ++i) {
         ssched.spawn([local_attr, remote_attr, thread_id, test_buf, qp, qp2,
                       &rand, four_h_mb, address_space, &statics, &rgen,
@@ -433,14 +434,16 @@ int main(int argc, char **argv) {
               This is because latency timing using timer has overhead.
               Restricting the number of threads can minimize this overhead.
             */
-
             uintptr_t write_addr = 0;
             uintptr_t write_addr1 = 0;
             uintptr_t batch_addr[FLAGS_batch];
 #if 1
+            // 1. Generate the remote address
             if (FLAGS_random) {
+              // Random address
               for (int i=0; i<FLAGS_batch; ++i)
               {
+                // Create a batch of addresses to serve doorbell batching
                 while (true) {
                   batch_addr[i] = rgen.gen(rand);
                   if (FLAGS_round_up) {
@@ -453,7 +456,6 @@ int main(int argc, char **argv) {
                       batch_addr[i] = batch_addr[i] / 4096 + start_addr;
                     }
                   }
-                  
                   // after round up, the addr may exceed the address space.
                   if (batch_addr[i] < address_space) {
                     break;
@@ -465,9 +467,9 @@ int main(int argc, char **argv) {
                 write_addr = batch_addr[0];
                 write_addr1 = batch_addr[1];
               }
-
               // ASSERT(false);
             } else {
+              // Sequential Address
               // write_addr = sgen.gen(FLAGS_payload);
               // write_addr = thread_id * 4096;
               write_addr = cur_off % total_space + start_off;
@@ -484,10 +486,10 @@ int main(int argc, char **argv) {
             ASSERT(write_addr < address_space) << " write addr: " << write_addr;
 
             if (!FLAGS_add_sync) {
-              // normal case read/write
+              // read/write request
               op.set_payload(&my_buf[0], FLAGS_payload)
                   .set_remote_addr(write_addr);
-
+              // write request
               op2.set_payload(&my_buf[0], 8).set_remote_addr(write_addr);
               op2.set_write();
 
@@ -503,6 +505,7 @@ int main(int argc, char **argv) {
                 qp->bind_remote_mr(remote_attr);
                 qp2->bind_remote_mr(remote_attr);
                 if (FLAGS_two_qp) {
+                  // Case 1: Using two QP to increase parallelism
                   auto ret1 = op.execute_no_wait(
                       qp, IBV_SEND_SIGNALED | write_flag, R2_ASYNC_WAIT);
                   auto ret2 = op.execute_no_wait(
@@ -510,23 +513,22 @@ int main(int argc, char **argv) {
                   op.wait_one(qp, R2_ASYNC_WAIT);
                   op.wait_one(qp2, R2_ASYNC_WAIT);
                 } else if (FLAGS_read_write) {
+                  // Case 2: Using two QP to increase parallelism, Write-after-read
+                  // This case simulates the index operations (remote reads -> local updates -> remote writes)
                   assert(!FLAGS_two_qp);
                   auto ret1 =
                       op.execute_no_wait(qp, IBV_SEND_SIGNALED, R2_ASYNC_WAIT);
-
                   auto ret2 =
                       op.execute_no_wait(qp2, IBV_SEND_SIGNALED, R2_ASYNC_WAIT);
                   op.wait_one(qp2, R2_ASYNC_WAIT);
                   op.wait_one(qp, R2_ASYNC_WAIT);
                   auto ret3 = op2.execute(
                       qp2, IBV_SEND_SIGNALED | IBV_SEND_INLINE, R2_ASYNC_WAIT);
-
                 } else if (FLAGS_doorbell){
-
 // the doorbell version of the request
       // DoorbellHelper<2> *dp = new DoorbellHelper<2>(IBV_WR_RDMA_WRITE);
       // DoorbellHelper<2> &doorbell
-
+                  // Case 3: Using Doorbell Batching to increase parallelism
                   DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, FLAGS_batch);
 
                   for (int i=0; i<FLAGS_batch;++i)
@@ -550,12 +552,13 @@ int main(int argc, char **argv) {
                   doorbell.cur_wr().send_flags = IBV_SEND_SIGNALED;
                   auto id = R2_COR_ID();
 
-                  // 3. send the doorbell
+                  // send the doorbell
                   auto res_d = op.execute_doorbell(qp, doorbell, R2_ASYNC_WAIT);
                   ASSERT(res_d == IOCode::Ok)
                       << "error: " << RC::wc_status(res_d.desc);
                 }
                 else if (FLAGS_search | FLAGS_update){
+                    // CASE 4: Simulate the search and update operations in learned index
                     DoorbellHelper<16> doorbell(IBV_WR_RDMA_READ, 2);
 
                     doorbell.next();
@@ -627,11 +630,9 @@ int main(int argc, char **argv) {
                   // ASSERT(ret1.code==rdmaio::IOCode::Ok) << "error: " << (u32)ret1.desc.status;
                         // An example of using Op to post an one-sided RDMA read.
 
+
+                  // CASE 5: Test the performance of RDMA CAS
                   ::rdmaio::qp::Op op_cas;
-                  // op_cas.set_rdma_rbuf(remote_attr.buf + write_addr, remote_attr.key).set_read().set_imm(0);
-                  // op_cas.set_payload(my_buf, sizeof(u64), local_attr.key);
-                  // op_cas.set_atomic_rbuf((u64 *)(remote_attr.buf+write_addr), remote_attr.key).set_fetch_add(1);
-                  // op_cas.set_payload(my_buf, sizeof(u64), local_attr.key);
                   op_cas.set_atomic_rbuf((u64 *)(remote_attr.buf+write_addr), remote_attr.key).set_cas(0,1);
                   op_cas.set_payload(my_buf, sizeof(u64), local_attr.key);
    
@@ -646,10 +647,10 @@ int main(int argc, char **argv) {
 
                 }
                 else {
-
+                  // Case 6: Normal RDMA READ/WRITE (The implementation provided by this paper)
+                  // Please read this function in detail
                   auto ret = op.execute(qp, IBV_SEND_SIGNALED | write_flag,
                                         R2_ASYNC_WAIT);
-
                   ASSERT(ret == IOCode::Ok)
                       << RC::wc_status(ret.desc) << " " << ret.code.name();
                 }
@@ -674,6 +675,7 @@ int main(int argc, char **argv) {
               // ASSERT(retr == IOCode::Ok)
               //  << RC::wc_status(ret.desc) << " " << ret.code.name();
             } else {
+              // CASE 7: IGNORE THIS PART
 
 #if 1 // the doorbell version of the request
       // DoorbellHelper<2> *dp = new DoorbellHelper<2>(IBV_WR_RDMA_WRITE);
