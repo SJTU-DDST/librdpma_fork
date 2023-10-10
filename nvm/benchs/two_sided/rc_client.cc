@@ -279,8 +279,8 @@ int main(int argc, char **argv) {
         req->attr = handler->get_reg_attr().value();
 
         auto res_s = rc_session.send_unsignaled(
-            {.mem_ptr = (void *)(send_buf),
-             .sz = sizeof(MsgHeader) + sizeof(ConnectReq2)});
+            {(void *)(send_buf),
+             sizeof(MsgHeader) + sizeof(ConnectReq2)});
         ASSERT(res_s == IOCode::Ok);
 
         char reply_buf[64];
@@ -328,8 +328,8 @@ int main(int argc, char **argv) {
               }
 
               auto ret = rc_session.send_unsignaled(
-                  {.mem_ptr = (void *)(local_buf),
-                   .sz = sizeof(MsgHeader) + sizeof(Request)});
+                  {(void *)(local_buf),
+                   sizeof(MsgHeader) + sizeof(Request)});
               ASSERT(ret == IOCode::Ok);
             }
             wait_replies[R2_COR_ID()] = window_sz;

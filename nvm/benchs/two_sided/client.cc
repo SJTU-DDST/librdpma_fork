@@ -274,8 +274,8 @@ int main(int argc, char **argv) {
           req->attr = ud->my_attr();
 
           auto res_s = ud_session->send_unsignaled(
-              {.mem_ptr = (void *)(send_buf),
-               .sz = sizeof(MsgHeader) + sizeof(ConnectReq)},
+              {(void *)(send_buf),
+               sizeof(MsgHeader) + sizeof(ConnectReq)},
               mr_s.key);
           ASSERT(res_s == IOCode::Ok);
 
@@ -368,8 +368,8 @@ int main(int argc, char **argv) {
 
                 auto ret = ud_session->send_unsignaled_doorbell(
                     doorbell,
-                    {.mem_ptr = (void *)(local_buf),
-                     .sz = sizeof(MsgHeader) + sizeof(Request)},
+                    {(void *)(local_buf),
+                     sizeof(MsgHeader) + sizeof(Request)},
                     mr_s.key, ud_session->my_wr());
                 ASSERT(ret == IOCode::Ok) << "error: " << ret.desc;
               }

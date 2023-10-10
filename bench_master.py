@@ -210,11 +210,11 @@ def main():
     machine_config = load_machine_config(args.config)
     
     clients_server_pairs = [
-        # (['machine-74'], 'machine-74_dpu'),
-        # (['machine-74_dpu'], 'machine-74'),
-        # (['machine-74'], 'machine-71'),
-        # (['machine-74_dpu'], 'machine-74_dpu'),
         (['machine-74'], 'machine-74')
+        # (['machine-74'], 'machine-144_dpu'),
+        # (['machine-144_dpu'], 'machine-74'),
+        # (['machine-74'], 'machine-71'),
+        # (['machine-144_dpu'], 'machine-144_dpu'),
     ]
 
     for thread_count in [1, 36]:

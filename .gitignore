@@ -7,8 +7,10 @@ build/
 log/
 ddio_tools/*
 
+.cache
 .vscode
 __pycache__
+compile_commands.json
 
 # no .txt, except cmakelist
 *.txt

@@ -2,23 +2,30 @@
 
 LibRDPMA provides a set of tools  to analyze the behavior when accessing NVM (i.e., Intel Optane DC persistent memory) with RDMA. These including benchmarks for one-sided RDMA and two-sided RDMA and tools to analyze NVM behavior. 
 
-
-
 ## Getting Started
+
+### Clone and Build
 
 Building the tools of librdpma is straightforward since it will automatically install dependencies. Specifically, using the following steps:
 
-- Clone the project with `git clone git@github.com:SJTU-DDST/librdpma_fork.git --recursive`
-- `sudo cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=1`
-- `cd build && sudo make -j`
+- clone the project
+  - clone submodules, use `git clone git@github.com:SJTU-DDST/librdpma_fork.git --recursive`
+  - or clone and then use `git submodule update --init --recursive`
+- `mkdir build && cd build && cmake ..`
+  - compile_commands.json will generate in build/
+- `make -j`
 
-> 不知道为啥，50上得sudo才能编译，有点怪
-
+> 不知道为啥，50 上得 sudo 才能编译，有点怪
 
 ### Running benchmarks
 
+运行 `python3 bench_master.py`，第一次运行会生成配置文件，请手动更改该配置文件。
+
+第二次及之后的运行会输出结果至 `benchres_*.json`。
+
 #### 20230606
-因为现在主要只需要单边，因此只考虑 nvm_server 和 nvm_client两个文件即可，server的参数和代码基本上不需要动，client的代码对应 nvm/benchs/one_sided/client.cc， numa的绑定也写死在这个文件里了
+
+因为现在主要只需要单边，因此只考虑 nvm_server 和 nvm_client 两个文件即可，server的参数和代码基本上不需要动，client的代码对应 nvm/benchs/one_sided/client.cc， numa的绑定也写死在这个文件里了
 ```shell
 sudo ./scripts/nvm_server --host=localhost --port=8964 -use_nvm=false -touch_mem=true --nvm_sz=8 --nvm_file=/dev/dax12.0
 ```
@@ -54,24 +61,18 @@ client 的一个示例参数：
 
 #### original
 
-
 For the built binaries, `./nvm_rrtserver` and ``./nvm_rrtclient` are used for evaluating two-sided performance, while `./nvm_server` and `./nvm_client` are used for evaluating one-sided performance. We provide scripts to run experiments. For how to configure these binaries, please use `binary --help` to check.
 
 We've also provide scripts to run experiments. For example, to run one-sided evaluations, use the following:
 
 - `cd scripts; ./bootstrap-proxy.py -f run_one.toml`; Note that `run_one.toml` should be configured according to your hardawre setting. It is straightforward to configure it  based on its content. 
 
-  
-
 ### Other tools
 
 We provide some tools for make system configurations or monitor NVM statistics. 
 
 - To tune DDIO setups, use `cd ddio_tools; cmake; make;` and then use `setup_dca`. 
-
 - To monitor NVM read/write amplications, use `cd nvm; python analysis.py`.  Note that `ipmctl` should be installed. 
-
-
 
 ## Check our results
 

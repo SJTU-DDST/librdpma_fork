@@ -327,8 +327,8 @@ int main(int argc, char **argv) {
               }
 
               auto ret = ss->send_unsignaled(
-                  {.mem_ptr = (void *)(msg_buf),
-                   .sz = sizeof(MsgHeader) + sizeof(Request) +
+                  {(void *)(msg_buf),
+                   sizeof(MsgHeader) + sizeof(Request) +
                          (FLAGS_use_read ? 0 : FLAGS_payload)});
               ASSERT(ret == IOCode::Ok);
 

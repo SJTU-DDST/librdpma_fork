@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(ggflags_DIR "${CMAKE_SOURCE_DIR}/third_party/gflags")
 add_subdirectory(${ggflags_DIR})
 include_directories("${ggflags_DIR}/include")

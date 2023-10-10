@@ -274,8 +274,8 @@ int main(int argc, char **argv) {
           }
 #if 1
           auto res_s = cur_session->send_unsignaled(
-              {.mem_ptr = (void *)(reply_buf),
-               .sz = sizeof(MsgHeader) + reply_sz});
+              {(void *)(reply_buf),
+               sizeof(MsgHeader) + reply_sz});
           ASSERT(res_s == IOCode::Ok);
 #endif
 
