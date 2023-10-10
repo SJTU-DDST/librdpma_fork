@@ -251,6 +251,7 @@ def main():
             output_f.write("[ \n")  # this space is fit for ",\n"
 
         print(f"\033[96m=== run: server = {server}, clients = {clients} ===\033[0m")
+        print(f"\033[96m===      thread_count = {thread_count_list}, payload = {payload_list} ===\033[0m")
         print(f"\033[96m=== output will all print to {this_time_filename} ===\033[0m")
 
         if machine_config[server]["user"] == "YOUR_USER_NAME":
@@ -277,8 +278,8 @@ def main():
                 server_addr = f'{machine_config[server]["ip"]}:{machine_config[server]["port"]}'
                 server_nic_idx = machine_config[server]['available_nic'][0]
                 server_config = {
-                    "host": {machine_config[server]["ip"]},
-                    "port": {machine_config[server]["port"]},
+                    "host": machine_config[server]["ip"],
+                    "port": machine_config[server]["port"],
                     "use_nvm": False,
                     "touch_mem": True,
                     "nvm_sz": 1,
