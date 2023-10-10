@@ -369,7 +369,15 @@ def main():
             pic.plot(one_testcase_dict["threads"], y, marker='o')
         pic.set_xlabel("threads")
         pic.set_ylabel("throughput")
-        pic.figure.savefig(f'./threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+        pic.figure.savefig(f'./throughput_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+
+        pic = plt.axes()
+        for i in range(np.shape(one_testcase_dict["latency"])[1]):
+            y = one_testcase_dict["throughput"][:, i]
+            pic.plot(one_testcase_dict["threads"], y, marker='o')
+        pic.set_xlabel("threads")
+        pic.set_ylabel("throughput")
+        pic.figure.savefig(f'./latency_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
         # dim 1: payload
         plt.figure()
@@ -379,9 +387,20 @@ def main():
             pic.plot(one_testcase_dict["payload"], y, marker='o')
         pic.set_xlabel("payload")
         pic.set_ylabel("throughput")
-        pic.figure.savefig(f'./payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+        pic.figure.savefig(f'./throughput_payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
         pic.set_xscale('log')
-        pic.figure.savefig(f'./payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+        pic.figure.savefig(f'./throughput_payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+
+        plt.figure()
+        pic = plt.axes()
+        for i in range(np.shape(one_testcase_dict["latency"])[0]):
+            y = one_testcase_dict["throughput"][i, :]
+            pic.plot(one_testcase_dict["payload"], y, marker='o')
+        pic.set_xlabel("payload")
+        pic.set_ylabel("throughput")
+        pic.figure.savefig(f'./latency_payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+        pic.set_xscale('log')
+        pic.figure.savefig(f'./latency_payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
         print("--- copy it if you need")
         print(one_testcase_dict)
