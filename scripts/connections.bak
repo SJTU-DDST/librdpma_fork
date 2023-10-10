@@ -3,9 +3,9 @@
   clients:
     - localhost
   thread_count:
-    [1, 36]
+    [2, 4, 8]
   payload:
-    [16, 256, 512, 8192]
+    [16, 256, 1024, 4096]
   enable:
     True
 
