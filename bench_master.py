@@ -1,13 +1,16 @@
-import yaml
-import argparse
-from bench_utils.session import SessionConfig, Session
-from typing import List, Dict
-from time import sleep
-import select
 import re
 import os
-from datetime import datetime
+import yaml
 import json
+import select
+import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+
+from time import sleep
+from typing import List, Dict
+from datetime import datetime
+from bench_utils.session import SessionConfig, Session
 
 
 def make_read_experiement_config(threads, coros, payload):
@@ -243,6 +246,9 @@ def main():
             cstp_pairs.append((i["clients"], i["server"], i["thread_count"], i["payload"]))
 
     # for each testcase pair, generate one .json and one picture
+    # todo: for all testcases, generate a huge picture
+
+    all_testcases_dict_list = []
 
     for clients, server, thread_count_list, payload_list in cstp_pairs:
 
@@ -260,18 +266,22 @@ def main():
             if machine_config[i]["user"] == "YOUR_USER_NAME":
                 raise ValueError("Did you forget to change the user in `./configs/machines.ymal`?")
         
-        result_dist = {
-            'throughput': [],
-            'latency': [],
-            'threads': [],
-            'coros': [],
-            'payload': [],
+        one_testcase_dict = {
+            'throughput': np.ndarray((len(thread_count_list), len(payload_list)), np.float64),
+            'latency': np.ndarray((len(thread_count_list), len(payload_list)), np.float64),
+            'threads': np.asarray(thread_count_list),  # dim1
+            'payload': np.asarray(payload_list),  # dim2
+            'coros': 1,  # dim3, now empty
             'server': server,
             'clients': clients,
         }
 
+        t = -1
         for thread_count in thread_count_list:
+            t += 1
+            p = -1
             for payload in payload_list:
+                p += 1
 
                 print(f"\033[91mrun: thread_count = {thread_count}, payload = {payload}\033[0m")
 
@@ -320,11 +330,8 @@ def main():
                     machine_config=machine_config
                 )
 
-                result_dist["throughput"].append(thpt)
-                result_dist["latency"].append(lat)
-                result_dist["threads"].append(threads)
-                result_dist["coros"].append(coros)
-                result_dist["payload"].append(payload)
+                one_testcase_dict["throughput"][t][p] = thpt
+                one_testcase_dict["latency"][t][p] = lat
 
                 with open(this_time_filename, "a+") as output_f:
                     result = {
@@ -346,8 +353,8 @@ def main():
                 print(f"--- sleep {w} seconds\n\n")
                 sleep(w)
 
-            # for thread_count in [1, 36]:
-        # for payload in [16, 256, 512, 8192]:
+            # for thread_count in such as [1, 36]:
+        # for payload in  such as [16, 256, 512, 8192]:
 
         with open(this_time_filename, 'rb+') as output_f:
             output_f.seek(-2, os.SEEK_END)
@@ -355,10 +362,33 @@ def main():
         with open(this_time_filename, "a+") as output_f:
             output_f.write("\n]")
 
-        # todo: use this to draw pictures
-        print(result_dist)
+        # dim 0: threads
+        pic = plt.axes()
+        for i in range(np.shape(one_testcase_dict["throughput"])[1]):
+            y = one_testcase_dict["throughput"][:, i]
+            pic.plot(one_testcase_dict["threads"], y, marker='o')
+        pic.set_xlabel("threads")
+        pic.set_ylabel("throughput")
+        pic.figure.savefig(f'./threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
-    # for clients, server in clients_server_pairs:
+        # dim 1: payload
+        plt.figure()
+        pic = plt.axes()
+        for i in range(np.shape(one_testcase_dict["throughput"])[0]):
+            y = one_testcase_dict["throughput"][i, :]
+            pic.plot(one_testcase_dict["payload"], y, marker='o')
+        pic.set_xlabel("payload")
+        pic.set_ylabel("throughput")
+        pic.figure.savefig(f'./payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+        pic.set_xscale('log')
+        pic.figure.savefig(f'./payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+
+        all_testcases_dict_list.append(one_testcase_dict)
+
+    # for clients, server, thread_count_list, payload_list in cstp_pairs
+
+    # todo: use this to draw pictures
+    all_testcases_dict_list
 
 
 def new_config():

@@ -35,13 +35,13 @@ Results will output to `benchres_*.json`.
 
 因为现在主要只需要单边，因此只考虑 nvm_server 和 nvm_client 两个文件即可，server的参数和代码基本上不需要动，client的代码对应 nvm/benchs/one_sided/client.cc， numa的绑定也写死在这个文件里了
 ```shell
-sudo ./scripts/nvm_server --host=localhost --port=8964 -use_nvm=false -touch_mem=true --nvm_sz=8 --nvm_file=/dev/dax12.0
+sudo ./scripts/nvm_server --host=0.0.0.0 --port=8964 -use_nvm=false -touch_mem=true --nvm_sz=8 --nvm_file=/dev/dax12.0
 ```
 
 client 的一个示例参数：
 
 ```shell
-./scripts/nvm_client -addr="192.168.98.50:8964" --force_use_numa_node=false --use_numa_node=0 --threads=36 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=true -two_qp=false
+./scripts/nvm_client -addr="0.0.0.0:8964" --force_use_numa_node=false --use_numa_node=0 --threads=36 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=true -two_qp=false
 ```
 
 解释：
