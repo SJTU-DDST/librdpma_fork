@@ -242,9 +242,14 @@ def main():
         if i["enable"]:
             cstp_pairs.append((i["clients"], i["server"], i["thread_count"], i["payload"]))
 
+    # for each testcase pair, generate one .json and one picture
+
     for clients, server, thread_count_list, payload_list in cstp_pairs:
 
+        this_time_filename = generate_bench_result_filename()
+
         print(f"\033[96m=== run: server = {server}, clients = {clients} ===\033[0m")
+        print(f"\033[96m=== output will all print to {this_time_filename} ===\033[0m")
 
         if machine_config[server]["user"] == "YOUR_USER_NAME":
             raise ValueError("Did you forget to change the user in `./configs/machines.ymal`?")
@@ -318,7 +323,7 @@ def main():
                 result_dist["coros"].append(coros)
                 result_dist["payload"].append(payload)
 
-                with open(generate_bench_result_filename(), "w") as output_f:
+                with open(this_time_filename, "a+") as output_f:
                     result = {
                         'throughput': thpt,
                         'latency': lat,
