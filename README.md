@@ -15,13 +15,21 @@ Building the tools of librdpma is straightforward since it will automatically in
   - compile_commands.json will generate in build/
 - `make -j`
 
-> 不知道为啥，50 上得 sudo 才能编译，有点怪
+<!-- 不知道为啥，50 上得 sudo 才能编译，有点怪 -->
 
-### Running benchmarks
+### Run Benchmark Auto-Scripts
 
-运行 `python3 bench_master.py`，第一次运行会生成配置文件，请手动更改该配置文件。
+Run `python3 bench_master.py`.
 
-第二次及之后的运行会输出结果至 `benchres_*.json`。
+2 new config files will be generated when you run this script for the first time. Modify them in `./configs/*.yaml`.
+
+Within them, `machines.yaml` contains the configures of several machines, while `connections.yaml` contains several testcases of server (single) and clients (multiple) pair; only <server, clients> pairs that are enabled would be test in the script. Note that names of machines/servers/clients must correspond to each other in machines.yaml and connections.yaml.
+
+Results will output to `benchres_*.json`.
+
+## More
+
+### Run Benchmark Mannually
 
 #### 20230606
 
