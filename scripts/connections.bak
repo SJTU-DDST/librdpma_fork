@@ -1,0 +1,29 @@
+- server:
+    localhost
+  client:
+    - localhost
+  enable:
+    True
+
+- server:
+    machine-74
+  client:
+    - machine-74
+  enable:
+    False
+
+- server:
+    machine-144_dpu
+  client:
+    - machine-71
+    - machine-74
+  enable:
+    False
+
+- server:
+    machine-74
+  client:
+    - machine-71
+    - machine-144_dpu
+  enable:
+    False

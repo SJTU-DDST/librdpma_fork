@@ -44,11 +44,12 @@ def make_thread_config(numa_type, force_use_numa_node, use_numa_node):
 
 def make_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", type=str, default="configs/machines.yaml")
+    parser.add_argument("-m", "--machine", type=str, default="configs/machines.yaml")
+    parser.add_argument("-c", "--connect", type=str, default="configs/connections.yaml")
     parser.add_argument("-t", "--bench_type", type=str, default="read")
     return parser.parse_args()
 
-def load_machine_config(config_file_path: str) -> Dict:
+def load_config(config_file_path: str) -> Dict:
     with open(config_file_path, "r") as config_file:
         config_yaml = yaml.load(config_file, yaml.Loader)
         return config_yaml
@@ -207,25 +208,22 @@ def generate_bench_result_filename():
     
 def main():
     args = make_args()
-    machine_config = load_machine_config(args.config)
+    machine_config = load_config(args.machine)
+    connection_config = load_config(args.connect)
     
-    clients_server_pairs = [
-        (['machine-74'], 'machine-74')
-        # (['machine-74'], 'machine-144_dpu'),
-        # (['machine-144_dpu'], 'machine-74'),
-        # (['machine-74'], 'machine-71'),
-        # (['machine-144_dpu'], 'machine-144_dpu'),
-    ]
+    clients_server_pairs = []
+    for i in connection_config:
+        if i["enable"]:
+            clients_server_pairs.append((i["client"], i["server"]))
 
     for thread_count in [1, 36]:
         for payload in [16, 256, 512, 8192]:
             for clients, server in clients_server_pairs:
-                server_addr = f'{machine_config[server]["ip"]}:8964'
+                server_addr = f'{machine_config[server]["ip"]}:{machine_config[server]["port"]}'
                 server_nic_idx = machine_config[server]['available_nic'][0]
-
                 server_config = {
-                    "host": "0.0.0.0",
-                    "port": 8964,
+                    "host": {machine_config[server]["ip"]},
+                    "port": {machine_config[server]["port"]},
                     "use_nvm": False,
                     "touch_mem": True,
                     "nvm_sz": 1,
@@ -277,15 +275,18 @@ def main():
                     }
                     json.dump(result, output_f)                
 
+
 def new_machine_config():
-    if os.path.exists("./configs/machines.yaml"):
+    if os.path.exists("./configs/machines.yaml") and os.path.exists("./configs/connections.yaml"):
         return
     os.system("cp ./scripts/machines.bak ./configs/machines.yaml")
+    os.system("cp ./scripts/connections.bak ./configs/connections.yaml")
     print("\033[91m")
-    print("a new file is generate in ./configs/machines.yaml")
-    print("please check it then run this again")
+    print("./configs/machines.yaml and ./configs/connections.yaml are generated")
+    print("please check them, then run this again")
     print("\033[0m")
     exit(0)
+
 
 if __name__ == '__main__':
     new_machine_config()

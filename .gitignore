@@ -27,4 +27,5 @@ scripts/*
 benchres*.json
 
 # user config
-configs/machines.yaml
+configs/*
+!configs/.gitkeep

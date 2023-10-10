@@ -1,5 +1,17 @@
-machine_71:
+localhost:
+  ip: "0.0.0.0"
+  port: 8964
+  machine_type: common
+  user: YOUR_USER_NAME # change this
+  passwd: "1111" # change this if need
+  numa_type: 1
+  threads_per_socket: 36
+  socket_count: 2
+  available_nic: [0, 1]
+
+machine-71:
   ip: "192.168.98.71"
+  port: 8964
   machine_type: common
   user: YOUR_USER_NAME # change this
   passwd: "1111" # change this if need
@@ -10,6 +22,7 @@ machine_71:
 
 machine-74:
   ip: "192.168.98.74"
+  port: 8964
   machine_type: common
   user: YOUR_USER_NAME # change this
   passwd: "1111" # change this if need
@@ -20,6 +33,7 @@ machine-74:
 
 machine-144_dpu:
   ip: "192.168.98.144"
+  port: 8964
   machine_type: dpu
   user: ubuntu # change this if need
   passwd: ddstgogo # change this if need
