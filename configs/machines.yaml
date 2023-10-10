@@ -1,6 +1,6 @@
 machine-74:
   ip: "192.168.98.74"
-  user: jingxiang
+  user: cong
   passwd: "1111"
   numa_type: 1
   machine_type: common
@@ -17,12 +17,11 @@ machine-74_dpu:
   threads_per_socket: 8
   socket_count: 1
   available_nic: [1]
-    
-  
+
 machine_71:
   ip: "192.168.98.71"
   machine_type: common
-  user: jingxiang
+  user: cong
   passwd: "1111"
   numa_type: 1
   threads_per_socket: 36

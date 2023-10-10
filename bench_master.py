@@ -65,6 +65,8 @@ def build_exec_cmd(binary, cmd_dict: Dict):
 def select_client_recv_channels(client_recv_channel_map: Dict):
     selected_channels = [channel['stdout'] for channel in client_recv_channel_map.values()]
     
+    # print(f"{client_recv_channel_map}-----------------------------")
+
     channel_client_map = {
         hash(c['stdout'].channel): {
             'name': name,
@@ -79,25 +81,28 @@ def select_client_recv_channels(client_recv_channel_map: Dict):
         if any([c.recv_ready() for c in channel_list]):
             rl, _, _ = select.select(channel_list, [], [], 0.0)
             for c in rl:
-                recved = c.recv(1024).decode('utf-8')
+                print("--- receive 16384 byte, if too short or too long please change it")
+                recved = c.recv(16384).decode('utf-8')
                 channel_client_map[hash(c)]['buffer'] = channel_client_map[hash(c)]['buffer'] + recved
                 print("Output: {}".format(recved))
         # remove file discriptors that have closed.
         selected_channels = [c for c in selected_channels if not c.channel.exit_status_ready()]
         
+    # print(f"{channel_client_map}+++++++++++++++++++++++++++")
     return {x['name']: x['buffer'] for x in channel_client_map.values()}
 
-STATICS_PATTERN = re.compile(r"epoch @ (\d+) (\d+\.\d+) : thpt: (\d+) reqs/sec")
+STATICS_PATTERN = re.compile(".*?epoch[ :@\t]*([0-9\+e\.]*)[ \t]*([0-9\+e\.]*)[ :\t]*thpt[ :@\t]*([0-9\+e\.]*)[ \t]*reqs/sec")
+"""[statucs.hh:78] epoch @ 0 2.02875 : thpt: 1.41981e+06 reqs/sec,"""
+"""[statucs.hh:78] epoch @ 8 1.73391 : thpt: 596948 reqs/sec,"""
 
 def parse_buffer_into_statics(buffer: str):
-    buffer_split_list = buffer.split('\n')
     stats = []
     for line in buffer.split('\n'):
         match_res = STATICS_PATTERN.match(line)
         if match_res:
-            epoch = int(match_res.group(1))
+            epoch = float(match_res.group(1))
             latency = float(match_res.group(2))
-            throughput = int(match_res.group(3))
+            throughput = float(match_res.group(3))
             if epoch >= 5:
                 stats.append({
                     'epoch': epoch,
@@ -109,15 +114,15 @@ def parse_buffer_into_statics(buffer: str):
 
 def aggregate_statics(name_buffer_map: Dict[str, str]):
     name_stats_map = {
-        name_buffer_map['name']: parse_buffer_into_statics(name_buffer_map['buffer'])
+        x: parse_buffer_into_statics(y) for (x, y) in name_buffer_map.items()
     }
     
     thpts = []
     latencys = []
     
     for stat_list in name_stats_map.values():
-        cur_thpt = sum([stat['throughput'] for stat in stat_list]) / len(stat_list)
-        cur_latency = sum([stat['latency'] for stat in stat_list]) / len(stat_list)
+        cur_thpt = sum([stat['throughput'] for stat in stat_list]) / len(stat_list) if len(stat_list) != 0 else 0
+        cur_latency = sum([stat['latency'] for stat in stat_list]) / len(stat_list) if len(stat_list) != 0 else 0
         thpts.append(cur_thpt)
         latencys.append(cur_latency)
         
@@ -125,6 +130,9 @@ def aggregate_statics(name_buffer_map: Dict[str, str]):
     
     
 def run(server_name, server_args, client_names, clients_args, machine_config):
+
+    # print(server_name, server_args, client_names, clients_args, machine_config, sep="\n\n")
+
     server_config = machine_config[server_name]
 
     server_session_config = SessionConfig(
@@ -148,6 +156,8 @@ def run(server_name, server_args, client_names, clients_args, machine_config):
         server_session.execute("killall nvm_userver || true")
     stdout, stderr = server_session.execute_many_non_blocking(server_exec_cmd_list)
     
+    print("--- wait [SERVER] for some seconds, if it's too short or too long, please change it manuually ---")
+    # todo: change to wait for server_session to execute, but seems difficult
     sleep(5)
     
     client_recv_channels = {}
@@ -167,15 +177,21 @@ def run(server_name, server_args, client_names, clients_args, machine_config):
         
         client_session.execute("killall nvm_client || true")
         stdout, stderr = client_session.execute_many_non_blocking(client_exec_cmd_list)
+
+        print("--- wait [CLIENT] for some seconds, if it's too short or too long, please change it manuually ---")
+        sleep(0)
+
         client_recv_channels[client_name] = {
             "stdout": stdout,
             "stderr": stderr
         }
-        
+    
     name_buffer_map = select_client_recv_channels(client_recv_channel_map=client_recv_channels) 
-    
+
+    # print(f"{name_buffer_map}=========================")
+
     thpt, lat = aggregate_statics(name_buffer_map)
-    
+
     server_session.execute("killall nvm_server || true")
     server_session.close()
 
@@ -193,11 +209,10 @@ def main():
     machine_config = load_machine_config(args.config)
     
     clients_server_pairs = [
-        (['machine-74'], 'machine-74_dpu'),
-        (['machine-74_dpu'], 'machine-74'),
-
-        (['machine-74'], 'machine-71'),
-        (['machine-74_dpu'], 'machine-74_dpu'),
+        # (['machine-74'], 'machine-74_dpu'),
+        # (['machine-74_dpu'], 'machine-74'),
+        # (['machine-74'], 'machine-71'),
+        # (['machine-74_dpu'], 'machine-74_dpu'),
         (['machine-74'], 'machine-74')
     ]
 
@@ -208,7 +223,7 @@ def main():
                 server_nic_idx = machine_config[server]['available_nic'][0]
 
                 server_config = {
-                    "host": "localhost",
+                    "host": "0.0.0.0",
                     "port": 8964,
                     "use_nvm": False,
                     "touch_mem": True,
@@ -241,13 +256,14 @@ def main():
                         "addr": server_addr,
                     })
                     client_configs.append(client_config)
+                
                 thpt, lat = run(
                     server_name=server, 
                     server_args=server_config, 
                     client_names=clients, 
                     clients_args=client_configs, 
-                    machine_config=machine_config)  
-                
+                    machine_config=machine_config)
+
                 with open(generate_bench_result_filename(), "w") as output_f:
                     result = {
                         'throughput': thpt,
@@ -258,9 +274,8 @@ def main():
                         'coros': coros,
                         'payload': payload
                     }
-                
+                    json.dump(result, output_f)                
 
 
-    
 if __name__ == '__main__':
     main()

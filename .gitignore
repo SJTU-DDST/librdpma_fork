@@ -1,9 +1,24 @@
 third_party/
 libboost1.61-prefix/
 CMakeFiles/
-CMakeCache.txt
 Makefile
 cmake_install.cmake
 build/
 log/
 ddio_tools/*
+
+.vscode
+__pycache__
+
+# no .txt, except cmakelist
+*.txt
+!CMakeLists.txt
+
+# no vim files
+*~
+
+# no exe files, except .sh, .py, etc.
+scripts/*
+!scripts/*.*
+
+benchres*.json

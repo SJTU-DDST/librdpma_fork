@@ -18,14 +18,17 @@ class Session:
         self.channel = self.client.invoke_shell()
 
     def execute(self, command: str):
+        print(f"\033[91m>>> now execute: {command}\033[0m")
         _, stdout, stderr = self.client.exec_command(command)
         return stdout.read().decode(), stderr.read().decode()
     
     def execute_many(self, commands: List[str]):
+        print(f"\033[91m>>> now execute: {' && '.join(commands)}\033[0m")
         _, stdout, stderr = self.client.exec_command(" && ".join(commands))
         return stdout.read().decode(), stderr.read().decode()
     
     def execute_many_non_blocking(self, commands: List[str]):
+        print(f'\033[91m>>> now execute: {" && ".join(commands)}\033[0m')
         _, stdout, stderr = self.client.exec_command(" && ".join(commands))
         return stdout, stderr
         
