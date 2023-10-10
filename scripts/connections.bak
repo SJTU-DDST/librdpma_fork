@@ -1,29 +1,45 @@
 - server:
     localhost
-  client:
+  clients:
     - localhost
+  thread_count:
+    [1, 36]
+  payload:
+    [16, 256, 512, 8192]
   enable:
     True
 
 - server:
     machine-74
-  client:
+  clients:
     - machine-74
+  thread_count:
+    [1, 36]
+  payload:
+    [16, 256, 512, 8192]
   enable:
     False
 
 - server:
     machine-144_dpu
-  client:
+  clients:
     - machine-71
     - machine-74
+  thread_count:
+    [1, 36]
+  payload:
+    [16, 256, 512, 8192]
   enable:
     False
 
 - server:
     machine-74
-  client:
+  clients:
     - machine-71
     - machine-144_dpu
+  thread_count:
+    [1, 36]
+  payload:
+    [16, 256, 512, 8192]
   enable:
     False
