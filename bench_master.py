@@ -247,6 +247,8 @@ def main():
     for clients, server, thread_count_list, payload_list in cstp_pairs:
 
         this_time_filename = generate_bench_result_filename()
+        with open(this_time_filename, "a+") as output_f:
+            output_f.write("[ \n")  # this space is fit for ",\n"
 
         print(f"\033[96m=== run: server = {server}, clients = {clients} ===\033[0m")
         print(f"\033[96m=== output will all print to {this_time_filename} ===\033[0m")
@@ -334,6 +336,7 @@ def main():
                         'payload': payload
                     }
                     json.dump(result, output_f)
+                    output_f.write(",\n")
                 
                 print(f"\033[94mdone with thread_count = {thread_count}, payload = {payload}\033[0m")
                 print(f"\033[94mresult: throughput = {thpt}, latency = {lat}\033[0m")
@@ -344,6 +347,12 @@ def main():
 
             # for thread_count in [1, 36]:
         # for payload in [16, 256, 512, 8192]:
+
+        with open(this_time_filename, 'rb+') as output_f:
+            output_f.seek(-2, os.SEEK_END)
+            output_f.truncate()
+        with open(this_time_filename, "a+") as output_f:
+            output_f.write("\n]")
 
         # todo: use this to draw pictures
         print(result_dist)
