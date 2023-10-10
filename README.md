@@ -25,7 +25,21 @@ Run `python3 bench_master.py`.
 
 Within them, `machines.yaml` contains the configures of several machines, while `connections.yaml` contains several testcases of server (single) and clients (multiple) pair; only <server, clients> pairs that are enabled would be test in the script. Note that names of machines/servers/clients must correspond to each other in machines.yaml and connections.yaml.
 
-Results will output to `benchres_*.json`.
+Results will output to `benchres_*.json` and `*.png`, such as
+
+```json
+[ 
+{"throughput": 1053194.6666666667, "latency": 1.9032220000000002, "server": "localhost", "clients": ["localhost"], "threads": 2, "coros": 1, "payload": 16},
+{"throughput": 994628.0666666667, "latency": 2.013740666666667, "server": "localhost", "clients": ["localhost"], "threads": 2, "coros": 1, "payload": 256},
+...
+{"throughput": 3348694.6666666665, "latency": 2.3953606666666665, "server": "localhost", "clients": ["localhost"], "threads": 8, "coros": 1, "payload": 1024},
+{"throughput": 2268334.6666666665, "latency": 3.5285299999999995, "server": "localhost", "clients": ["localhost"], "threads": 8, "coros": 1, "payload": 4096}
+]
+```
+
+and
+
+![demo.png](demo.png)
 
 ## More
 
