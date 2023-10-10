@@ -373,14 +373,13 @@ def main():
 
         pic = plt.axes()
         for i in range(np.shape(one_testcase_dict["latency"])[1]):
-            y = one_testcase_dict["throughput"][:, i]
+            y = one_testcase_dict["latency"][:, i]
             pic.plot(one_testcase_dict["threads"], y, marker='o')
         pic.set_xlabel("threads")
-        pic.set_ylabel("throughput")
+        pic.set_ylabel("latency")
         pic.figure.savefig(f'./latency_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
         # dim 1: payload
-        plt.figure()
         pic = plt.axes()
         for i in range(np.shape(one_testcase_dict["throughput"])[0]):
             y = one_testcase_dict["throughput"][i, :]
@@ -391,13 +390,12 @@ def main():
         pic.set_xscale('log')
         pic.figure.savefig(f'./throughput_payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
-        plt.figure()
         pic = plt.axes()
         for i in range(np.shape(one_testcase_dict["latency"])[0]):
-            y = one_testcase_dict["throughput"][i, :]
+            y = one_testcase_dict["latency"][i, :]
             pic.plot(one_testcase_dict["payload"], y, marker='o')
         pic.set_xlabel("payload")
-        pic.set_ylabel("throughput")
+        pic.set_ylabel("latency")
         pic.figure.savefig(f'./latency_payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
         pic.set_xscale('log')
         pic.figure.savefig(f'./latency_payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
