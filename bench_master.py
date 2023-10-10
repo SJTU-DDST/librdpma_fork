@@ -5,6 +5,7 @@ from typing import List, Dict
 from time import sleep
 import select
 import re
+import os
 from datetime import datetime
 import json
 
@@ -276,6 +277,16 @@ def main():
                     }
                     json.dump(result, output_f)                
 
+def new_machine_config():
+    if os.path.exists("./configs/machines.yaml"):
+        return
+    os.system("cp ./scripts/machines.bak ./configs/machines.yaml")
+    print("\033[91m")
+    print("a new file is generate in ./configs/machines.yaml")
+    print("please check it then run this again")
+    print("\033[0m")
+    exit(0)
 
 if __name__ == '__main__':
+    new_machine_config()
     main()

@@ -21,4 +21,8 @@ __pycache__
 scripts/*
 !scripts/*.*
 
+# output data
 benchres*.json
+
+# user config
+configs/machines.yaml
