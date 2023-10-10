@@ -25,6 +25,7 @@ scripts/*
 
 # output data
 benchres*.json
+*.png
 
 # user config
 configs/*

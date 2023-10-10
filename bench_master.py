@@ -383,6 +383,9 @@ def main():
         pic.set_xscale('log')
         pic.figure.savefig(f'./payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
+        print("--- copy it if you need")
+        print(one_testcase_dict)
+
         all_testcases_dict_list.append(one_testcase_dict)
 
     # for clients, server, thread_count_list, payload_list in cstp_pairs
