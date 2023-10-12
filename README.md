@@ -8,22 +8,36 @@ LibRDPMA provides a set of tools  to analyze the behavior when accessing NVM (i.
 
 Building the tools of librdpma is straightforward since it will automatically install dependencies. Specifically, using the following steps:
 
-- clone the project
-  - clone submodules, use `git clone git@github.com:SJTU-DDST/librdpma_fork.git --recursive`
-  - or clone and then use `git submodule update --init --recursive`
-- `mkdir build && cd build && cmake ..`
-  - compile_commands.json will generate in build/
-- `make -j`
+1. clone the project
+   - use `git clone git@github.com:SJTU-DDST/librdpma_fork.git --recursive` to clone submodules
+   - or clone normally, and then use `git submodule update --init --recursive`
+2. `mkdir build && cd build && cmake ..`
+   - compile_commands.json will generate in build/
+3. `make -j`
+4. `cd ..` to go back
 
 <!-- 不知道为啥，50 上得 sudo 才能编译，有点怪 -->
 
 ### Run Benchmark Auto-Scripts
 
-Run `python3 bench_master.py`.
+Install requirements and run.
+
+```shell
+python3 -m pip install numpy matplotlib
+python3 bench_master.py
+```
 
 2 new config files will be generated when you run this script for the first time. Modify them in `./configs/*.yaml`.
 
 Within them, `machines.yaml` contains the configures of several machines, while `connections.yaml` contains several testcases of server (single) and clients (multiple) pair; only <server, clients> pairs that are enabled would be test in the script. Note that names of machines/servers/clients must correspond to each other in machines.yaml and connections.yaml.
+
+Modify them and run again.
+
+```shell
+vim ./configs/machines.yaml
+vim ./configs/connections.yaml
+python3 bench_master.py
+```
 
 Results will output to `benchres_*.json` and `*.png`, such as
 
