@@ -363,7 +363,7 @@ def main():
             output_f.write("\n]")
 
         # dim 0: threads
-        plt.figure()  # refresh
+        plt.clf()  # refresh
         pic = plt.axes()
         for i in range(np.shape(one_testcase_dict["throughput"])[1]):
             y = one_testcase_dict["throughput"][:, i]
@@ -372,7 +372,7 @@ def main():
         pic.set_ylabel("throughput")
         pic.figure.savefig(f'./throughput_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
-        plt.figure()
+        plt.clf()
         pic = plt.axes()
         for i in range(np.shape(one_testcase_dict["latency"])[1]):
             y = one_testcase_dict["latency"][:, i]
@@ -382,7 +382,7 @@ def main():
         pic.figure.savefig(f'./latency_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
 
         # dim 1: payload
-        plt.figure()
+        plt.clf()
         pic = plt.axes()
         for i in range(np.shape(one_testcase_dict["throughput"])[0]):
             y = one_testcase_dict["throughput"][i, :]

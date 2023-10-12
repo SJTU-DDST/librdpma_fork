@@ -59,6 +59,14 @@ and
 
 ### Run Benchmark Mannually
 
+#### 20231010
+
+服务器无法开启：需要打开 hugepage
+
+```shell
+sudo sysctl -w vm.nr_hugepages=16384
+```
+
 #### 20230606
 
 因为现在主要只需要单边，因此只考虑 nvm_server 和 nvm_client 两个文件即可，server的参数和代码基本上不需要动，client的代码对应 nvm/benchs/one_sided/client.cc， numa的绑定也写死在这个文件里了
