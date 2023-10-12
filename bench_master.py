@@ -236,65 +236,75 @@ def generate_time_str():
 def generate_bench_result_filename(time_str: str):
     return f"benchres_{time_str}.json"
 
-def generate_picture_filename(type: str, time_str: str):
+def generate_single_testcase_picture_filename(type: str, time_str: str):
     Path("./img/").mkdir(parents=True, exist_ok=True)
     return f"./img/{type}_{time_str}.png"
+
+def generate_compare_testcases_picture_filename(about: str, fix_value: str, time_str: str):
+    Path("./img_compare/").mkdir(parents=True, exist_ok=True)
+    return f"./img_compare/{about}_WITH_{fix_value}_TIME_{time_str}.png"
 
 
 def draw_testcase_pictures(one_testcase_dict: dict, time_str: str):
     # dim 0: threads for different payload
     plt.clf()  # refresh
     pic = plt.axes()
-    for i in range(len(one_testcase_dict["payload"])):
-        y = one_testcase_dict["throughput"][:, i]
-        pic.plot(one_testcase_dict["threads"], y, marker='o', label=f"payload={one_testcase_dict['payload'][i]}")
+    for p in range(len(one_testcase_dict["payload"])):
+        y = one_testcase_dict["throughput"][:, p]
+        pic.plot(one_testcase_dict["threads"], y, marker='o', label=f"payload={one_testcase_dict['payload'][p]}")
     pic.set_xlabel("threads")
     pic.set_ylabel("throughput")
     plt.legend()
-    pic.figure.savefig(generate_picture_filename("throughput_threads", time_str))
+    plt.title(f"server={one_testcase_dict['server']}, clients={one_testcase_dict['clients']}")
+    pic.figure.savefig(generate_single_testcase_picture_filename("throughput_threads", time_str))
 
     plt.clf()
     pic = plt.axes()
-    for i in range(len(one_testcase_dict["payload"])):
-        y = one_testcase_dict["latency"][:, i]
-        pic.plot(one_testcase_dict["threads"], y, marker='o', label=f"payload={one_testcase_dict['payload'][i]}")
+    for p in range(len(one_testcase_dict["payload"])):
+        y = one_testcase_dict["latency"][:, p]
+        pic.plot(one_testcase_dict["threads"], y, marker='o', label=f"payload={one_testcase_dict['payload'][p]}")
     pic.set_xlabel("threads")
     pic.set_ylabel("latency")
     plt.legend()
-    pic.figure.savefig(generate_picture_filename("latency_threads", time_str))
+    plt.title(f"server={one_testcase_dict['server']}, clients={one_testcase_dict['clients']}")
+    pic.figure.savefig(generate_single_testcase_picture_filename("latency_threads", time_str))
 
     # dim 1: payload for different threads
     plt.clf()
     pic = plt.axes()
-    for i in range(len(one_testcase_dict["threads"])):
-        y = one_testcase_dict["throughput"][i, :]
-        pic.plot(one_testcase_dict["payload"], y, marker='o', label=f"threads={one_testcase_dict['threads'][i]}")
+    for t in range(len(one_testcase_dict["threads"])):
+        y = one_testcase_dict["throughput"][t, :]
+        pic.plot(one_testcase_dict["payload"], y, marker='o', label=f"threads={one_testcase_dict['threads'][t]}")
     pic.set_xlabel("payload")
     pic.set_ylabel("throughput")
     plt.legend()
-    pic.figure.savefig(generate_picture_filename("throughput_payload", time_str))
+    plt.title(f"server={one_testcase_dict['server']}, clients={one_testcase_dict['clients']}")
+    pic.figure.savefig(generate_single_testcase_picture_filename("throughput_payload", time_str))
     pic.set_xscale('log')
-    pic.figure.savefig(generate_picture_filename("throughput_payload_log", time_str))
+    pic.figure.savefig(generate_single_testcase_picture_filename("throughput_payload_log", time_str))
 
     plt.clf()
     pic = plt.axes()
-    for i in range(len(one_testcase_dict["threads"])):
-        y = one_testcase_dict["latency"][i, :]
-        pic.plot(one_testcase_dict["payload"], y, marker='o', label=f"threads={one_testcase_dict['threads'][i]}")
+    for t in range(len(one_testcase_dict["threads"])):
+        y = one_testcase_dict["latency"][t, :]
+        pic.plot(one_testcase_dict["payload"], y, marker='o', label=f"threads={one_testcase_dict['threads'][t]}")
     pic.set_xlabel("payload")
     pic.set_ylabel("latency")
     plt.legend()
-    pic.figure.savefig(generate_picture_filename("latency_payload", time_str))
+    plt.title(f"server={one_testcase_dict['server']}, clients={one_testcase_dict['clients']}")
+    pic.figure.savefig(generate_single_testcase_picture_filename("latency_payload", time_str))
     pic.set_xscale('log')
-    pic.figure.savefig(generate_picture_filename("latency_payload_log", time_str))
+    pic.figure.savefig(generate_single_testcase_picture_filename("latency_payload_log", time_str))
 
 
-def draw_compare_testcase_pictures(testcases_list: List[dict], time_str: str):
+def draw_compare_testcases_pictures(testcases_list: List[dict]):
 
     if len(testcases_list) <= 1: return
 
+    compare_time = generate_time_str()
+
     # find the same payload & threads for all testcases
-    
+
     common_payload_set = set(testcases_list[0]["payload"])
     common_threads_set = set(testcases_list[0]["threads"])
     for i in range(1, len(testcases_list)):
@@ -303,12 +313,123 @@ def draw_compare_testcase_pictures(testcases_list: List[dict], time_str: str):
         common_payload_set &= this_payload_set
         common_threads_set &= this_threads_set
     
-    common_payload_list = list(common_payload_set).sort()
-    common_threads_list = list(common_threads_set).sort()
+    common_payload_list = list(common_payload_set)
+    common_payload_list.sort()
+    common_threads_list = list(common_threads_set)
+    common_threads_list.sort()
 
     print(f"--- common_payload_list = {common_payload_list}, common_threads_list = {common_threads_list}")
 
+    # get common data
+
+    # common_threads_list = [2, 4, 8]
+    # common_payload_list = [16, 256, 1024, 4096]
+    # throughput_list = [
+    #   [  # server-clients 1
+    #      [1054322.0, 990595.46666667, 894920.66666667, 702000.8],
+    #      [2076115.33333333, 1959232.66666667, 1742281.33333333, 1355087.33333333],
+    #      [4070519.33333333, 3847078.66666667, 3330096.66666667, 2330798.0],
+    #   ],
+    #   [  # server-clients 2
+    #      [1054322.0, 990595.46666667, 894920.66666667, 702000.8],
+    #      [2076115.33333333, 1959232.66666667, 1742281.33333333, 1355087.33333333],
+    #      [4070519.33333333, 3847078.66666667, 3330096.66666667, 2330798.0],
+    #   ],
+    # ]
+    
+    throughput_list = np.ndarray((len(testcases_list), len(common_threads_list), len(common_payload_list)), np.float64)
+    latency_list = np.ndarray((len(testcases_list), len(common_threads_list), len(common_payload_list)), np.float64)
+    legend_name_list = [f"server={testcase['server']}, clients={testcase['clients']}" for testcase in testcases_list]
+    for p in range(len(common_payload_list)):
+        for t in range(len(common_threads_list)):
+            i = -1
+            for testcase in testcases_list:
+                i += 1
+                this_t = list(testcase["threads"]).index(common_threads_list[t])
+                this_p = list(testcase["payload"]).index(common_payload_list[p])
+                throughput_list[i][t][p] = testcase["throughput"][this_t][this_p]
+                latency_list[i][t][p] = testcase["latency"][this_t][this_p]
+    common_payload_list = np.asarray(common_payload_list)
+    common_threads_list = np.asarray(common_threads_list)
+
     # draw pictures
+
+    # 4 pictures [
+    #   {for all fix payload, different ser-cli lines} threads - throughput,
+    #   {for all fix payload, different ser-cli lines} threads - latency,
+    #   {for all fix threads, different ser-cli lines} payload - throughput,
+    #   {for all fix threads, different ser-cli lines} payload - latency
+    # ]
+
+    # pictures 1, 2
+    p = -1
+    for payload in common_payload_list:
+        p += 1
+
+        plt.clf()
+        pic = plt.axes()
+        for i in range(len(legend_name_list)):
+            y = throughput_list[i, :, p]
+            pic.plot(common_threads_list, y, marker='o', label=legend_name_list[i])
+        pic.set_xlabel("threads")
+        pic.set_ylabel("throughput")
+        plt.legend()
+        plt.title(f"payload={payload}")
+        pic.figure.savefig(generate_compare_testcases_picture_filename(
+            about="threads_throughput",
+            fix_value=f"payload_{payload}",
+            time_str=compare_time
+        ))
+
+        plt.clf()
+        pic = plt.axes()
+        for i in range(len(legend_name_list)):
+            y = latency_list[i, :, p]
+            pic.plot(common_threads_list, y, marker='o', label=legend_name_list[i])
+        pic.set_xlabel("threads")
+        pic.set_ylabel("latency")
+        plt.legend()
+        plt.title(f"payload={payload}")
+        pic.figure.savefig(generate_compare_testcases_picture_filename(
+            about="threads_latency",
+            fix_value=f"payload_{payload}",
+            time_str=compare_time
+        ))
+    
+    # pictures 3, 4
+    t = -1
+    for threads in common_threads_list:
+        t += 1
+
+        plt.clf()
+        pic = plt.axes()
+        for i in range(len(legend_name_list)):
+            y = throughput_list[i, t, :]
+            pic.plot(common_payload_list, y, marker='o', label=legend_name_list[i])
+        pic.set_xlabel("payload")
+        pic.set_ylabel("throughput")
+        plt.legend()
+        plt.title(f"threads={threads}")
+        pic.figure.savefig(generate_compare_testcases_picture_filename(
+            about="payload_throughput",
+            fix_value=f"threads_{threads}",
+            time_str=compare_time
+        ))
+
+        plt.clf()
+        pic = plt.axes()
+        for i in range(len(legend_name_list)):
+            y = latency_list[i, t, :]
+            pic.plot(common_payload_list, y, marker='o', label=legend_name_list[i])
+        pic.set_xlabel("payload")
+        pic.set_ylabel("latency")
+        plt.legend()
+        plt.title(f"threads={threads}")
+        pic.figure.savefig(generate_compare_testcases_picture_filename(
+            about="payload_latency",
+            fix_value=f"threads_{threads}",
+            time_str=compare_time
+        ))
 
 
 def main_benchmark():
@@ -448,7 +569,7 @@ def main_benchmark():
 
     # END for clients, server, thread_count_list, payload_list in cstp_pairs
 
-    draw_compare_testcase_pictures(all_testcases_dict_list, this_time_str)
+    draw_compare_testcases_pictures(all_testcases_dict_list)
 
 
 def new_config():

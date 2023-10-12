@@ -26,6 +26,7 @@ scripts/*
 # output data
 benchres*.json
 img/
+img_compare/
 
 # user config
 configs/*
