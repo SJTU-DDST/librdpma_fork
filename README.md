@@ -39,7 +39,7 @@ vim ./configs/connections.yaml
 python3 bench_master.py
 ```
 
-Results will output to `benchres_*.json` and `*.png`, such as
+Results will output to `benchres_<time>.json` and `img/*_<time>.png`, such as
 
 ```json
 [ 

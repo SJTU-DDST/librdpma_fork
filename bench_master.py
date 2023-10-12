@@ -5,6 +5,7 @@ import json
 import select
 import argparse
 import numpy as np
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 from time import sleep
@@ -134,7 +135,7 @@ def aggregate_statics(name_buffer_map: Dict[str, str]):
     return sum(thpts), sum(latencys) / len(latencys)
 
 
-def run(server_name, server_args, client_names, clients_args, machine_config):
+def run_single_testcase(server_name, server_args, client_names, clients_args, machine_config):
 
     # (1) init server
 
@@ -229,13 +230,88 @@ def run(server_name, server_args, client_names, clients_args, machine_config):
     return thpt, lat
 
 
-def generate_bench_result_filename():
-    now = datetime.now()
-    cur = now.strftime(r"%Y-%m-%d-%H-%M-%S-%f")
-    return f"benchres_{cur}.json"
+def generate_time_str():
+    return datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")
+
+def generate_bench_result_filename(time_str: str):
+    return f"benchres_{time_str}.json"
+
+def generate_picture_filename(type: str, time_str: str):
+    Path("./img/").mkdir(parents=True, exist_ok=True)
+    return f"./img/{type}_{time_str}.png"
 
 
-def main():
+def draw_testcase_pictures(one_testcase_dict: dict, time_str: str):
+    # dim 0: threads for different payload
+    plt.clf()  # refresh
+    pic = plt.axes()
+    for i in range(len(one_testcase_dict["payload"])):
+        y = one_testcase_dict["throughput"][:, i]
+        pic.plot(one_testcase_dict["threads"], y, marker='o', label=f"payload={one_testcase_dict['payload'][i]}")
+    pic.set_xlabel("threads")
+    pic.set_ylabel("throughput")
+    plt.legend()
+    pic.figure.savefig(generate_picture_filename("throughput_threads", time_str))
+
+    plt.clf()
+    pic = plt.axes()
+    for i in range(len(one_testcase_dict["payload"])):
+        y = one_testcase_dict["latency"][:, i]
+        pic.plot(one_testcase_dict["threads"], y, marker='o', label=f"payload={one_testcase_dict['payload'][i]}")
+    pic.set_xlabel("threads")
+    pic.set_ylabel("latency")
+    plt.legend()
+    pic.figure.savefig(generate_picture_filename("latency_threads", time_str))
+
+    # dim 1: payload for different threads
+    plt.clf()
+    pic = plt.axes()
+    for i in range(len(one_testcase_dict["threads"])):
+        y = one_testcase_dict["throughput"][i, :]
+        pic.plot(one_testcase_dict["payload"], y, marker='o', label=f"threads={one_testcase_dict['threads'][i]}")
+    pic.set_xlabel("payload")
+    pic.set_ylabel("throughput")
+    plt.legend()
+    pic.figure.savefig(generate_picture_filename("throughput_payload", time_str))
+    pic.set_xscale('log')
+    pic.figure.savefig(generate_picture_filename("throughput_payload_log", time_str))
+
+    plt.clf()
+    pic = plt.axes()
+    for i in range(len(one_testcase_dict["threads"])):
+        y = one_testcase_dict["latency"][i, :]
+        pic.plot(one_testcase_dict["payload"], y, marker='o', label=f"threads={one_testcase_dict['threads'][i]}")
+    pic.set_xlabel("payload")
+    pic.set_ylabel("latency")
+    plt.legend()
+    pic.figure.savefig(generate_picture_filename("latency_payload", time_str))
+    pic.set_xscale('log')
+    pic.figure.savefig(generate_picture_filename("latency_payload_log", time_str))
+
+
+def draw_compare_testcase_pictures(testcases_list: List[dict], time_str: str):
+
+    if len(testcases_list) <= 1: return
+
+    # find the same payload & threads for all testcases
+    
+    common_payload_set = set(testcases_list[0]["payload"])
+    common_threads_set = set(testcases_list[0]["threads"])
+    for i in range(1, len(testcases_list)):
+        this_payload_set = set(testcases_list[i]["payload"])
+        this_threads_set = set(testcases_list[i]["threads"])
+        common_payload_set &= this_payload_set
+        common_threads_set &= this_threads_set
+    
+    common_payload_list = list(common_payload_set).sort()
+    common_threads_list = list(common_threads_set).sort()
+
+    print(f"--- common_payload_list = {common_payload_list}, common_threads_list = {common_threads_list}")
+
+    # draw pictures
+
+
+def main_benchmark():
     args = make_args()
     machine_config = load_config(args.machine)
     connection_config = load_config(args.connect)
@@ -252,13 +328,14 @@ def main():
 
     for clients, server, thread_count_list, payload_list in cstp_pairs:
 
-        this_time_filename = generate_bench_result_filename()
-        with open(this_time_filename, "a+") as output_f:
+        this_time_str = generate_time_str()
+        bench_result_filename = generate_bench_result_filename(this_time_str)
+        with open(bench_result_filename, "a+") as output_f:
             output_f.write("[ \n")  # this space is fit for ",\n"
 
         print(f"\033[96m=== run: server = {server}, clients = {clients} ===\033[0m")
         print(f"\033[96m===      thread_count = {thread_count_list}, payload = {payload_list} ===\033[0m")
-        print(f"\033[96m=== output will all print to {this_time_filename} ===\033[0m")
+        print(f"\033[96m=== output will all print to {bench_result_filename} ===\033[0m")
 
         if machine_config[server]["user"] == "YOUR_USER_NAME":
             raise ValueError("Did you forget to change the user in `./configs/machines.ymal`?")
@@ -322,7 +399,7 @@ def main():
                     })
                     client_configs.append(client_config)
                 
-                thpt, lat = run(
+                thpt, lat = run_single_testcase(
                     server_name=server, 
                     server_args=server_config, 
                     client_names=clients, 
@@ -333,7 +410,7 @@ def main():
                 one_testcase_dict["throughput"][t][p] = thpt
                 one_testcase_dict["latency"][t][p] = lat
 
-                with open(this_time_filename, "a+") as output_f:
+                with open(bench_result_filename, "a+") as output_f:
                     result = {
                         'throughput': thpt,
                         'latency': lat,
@@ -353,65 +430,25 @@ def main():
                 print(f"--- sleep {w} seconds\n\n")
                 sleep(w)
 
-            # for thread_count in such as [1, 36]:
-        # for payload in  such as [16, 256, 512, 8192]:
+            # END for thread_count in such as [1, 36]:
+        # END for payload in  such as [16, 256, 512, 8192]:
 
-        with open(this_time_filename, 'rb+') as output_f:
+        with open(bench_result_filename, 'rb+') as output_f:
             output_f.seek(-2, os.SEEK_END)
             output_f.truncate()
-        with open(this_time_filename, "a+") as output_f:
+        with open(bench_result_filename, "a+") as output_f:
             output_f.write("\n]")
 
-        # dim 0: threads
-        plt.clf()  # refresh
-        pic = plt.axes()
-        for i in range(np.shape(one_testcase_dict["throughput"])[1]):
-            y = one_testcase_dict["throughput"][:, i]
-            pic.plot(one_testcase_dict["threads"], y, marker='o')
-        pic.set_xlabel("threads")
-        pic.set_ylabel("throughput")
-        pic.figure.savefig(f'./throughput_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
-
-        plt.clf()
-        pic = plt.axes()
-        for i in range(np.shape(one_testcase_dict["latency"])[1]):
-            y = one_testcase_dict["latency"][:, i]
-            pic.plot(one_testcase_dict["threads"], y, marker='o')
-        pic.set_xlabel("threads")
-        pic.set_ylabel("latency")
-        pic.figure.savefig(f'./latency_threads_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
-
-        # dim 1: payload
-        plt.clf()
-        pic = plt.axes()
-        for i in range(np.shape(one_testcase_dict["throughput"])[0]):
-            y = one_testcase_dict["throughput"][i, :]
-            pic.plot(one_testcase_dict["payload"], y, marker='o')
-        pic.set_xlabel("payload")
-        pic.set_ylabel("throughput")
-        pic.figure.savefig(f'./throughput_payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
-        pic.set_xscale('log')
-        pic.figure.savefig(f'./throughput_payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
-
-        pic = plt.axes()
-        for i in range(np.shape(one_testcase_dict["latency"])[0]):
-            y = one_testcase_dict["latency"][i, :]
-            pic.plot(one_testcase_dict["payload"], y, marker='o')
-        pic.set_xlabel("payload")
-        pic.set_ylabel("latency")
-        pic.figure.savefig(f'./latency_payload_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
-        pic.set_xscale('log')
-        pic.figure.savefig(f'./latency_payload_log_{datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")}.png')
+        draw_testcase_pictures(one_testcase_dict, this_time_str)
 
         print("--- copy it if you need")
         print(one_testcase_dict)
 
         all_testcases_dict_list.append(one_testcase_dict)
 
-    # for clients, server, thread_count_list, payload_list in cstp_pairs
+    # END for clients, server, thread_count_list, payload_list in cstp_pairs
 
-    # todo: use this to draw pictures
-    all_testcases_dict_list
+    draw_compare_testcase_pictures(all_testcases_dict_list, this_time_str)
 
 
 def new_config():
@@ -430,4 +467,4 @@ def new_config():
 
 if __name__ == '__main__':
     new_config()
-    main()
+    main_benchmark()
