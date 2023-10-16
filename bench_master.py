@@ -229,7 +229,10 @@ def run_single_testcase(
         server_session.execute(f"killall {numa_server_bin_name} || true")
     else:
         server_session.execute(f"killall {server_bin_name} || true")
-    stdout, stderr = server_session.execute_many_non_blocking(server_exec_cmd_list)
+    
+    # todo: add a thread to show the server's stdout and stderr
+    # note: if you add a thread for its stdout and stderr, please make `quick_show_out=False`
+    _, _ = server_session.execute_many_non_blocking(server_exec_cmd_list)  # stdout, stderr = ...
 
     # todo: change to wait for server_session to execute, but seems difficult
     w = 5
@@ -274,8 +277,10 @@ def run_single_testcase(
         )
         time.sleep(w)
 
+        # todo: make stderr strip from the stdout
+        # this maybe hard to do in select_client_recv_channels()
         stdout.channel.set_combine_stderr(True)
-        client_recv_channels[client_name] = {"stdout": stdout}  # "stderr": stderr  # useless now
+        client_recv_channels[client_name] = stdout
 
     # (3) deal with stdout/stderr and count latency and throughput
 
@@ -310,33 +315,31 @@ def run_single_testcase(
 
 
 def select_client_recv_channels(client_recv_channel_map: Dict):
-    selected_channels = [
-        channel["stdout"] for channel in client_recv_channel_map.values()
+    selected_channel_files = [
+        channel_file for channel_file in client_recv_channel_map.values()
     ]
-
     channel_client_map = {
-        hash(c["stdout"].channel): {"name": name, "buffer": ""}
-        for name, c in client_recv_channel_map.items()
+        hash(channel_file.channel): {"name": name, "buffer": ""}
+        for name, channel_file in client_recv_channel_map.items()
     }
+
     # use select to listen to all the client socket file descriptors
-    while len(selected_channels) > 0:
+    while len(selected_channel_files) > 0:
         time.sleep(1)
-        channel_list = [c.channel for c in selected_channels]
-        if any([c.recv_ready() for c in channel_list]):
-            rl, _, _ = select.select(channel_list, [], [], 0.0)
-            for c in rl:
+        channel_list = [channel_file.channel for channel_file in selected_channel_files]
+        if any([channel.recv_ready() for channel in channel_list]):
+            read_list, _, _ = select.select(channel_list, [], [], 0.0)
+            for c in read_list:
                 length = 16384
                 print(
                     f"--- will receive up to {length} bytes from stdout, if it's too short or too long, please change it manuually"
                 )
                 recved = c.recv(length).decode("utf-8")
-                channel_client_map[hash(c)]["buffer"] = (
-                    channel_client_map[hash(c)]["buffer"] + recved
-                )
+                channel_client_map[hash(c)]["buffer"] += recved
                 print(f"Output (stdout & stderr):\n{recved}")
         # remove file discriptors that have closed.
-        selected_channels = [
-            c for c in selected_channels if not c.channel.exit_status_ready()
+        selected_channel_files = [
+            channel_file for channel_file in selected_channel_files if not channel_file.channel.exit_status_ready()
         ]
 
     return {x["name"]: x["buffer"] for x in channel_client_map.values()}
