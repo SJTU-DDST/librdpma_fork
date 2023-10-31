@@ -1,6 +1,7 @@
 import yaml
 from pathlib import Path
 from datetime import datetime
+from typing import List
 
 
 def load_config(config_file_path: str) -> dict:
@@ -13,8 +14,9 @@ def generate_time_str():
     return datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")
 
 
-def generate_bench_result_filename(time_str: str):
-    return f"benchres_{time_str}.json"
+def generate_bench_result_filename(clients: List[str], server: str, time_str: str):
+    cn = ",".join(clients)
+    return f"benchres_{cn}_{server}_{time_str}.json"
 
 
 def generate_single_testcase_picture_filename(type: str, time_str: str):

@@ -62,7 +62,7 @@ protected:
     FD_SET(sock_fd, &rfds);
     struct timeval tv = {.tv_sec = 0, .tv_usec = static_cast<int>(to_usec)};
 
-    auto ready = select(sock_fd + 1, &rfds, nullptr, nullptr, &tv);
+    auto ready = select(sock_fd + 1, &rfds, nullptr, nullptr, nullptr);
 
     switch (ready) {
     case 0:

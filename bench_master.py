@@ -46,7 +46,7 @@ def main_benchmark(args):
 
     for clients, server, thread_count_list, payload_list in cstp_pairs:
         this_time_str = benchfile.generate_time_str()
-        bench_result_filename = benchfile.generate_bench_result_filename(this_time_str)
+        bench_result_filename = benchfile.generate_bench_result_filename(clients, server, this_time_str)
         with open(bench_result_filename, "a+") as output_f:
             output_f.write("[ \n")  # this space is fit for ",\n"
 
@@ -95,7 +95,7 @@ def main_benchmark(args):
                     "port": machine_config[server]["port"],
                     "use_nvm": False,
                     "touch_mem": True,
-                    "nvm_sz": 1,
+                    "nvm_sz": 2,
                     "use_nic_idx": server_nic_idx,
                 }
 
@@ -104,11 +104,12 @@ def main_benchmark(args):
                     if name not in clients:
                         continue
                     threads = thread_count
-                    if threads > config["threads_per_socket"]:
+                    physical_thread_max_num = config["threads_per_socket"] * config["socket_count"]
+                    if threads > physical_thread_max_num:
                         print(
-                            f"WARNING: {name} threads {threads} > config.threads_per_socket {config['threads_per_socket']}"
+                            f"WARNING: {name} threads {threads} > physical_thread_max_num {physical_thread_max_num}"
                         )
-                        threads = config["threads_per_socket"]
+                        threads = physical_thread_max_num
                     coros = 1
                     if args.bench_type == "read":
                         exp_config = benchargs.make_read_experiement_config(
@@ -119,9 +120,9 @@ def main_benchmark(args):
                             threads, coros, payload
                         )
                     else:
-                        assert False, "wront bench type"
+                        assert False, "wrong bench type"
                     thread_config = benchargs.make_thread_config(
-                        config["numa_type"], True, 0
+                        config["numa_type"], False
                     )
 
                     client_config = {**exp_config, **thread_config}
@@ -226,9 +227,9 @@ def run_single_testcase(
 
     print("setup server session OK")
     if server_config["numa_type"] == 3:
-        server_session.execute(f"killall {numa_server_bin_name} || true")
+        server_session.execute(f"sudo killall {numa_server_bin_name} || true")
     else:
-        server_session.execute(f"killall {server_bin_name} || true")
+        server_session.execute(f"sudo killall {server_bin_name} || true")
     
     # todo: add a thread to show the server's stdout and stderr
     # note: if you add a thread for its stdout and stderr, please make `quick_show_out=False`
@@ -237,7 +238,7 @@ def run_single_testcase(
     # todo: change to wait for server_session to execute, but seems difficult
     w = 5
     print(
-        f"--- will wait [SERVER] for {w} seconds, if it's too short or too long, please change it manuually"
+        f"--- will wait [SERVER] for {w} seconds, if it's too short or too long, please change it manually"
     )
     time.sleep(w)
 
@@ -268,12 +269,12 @@ def run_single_testcase(
         client_exec_cmd_list.insert(0, f"cd {client_repo_dir}")
 
         print(f"setup client {num} session OK")
-        client_session.execute(f"killall {client_bin_name} || true")
+        client_session.execute(f"sudo killall {client_bin_name} || true")
         stdout, stderr = client_session.execute_many_non_blocking(client_exec_cmd_list, quick_show_out=False)
 
         w = 0
         print(
-            f"--- will wait [CLIENT] for {w} seconds, if it's too short or too long, please change it manuually"
+            f"--- will wait [CLIENT] for {w} seconds, if it's too short or too long, please change it manually"
         )
         time.sleep(w)
 
@@ -301,13 +302,13 @@ def run_single_testcase(
             password=str(client_config["passwd"]),
         )
         client_session = benchsession.Session(client_session_config)
-        client_session.execute(f"killall {client_bin_name} || true")
+        client_session.execute(f"sudo killall {client_bin_name} || true")
         print(f"done, close client {num} session OK")
 
     if server_config["numa_type"] == 3:
-        server_session.execute(f"killall {numa_server_bin_name} || true")
+        server_session.execute(f"sudo killall {numa_server_bin_name} || true")
     else:
-        server_session.execute(f"killall {server_bin_name} || true")
+        server_session.execute(f"sudo killall {server_bin_name} || true")
     server_session.close()
     print("done, close server session OK")
 
@@ -332,7 +333,7 @@ def select_client_recv_channels(client_recv_channel_map: Dict):
             for c in read_list:
                 length = 16384
                 print(
-                    f"--- will receive up to {length} bytes from stdout, if it's too short or too long, please change it manuually"
+                    f"--- will receive up to {length} bytes from stdout, if it's too short or too long, please change it manually"
                 )
                 recved = c.recv(length).decode("utf-8")
                 channel_client_map[hash(c)]["buffer"] += recved
