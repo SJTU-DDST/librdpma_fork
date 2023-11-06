@@ -89,6 +89,7 @@ class Drawer:
                 marker="o",
                 label=f"threads={self.one_testcase_dict['threads'][t]}",
             )
+        # pic.set_ylim(self.one_testcase_dict["throughput"].max())
         pic.set_xlabel("payload (Byte)")
         pic.set_ylabel("throughput (reqs/s)")
         plt.legend()
@@ -100,12 +101,12 @@ class Drawer:
                 "throughput_payload", time_str
             )
         )
-        pic.set_xscale("log")
-        pic.figure.savefig(
-            file.generate_single_testcase_picture_filename(
-                "throughput_payload_log", time_str
-            )
-        )
+        # pic.set_xscale("log")
+        # pic.figure.savefig(
+        #     file.generate_single_testcase_picture_filename(
+        #         "throughput_payload_log", time_str
+        #     )
+        # )
 
         plt.clf()
         pic = plt.axes()
@@ -117,6 +118,7 @@ class Drawer:
                 marker="o",
                 label=f"threads={self.one_testcase_dict['threads'][t]}",
             )
+        # pic.set_ylim(self.one_testcase_dict["latency"].max())
         pic.set_xlabel("payload (Byte)")
         pic.set_ylabel("latency (μs)")
         plt.legend()
@@ -126,10 +128,56 @@ class Drawer:
         pic.figure.savefig(
             file.generate_single_testcase_picture_filename("latency_payload", time_str)
         )
-        pic.set_xscale("log")
+        # pic.set_xscale("log")
+        # pic.figure.savefig(
+        #     file.generate_single_testcase_picture_filename(
+        #         "latency_payload_log", time_str
+        #     )
+        # )
+
+        # dim 2: throughput * payload = bandwidth
+        plt.clf()  # refresh
+        pic = plt.axes()
+        for p in range(len(self.one_testcase_dict["payload"])):
+            y = self.one_testcase_dict["throughput"][:, p] * self.one_testcase_dict["payload"][p]
+            pic.plot(
+                self.one_testcase_dict["threads"],
+                y,
+                marker="o",
+                label=f"payload={self.one_testcase_dict['payload'][p]}",
+            )
+        pic.set_xlabel("threads")
+        pic.set_ylabel("bandwidth (bps)")
+        plt.legend()
+        plt.title(
+            f"server={self.one_testcase_dict['server']}, clients={self.one_testcase_dict['clients']}"
+        )
         pic.figure.savefig(
             file.generate_single_testcase_picture_filename(
-                "latency_payload_log", time_str
+                "bandwidth_threads", time_str
+            )
+        )
+
+        plt.clf()
+        pic = plt.axes()
+        for t in range(len(self.one_testcase_dict["threads"])):
+            y = self.one_testcase_dict["throughput"][t, :] * self.one_testcase_dict["payload"]
+            pic.plot(
+                self.one_testcase_dict["payload"],
+                y,
+                marker="o",
+                label=f"threads={self.one_testcase_dict['threads'][t]}",
+            )
+        # pic.set_ylim(self.one_testcase_dict["throughput"].max())
+        pic.set_xlabel("payload (Byte)")
+        pic.set_ylabel("bandwidth (bps)")
+        plt.legend()
+        plt.title(
+            f"server={self.one_testcase_dict['server']}, clients={self.one_testcase_dict['clients']}"
+        )
+        pic.figure.savefig(
+            file.generate_single_testcase_picture_filename(
+                "bandwidth_payload", time_str
             )
         )
 
@@ -228,6 +276,7 @@ class Drawer:
                 pic.plot(common_threads_list, y, marker="o", label=legend_name_list[i])
             pic.set_xlabel("threads")
             pic.set_ylabel("throughput (reqs/s)")
+            pic.set_ylim(bottom = 0)
             plt.legend()
             plt.title(f"payload={payload}")
             pic.figure.savefig(
@@ -245,6 +294,7 @@ class Drawer:
                 pic.plot(common_threads_list, y, marker="o", label=legend_name_list[i])
             pic.set_xlabel("threads")
             pic.set_ylabel("latency (μs)")
+            pic.set_ylim(bottom = 0)
             plt.legend()
             plt.title(f"payload={payload}")
             pic.figure.savefig(
@@ -267,6 +317,7 @@ class Drawer:
                 pic.plot(common_payload_list, y, marker="o", label=legend_name_list[i])
             pic.set_xlabel("payload (Byte)")
             pic.set_ylabel("throughput (reqs/s)")
+            pic.set_ylim(bottom = 0)
             plt.legend()
             plt.title(f"threads={threads}")
             pic.figure.savefig(
@@ -284,6 +335,7 @@ class Drawer:
                 pic.plot(common_payload_list, y, marker="o", label=legend_name_list[i])
             pic.set_xlabel("payload (Byte)")
             pic.set_ylabel("latency (μs)")
+            pic.set_ylim(bottom = 0)
             plt.legend()
             plt.title(f"threads={threads}")
             pic.figure.savefig(
