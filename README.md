@@ -39,7 +39,7 @@ vim ./configs/connections.yaml
 python3 bench_master.py
 ```
 
-Results will output to `benchres_<time>.json`, `img/*_<time>.png` and `img_compare/*_<time>.png` (if use >=2 testcases), such as
+Results will output to `benchres_<clients>_<servers>_<time>.json`, such as
 
 ```json
 [ 
@@ -51,7 +51,12 @@ Results will output to `benchres_<time>.json`, `img/*_<time>.png` and `img_compa
 ]
 ```
 
-and
+### Run Figure Auto-Scripts
+Copy the json files generated that you would like to draw figures into ./benchres. Since experiment info is not adequate in json file itself, please also make sure you have the corresponding info in `connections.yaml`. 
+```shell
+python3 bench_figure.py
+```
+Figures `img/*_<time>.png` and `img_compare/*_<time>.png` will be generated. (if use >=2 testcases)
 
 ![demo.png](demo.png)
 
