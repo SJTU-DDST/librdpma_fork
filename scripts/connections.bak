@@ -6,6 +6,8 @@
     [2, 4, 8]
   payload:
     [16, 256, 1024, 4096]
+  corotines:
+    [1, 2, 4, 8, 16]
   enable:
     True
 
@@ -17,6 +19,8 @@
     [1, 36]
   payload:
     [16, 256, 512, 8192]
+  corotines:
+    [1, 2, 4, 8, 16]
   enable:
     False
 
@@ -29,6 +33,8 @@
     [1, 36]
   payload:
     [16, 256, 512, 8192]
+  corotines:
+    [1, 2, 4, 8, 16]
   enable:
     False
 
@@ -41,5 +47,7 @@
     [1, 36]
   payload:
     [16, 256, 512, 8192]
+  corotines:
+    [1, 2, 4, 8, 16]
   enable:
     False

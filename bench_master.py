@@ -12,7 +12,6 @@ from pathlib import Path
 import benchlib.color as color
 import benchlib.args as benchargs
 import benchlib.file as benchfile
-import benchlib.draw as benchdraw
 import benchlib.session as benchsession
 
 project_name = "librdpma_fork"
@@ -39,12 +38,10 @@ def main_benchmark(args):
     for i in connection_config:
         if i["enable"]:
             cstp_pairs.append(
-                (i["clients"], i["server"], i["thread_count"], i["payload"])
+                (i["clients"], i["server"], i["thread_count"], i["payload"], i["corotines"])
             )
 
-    drawer = benchdraw.Drawer()
-
-    for clients, server, thread_count_list, payload_list in cstp_pairs:
+    for clients, server, thread_count_list, payload_list, corotine_list in cstp_pairs:
         this_time_str = benchfile.generate_time_str()
         bench_result_filename = benchfile.generate_bench_result_filename(clients, server, this_time_str)
         with open(bench_result_filename, "a+") as output_f:
@@ -52,7 +49,7 @@ def main_benchmark(args):
 
         print(f"{color.CYAN}=== run: server = {server}, clients = {clients} ==={color.RESET}")
         print(
-            f"{color.CYAN}===      thread_count = {thread_count_list}, payload = {payload_list} ==={color.RESET}"
+            f"{color.CYAN}===      thread_count = {thread_count_list}, coroutine_count = {corotine_list}, payload = {payload_list} ==={color.RESET}"
         )
         print(
             f"{color.CYAN}=== output will all print to {bench_result_filename} ==={color.RESET}"
@@ -68,113 +65,102 @@ def main_benchmark(args):
                     f"Did you forget to change the user in `{config_dir / machine_config_name}`?"
                 )
 
-        drawer.reset_one_testcase_dict(
-            server=server,
-            clients=clients,
-            thread_count_list=thread_count_list,
-            payload_list=payload_list,
-        )
-
         t = -1
         for thread_count in thread_count_list:
             t += 1
-            p = -1
-            for payload in payload_list:
-                p += 1
-
-                print(
-                    f"{color.PURPLE}run: thread_count = {thread_count}, payload = {payload}{color.RESET}"
-                )
-
-                server_addr = (
-                    f'{machine_config[server]["ip"]}:{machine_config[server]["port"]}'
-                )
-                server_nic_idx = machine_config[server]["available_nic"][0]
-                server_config = {
-                    "host": machine_config[server]["ip"],
-                    "port": machine_config[server]["port"],
-                    "use_nvm": False,
-                    "touch_mem": True,
-                    "nvm_sz": 2,
-                    "use_nic_idx": server_nic_idx,
-                }
-
-                client_configs = []
-                for name, config in machine_config.items():
-                    if name not in clients:
-                        continue
-                    threads = thread_count
-                    physical_thread_max_num = config["threads_per_socket"] * config["socket_count"]
-                    if threads > physical_thread_max_num:
-                        print(
-                            f"WARNING: {name} threads {threads} > physical_thread_max_num {physical_thread_max_num}"
-                        )
-                        threads = physical_thread_max_num
-                    coros = 1
-                    if args.bench_type == "read":
-                        exp_config = benchargs.make_read_experiement_config(
-                            threads, coros, payload
-                        )
-                    elif args.bench_type == "write":
-                        exp_config = benchargs.make_write_experiment_config(
-                            threads, coros, payload
-                        )
-                    else:
-                        assert False, "wrong bench type"
-                    thread_config = benchargs.make_thread_config(
-                        config["numa_type"], False
+            c = -1
+            for corotine_count in corotine_list:
+                c += 1
+                p = -1
+                for payload in payload_list:
+                    p += 1
+                    print(
+                        f"{color.PURPLE}run: thread_count = {thread_count}, coroutine_count = {corotine_count}, payload = {payload}{color.RESET}"
                     )
 
-                    client_config = {**exp_config, **thread_config}
-                    client_config.update(
-                        {
-                            "remote_nic_idx": server_nic_idx,
-                            "use_nic_idx": config["available_nic"][0],
-                            "address_space": 1,
-                            "addr": server_addr,
-                        }
+                    server_addr = (
+                        f'{machine_config[server]["ip"]}:{machine_config[server]["port"]}'
                     )
-                    client_configs.append(client_config)
-
-                thpt, lat = run_single_testcase(
-                    server_name=server,
-                    server_args=server_config,
-                    client_names=clients,
-                    clients_args=client_configs,
-                    machine_config=machine_config,
-                )
-
-                drawer.update_one_testcase_throughput(
-                    threads_index=t, payload_index=p, throughput=thpt
-                )
-                drawer.update_one_testcase_latency(
-                    threads_index=t, payload_index=p, latency=lat
-                )
-
-                with open(bench_result_filename, "a+") as output_f:
-                    result = {
-                        "throughput": thpt,
-                        "latency": lat,
-                        "server": server,
-                        "clients": clients,
-                        "threads": threads,
-                        "coros": coros,
-                        "payload": payload,
+                    server_nic_idx = machine_config[server]["available_nic"][0]
+                    server_config = {
+                        "host": machine_config[server]["ip"],
+                        "port": machine_config[server]["port"],
+                        "use_nvm": False,
+                        "touch_mem": True,
+                        "nvm_sz": 2,
+                        "use_nic_idx": server_nic_idx,
                     }
-                    json.dump(result, output_f)
-                    output_f.write(",\n")
 
-                print(
-                    f"{color.BLUE}done with thread_count = {thread_count}, payload = {payload}{color.RESET}"
-                )
-                print(f"{color.BLUE}result: throughput = {thpt}, latency = {lat}{color.RESET}")
+                    client_configs = []
+                    for name, config in machine_config.items():
+                        if name not in clients:
+                            continue
+                        threads = thread_count
+                        physical_thread_max_num = config["threads_per_socket"] * config["socket_count"]
+                        if threads > physical_thread_max_num:
+                            print(
+                                f"WARNING: {name} threads {threads} > physical_thread_max_num {physical_thread_max_num}"
+                            )
+                            threads = physical_thread_max_num
+                        coros = corotine_count
+                        if args.bench_type == "read":
+                            exp_config = benchargs.make_read_experiement_config(
+                                threads, coros, payload
+                            )
+                        elif args.bench_type == "write":
+                            exp_config = benchargs.make_write_experiment_config(
+                                threads, coros, payload
+                            )
+                        else:
+                            assert False, "wrong bench type"
+                        thread_config = benchargs.make_thread_config(
+                            config["numa_type"], True, 0
+                        )
 
-                w = 3
-                print(f"--- time.sleep {w} seconds\n\n")
-                time.sleep(w)
+                        client_config = {**exp_config, **thread_config}
+                        client_config.update(
+                            {
+                                "remote_nic_idx": server_nic_idx,
+                                "use_nic_idx": config["available_nic"][0],
+                                "address_space": 1,
+                                "addr": server_addr,
+                            }
+                        )
+                        client_configs.append(client_config)
 
-            # END for thread_count in such as [1, 36]:
-        # END for payload in  such as [16, 256, 512, 8192]:
+                    thpt, lat = run_single_testcase(
+                        server_name=server,
+                        server_args=server_config,
+                        client_names=clients,
+                        clients_args=client_configs,
+                        machine_config=machine_config,
+                    )
+
+                    with open(bench_result_filename, "a+") as output_f:
+                        result = {
+                            "throughput": thpt,
+                            "latency": lat,
+                            "server": server,
+                            "clients": clients,
+                            "threads": threads,
+                            "coros": coros,
+                            "payload": payload,
+                        }
+                        json.dump(result, output_f)
+                        output_f.write(",\n")
+
+                    print(
+                        f"{color.BLUE}done with thread_count = {thread_count}, coroutine_count = {corotine_count}, payload = {payload}{color.RESET}"
+                    )
+                    print(f"{color.BLUE}result: throughput = {thpt}, latency = {lat}{color.RESET}")
+
+                    w = 3
+                    print(f"--- time.sleep {w} seconds\n\n")
+                    time.sleep(w)
+                # END for payload in  such as [16, 256, 512, 8192]
+            # END for coroutine_count in such as [1, 2, 4, 8, 16]
+        # END for thread_count in such as [1, 36]
+           
 
         with open(bench_result_filename, "rb+") as output_f:
             output_f.seek(-2, os.SEEK_END)
@@ -182,19 +168,7 @@ def main_benchmark(args):
         with open(bench_result_filename, "a+") as output_f:
             output_f.write("\n]")
 
-        drawer.draw_testcase_pictures(this_time_str)
-
-        print("--- copy it if you need")
-        print(drawer.one_testcase_dict)
-
-        drawer.add_one_to_all_list_and_clear_one()
-
-    # END for clients, server, thread_count_list, payload_list in cstp_pairs
-
-    print("--- copy it if you need")
-    print(drawer.all_testcases_dict_list)
-
-    drawer.draw_compare_testcases_pictures()
+    # END for clients, server, thread_count_list, payload_list, corotine_list in cstp_pairs
 
 
 def run_single_testcase(
@@ -236,7 +210,7 @@ def run_single_testcase(
     _, _ = server_session.execute_many_non_blocking(server_exec_cmd_list)  # stdout, stderr = ...
 
     # todo: change to wait for server_session to execute, but seems difficult
-    w = 5
+    w = 3
     print(
         f"--- will wait [SERVER] for {w} seconds, if it's too short or too long, please change it manually"
     )

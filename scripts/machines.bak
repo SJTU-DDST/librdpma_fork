@@ -18,7 +18,7 @@ machine-71:
   passwd: "1111" # change this if need
   repo_dir: path/to/librdpma_fork # or "None", which means /home/YOUR_USER_NAME/librdpma_fork
   numa_type: 1
-  threads_per_socket: 36
+  threads_per_socket: 56
   socket_count: 2
   available_nic: [0, 1]
 
@@ -30,7 +30,7 @@ machine-74:
   passwd: "1111" # change this if need
   repo_dir: path/to/librdpma_fork # or "None", which means /home/YOUR_USER_NAME/librdpma_fork
   numa_type: 1
-  threads_per_socket: 36
+  threads_per_socket: 56
   socket_count: 2
   available_nic: [0, 1]
 
