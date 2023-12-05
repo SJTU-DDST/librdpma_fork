@@ -10,7 +10,7 @@
 # provided with the software product.
 #
 
-project('DOCA_SAMPLE', 'C', 'CPP',
+project('LIBRDPMA_DMA', 'C', 'CPP',
 	# Get version number from file.
 	version: run_command(find_program('cat'),
 		files('/opt/mellanox/doca/applications/VERSION'), check: true).stdout().strip(),
@@ -38,20 +38,20 @@ sample_srcs = [
 	# Common code for the DOCA library samples
 	'../dma_common.c',
 	# Common code for all DOCA samples
-	'../../common.c',
+	'../common.c',
 	# Common code for all DOCA applications
-	'../../../applications/common/src/utils.c',
+	# '../../../applications/common/src/utils.c',
 ]
 
 sample_inc_dirs  = []
 # Common DOCA library logic
 sample_inc_dirs += include_directories('..')
 # Common DOCA logic (samples)
-sample_inc_dirs += include_directories('../..')
+# sample_inc_dirs += include_directories('../..')
 # Common DOCA logic
-sample_inc_dirs += include_directories('../../..')
+# sample_inc_dirs += include_directories('../../..')
 # Common DOCA logic (applications)
-sample_inc_dirs += include_directories('../../../applications/common/src')
+# sample_inc_dirs += include_directories('../../../applications/common/src')
 
 executable('doca_' + SAMPLE_NAME, sample_srcs,
 	c_args : '-Wno-missing-braces',
