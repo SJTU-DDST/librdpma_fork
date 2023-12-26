@@ -19,7 +19,7 @@ project('LIBRDPMA_DMA', 'C', 'CPP',
 	meson_version: '>= 0.61.2'
 )
 
-SAMPLE_NAME = 'dma_local_copy'
+SAMPLE_NAME = 'dma_copy_host_as_sender'
 
 # Comment this line to restore warnings of experimental DOCA features
 add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', language: ['c', 'cpp'])
@@ -39,6 +39,8 @@ sample_srcs = [
 	'../dma_common.c',
 	# Common code for all DOCA samples
 	'../common.c',
+	# Common code for all DOCA applications
+	# '../../../applications/common/src/utils.c',
 ]
 
 sample_inc_dirs  = []

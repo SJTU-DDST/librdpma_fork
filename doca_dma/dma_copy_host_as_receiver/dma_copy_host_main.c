@@ -43,7 +43,7 @@ main(int argc, char **argv)
 	int exit_status = EXIT_FAILURE;
 
 	/* Set the default configuration values (Example values) */
-	strcpy(dma_conf.pci_address, "b1:00.0");
+	strcpy(dma_conf.pci_address, "ca:00.0");
 	strcpy(dma_conf.cpy_txt, "This is a sample piece of text");
 	strcpy(dma_conf.export_desc_path, "/tmp/export_desc.txt");
 	strcpy(dma_conf.buf_info_path, "/tmp/buffer_info.txt");

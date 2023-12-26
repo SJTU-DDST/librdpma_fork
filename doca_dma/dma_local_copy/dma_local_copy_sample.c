@@ -161,6 +161,11 @@ dma_local_copy(const char *pcie_addr, char *dst_buffer, char *src_buffer, size_t
 
 	/* Set data position in src_buff */
 	result = doca_buf_set_data(src_doca_buf, src_buffer, length);
+	
+	// int ll;
+	// doca_buf_get_data_len(src_doca_buf, &ll);
+	// printf("src doca buf: len %d, %s\n", ll, src_buffer);
+	
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to set data for DOCA buffer: %s", doca_get_error_string(result));
 		return result;
@@ -175,6 +180,12 @@ dma_local_copy(const char *pcie_addr, char *dst_buffer, char *src_buffer, size_t
 		dma_cleanup(&state, dma_ctx);
 		return result;
 	}
+
+	// int lll;
+	// doca_buf_get_data_len(dst_doca_buf, &lll);
+	// char tmp_buf[10];
+	// doca_buf_get_data(dst_doca_buf, &tmp_buf);
+	// printf("dst doca buf: len %d, %s\n", lll, tmp_buf);
 
 	/* Wait for job completion */
 	while ((result = doca_workq_progress_retrieve(state.workq, &event, DOCA_WORKQ_RETRIEVE_FLAGS_NONE)) ==
@@ -195,6 +206,12 @@ dma_local_copy(const char *pcie_addr, char *dst_buffer, char *src_buffer, size_t
 	}
 
 	DOCA_LOG_INFO("Success, memory copied and verified as correct");
+	
+	// int lll;
+	// doca_buf_get_data_len(dst_doca_buf, &lll);
+	// char tmp_buf[10];
+	// doca_buf_get_data(dst_doca_buf, &tmp_buf);
+	// printf("dst doca buf: len %d, %s\n", lll, tmp_buf);
 
 	if (doca_buf_refcount_rm(src_doca_buf, NULL) != DOCA_SUCCESS)
 		DOCA_LOG_ERR("Failed to decrease DOCA source buffer reference count");
