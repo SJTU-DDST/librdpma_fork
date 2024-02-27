@@ -43,7 +43,7 @@ def main_benchmark(args):
 
     for clients, server, thread_list, payload_list, corotine_list in cstp_pairs:
         this_time_str = benchfile.generate_time_str()
-        bench_result_filename = benchfile.generate_bench_result_filename('./', clients, server, this_time_str)
+        bench_result_filename = benchfile.generate_bench_result_filename('./benchres-wait/', clients, server, this_time_str)
         with open(bench_result_filename, "a+") as output_f:
             output_f.write("[ \n")  # this space is fit for ",\n"
 

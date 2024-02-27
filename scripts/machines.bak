@@ -34,12 +34,24 @@ machine-75:
   socket_count: 2
   available_nic: [0, 1]
 
+machine-114_dpu:
+  ip: "192.168.98.114"
+  port: 8964
+  machine_type: dpu
+  user: YOUR_USER_NAME # change this
+  passwd: "1111" # change this if need
+  repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
+  numa_type: 3
+  threads_per_socket: 8
+  socket_count: 1
+  available_nic: [1]
+
 machine-144_dpu:
   ip: "192.168.98.144"
   port: 8964
   machine_type: dpu
-  user: ubuntu # change this if need
-  passwd: ddstgogo # change this if need
+  user: YOUR_USER_NAME # change this
+  passwd: "1111" # change this if need
   repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
   numa_type: 3
   threads_per_socket: 8

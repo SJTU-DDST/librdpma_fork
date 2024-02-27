@@ -1,33 +1,39 @@
+# 3rd party files
 third_party/
 libboost1.61-prefix/
+ddio_tools/*
+
+# normal build files
+build/
 CMakeFiles/
 Makefile
 cmake_install.cmake
-build/
-log/
-ddio_tools/*
+compile_commands.json
 
+# normal cache
 .cache
 .vscode
 __pycache__
-compile_commands.json
 
-# no .txt, except cmakelist
+# .txt, except cmakelist
 *.txt
 !CMakeLists.txt
 
-# no vim files
+# vim files
 *~
 
-# no exe files, except .sh, .py, etc.
+# exe files, except .sh, .py, etc.
 scripts/*
 !scripts/*.*
 
-# output data
+# output data, except .gitkeep
 benchres*.json
-img*/
-img_compare*/
+benchres/*
+!benchres/.gitkeep
+benchres-wait/
+img/
+img_compare/
+log/
 
 # user config
-configs/*
-!configs/.gitkeep
+configs/

@@ -44,23 +44,26 @@ vim ./configs/connections.yaml
 python3 bench_master.py
 ```
 
-Results will output to `benchres_<clients>_<servers>_<time>.json`, such as
+Results will output to `./benchres-wait/<clients>_<server>_<time>.json`, such as
 
 ```json
 [ 
-{"throughput": 1053194.6666666667, "latency": 1.9032220000000002, "server": "localhost", "clients": ["localhost"], "threads": 2, "coros": 1, "payload": 16},
-{"throughput": 994628.0666666667, "latency": 2.013740666666667, "server": "localhost", "clients": ["localhost"], "threads": 2, "coros": 1, "payload": 256},
+{"throughput": 1053194.6666666667, "latency": 1.9032220000000002, "server": "localhost", "clients": ["localhost"], "thread": 2, "corotine": 1, "payload": 16},
+{"throughput": 994628.0666666667, "latency": 2.013740666666667, "server": "localhost", "clients": ["localhost"], "thread": 2, "corotine": 1, "payload": 256},
 ...
-{"throughput": 3348694.6666666665, "latency": 2.3953606666666665, "server": "localhost", "clients": ["localhost"], "threads": 8, "coros": 1, "payload": 1024},
-{"throughput": 2268334.6666666665, "latency": 3.5285299999999995, "server": "localhost", "clients": ["localhost"], "threads": 8, "coros": 1, "payload": 4096}
+{"throughput": 3348694.6666666665, "latency": 2.3953606666666665, "server": "localhost", "clients": ["localhost"], "thread": 8, "corotine": 1, "payload": 1024},
+{"throughput": 2268334.6666666665, "latency": 3.5285299999999995, "server": "localhost", "clients": ["localhost"], "thread": 8, "corotine": 1, "payload": 4096}
 ]
 ```
 
 ### Run Figure Auto-Scripts
-Copy the json files generated that you would like to draw figures into ./benchres. Since experiment info is not adequate in json file itself, please also make sure you have the corresponding info in `connections.yaml`. 
+
+Copy the json files generated that you would like to draw figures from `./benchres-wait` into `./benchres`. Since experiment info is not adequate in json file itself, please also make sure you have the corresponding info in `connections.yaml`.
+
 ```shell
 python3 bench_figure.py
 ```
+
 Figures `img/*_<time>.png` and `img_compare/*_<time>.png` will be generated. (if use >=2 testcases)
 
 ![demo.png](demo.png)

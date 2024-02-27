@@ -13,15 +13,24 @@ connection_config_name = "connections.yaml"
 
 res_dir = Path("./benchres/")
 
+
 def figure():
+
     machine_config = benchfile.load_config(config_dir / machine_config_name)
     connection_config = benchfile.load_config(config_dir / connection_config_name)
     drawer = benchdraw.Drawer()
 
     for res_file in os.listdir(res_dir):
-        print(os.listdir(res_dir))
+
+        if res_file == '.gitkeep':
+            continue
+
+        print(res_file)
+
         with open(res_dir / res_file, "r") as res:
+
             res_list = json.load(res)
+
             for config in connection_config:
                 if res_list[0]["server"] == config["server"] and res_list[0]["clients"] == config["clients"]:
                     drawer.reset_one_testcase_dict(
@@ -43,13 +52,8 @@ def figure():
                 )
 
             drawer.draw_testcase_pictures()
-            print("--- copy it if you need")
-            print(drawer.one_testcase_dict)
 
         drawer.add_one_to_all_list_and_clear_one()
-
-    print("--- copy it if you need")
-    print(drawer.all_testcases_dict_list)
 
     drawer.draw_compare_testcases_pictures()
 
