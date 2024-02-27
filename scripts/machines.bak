@@ -34,7 +34,7 @@ machine-75:
   socket_count: 2
   available_nic: [0, 1]
 
-machine-114_dpu:
+machine-114-dpu:
   ip: "192.168.98.114"
   port: 8964
   machine_type: dpu
@@ -46,7 +46,7 @@ machine-114_dpu:
   socket_count: 1
   available_nic: [1]
 
-machine-144_dpu:
+machine-144-dpu:
   ip: "192.168.98.144"
   port: 8964
   machine_type: dpu
