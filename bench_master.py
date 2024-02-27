@@ -38,18 +38,18 @@ def main_benchmark(args):
     for i in connection_config:
         if i["enable"]:
             cstp_pairs.append(
-                (i["clients"], i["server"], i["thread_count"], i["payload"], i["corotines"])
+                (i["clients"], i["server"], i["thread"], i["payload"], i["corotine"])
             )
 
-    for clients, server, thread_count_list, payload_list, corotine_list in cstp_pairs:
+    for clients, server, thread_list, payload_list, corotine_list in cstp_pairs:
         this_time_str = benchfile.generate_time_str()
-        bench_result_filename = benchfile.generate_bench_result_filename(clients, server, this_time_str)
+        bench_result_filename = benchfile.generate_bench_result_filename('./', clients, server, this_time_str)
         with open(bench_result_filename, "a+") as output_f:
             output_f.write("[ \n")  # this space is fit for ",\n"
 
         print(f"{color.CYAN}=== run: server = {server}, clients = {clients} ==={color.RESET}")
         print(
-            f"{color.CYAN}===      thread_count = {thread_count_list}, coroutine_count = {corotine_list}, payload = {payload_list} ==={color.RESET}"
+            f"{color.CYAN}===      thread = {thread_list}, coroutine_count = {corotine_list}, payload = {payload_list} ==={color.RESET}"
         )
         print(
             f"{color.CYAN}=== output will all print to {bench_result_filename} ==={color.RESET}"
@@ -66,16 +66,16 @@ def main_benchmark(args):
                 )
 
         t = -1
-        for thread_count in thread_count_list:
+        for thread in thread_list:
             t += 1
             c = -1
-            for corotine_count in corotine_list:
+            for corotine in corotine_list:
                 c += 1
                 p = -1
                 for payload in payload_list:
                     p += 1
                     print(
-                        f"{color.PURPLE}run: thread_count = {thread_count}, coroutine_count = {corotine_count}, payload = {payload}{color.RESET}"
+                        f"{color.PURPLE}run: thread = {thread}, coroutine_count = {corotine}, payload = {payload}{color.RESET}"
                     )
 
                     server_addr = (
@@ -95,21 +95,20 @@ def main_benchmark(args):
                     for name, config in machine_config.items():
                         if name not in clients:
                             continue
-                        threads = thread_count
+                        thread = thread
                         physical_thread_max_num = config["threads_per_socket"] * config["socket_count"]
-                        if threads > physical_thread_max_num:
+                        if thread > physical_thread_max_num:
                             print(
-                                f"WARNING: {name} threads {threads} > physical_thread_max_num {physical_thread_max_num}"
+                                f"WARNING: {name} thread {thread} > physical_thread_max_num {physical_thread_max_num}"
                             )
-                            threads = physical_thread_max_num
-                        coros = corotine_count
+                            thread = physical_thread_max_num
                         if args.bench_type == "read":
                             exp_config = benchargs.make_read_experiement_config(
-                                threads, coros, payload
+                                thread, corotine, payload
                             )
                         elif args.bench_type == "write":
                             exp_config = benchargs.make_write_experiment_config(
-                                threads, coros, payload
+                                thread, corotine, payload
                             )
                         else:
                             assert False, "wrong bench type"
@@ -142,15 +141,15 @@ def main_benchmark(args):
                             "latency": lat,
                             "server": server,
                             "clients": clients,
-                            "threads": threads,
-                            "coros": coros,
+                            "thread": thread,
+                            "corotine": corotine,
                             "payload": payload,
                         }
                         json.dump(result, output_f)
                         output_f.write(",\n")
 
                     print(
-                        f"{color.BLUE}done with thread_count = {thread_count}, coroutine_count = {corotine_count}, payload = {payload}{color.RESET}"
+                        f"{color.BLUE}done with thread = {thread}, coroutine_count = {corotine}, payload = {payload}{color.RESET}"
                     )
                     print(f"{color.BLUE}result: throughput = {thpt}, latency = {lat}{color.RESET}")
 
@@ -159,7 +158,7 @@ def main_benchmark(args):
                     time.sleep(w)
                 # END for payload in  such as [16, 256, 512, 8192]
             # END for coroutine_count in such as [1, 2, 4, 8, 16]
-        # END for thread_count in such as [1, 36]
+        # END for thread in such as [1, 36]
            
 
         with open(bench_result_filename, "rb+") as output_f:
@@ -168,7 +167,7 @@ def main_benchmark(args):
         with open(bench_result_filename, "a+") as output_f:
             output_f.write("\n]")
 
-    # END for clients, server, thread_count_list, payload_list, corotine_list in cstp_pairs
+    # END for clients, server, thread_list, payload_list, corotine_list in cstp_pairs
 
 
 def run_single_testcase(
@@ -185,11 +184,7 @@ def run_single_testcase(
     )
     server_session = benchsession.Session(server_session_config)
     server_repo_dir = server_config.get("repo_dir", None)
-    if (
-        server_repo_dir == f"path/to/{project_name}"
-        or server_repo_dir == "None"
-        or server_repo_dir is None
-    ):
+    if server_repo_dir == "None" or server_repo_dir is None:
         server_repo_dir = f"/home/{server_config['user']}/{project_name}"
     server_binary = str(bin_dir / server_bin_name)
     if server_config["numa_type"] == 3:  # DPU should use userver instead of server
@@ -233,11 +228,7 @@ def run_single_testcase(
         )
         client_session = benchsession.Session(client_session_config)
         client_repo_dir = client_config.get("repo_dir", None)
-        if (
-            client_repo_dir == f"path/to/{project_name}"
-            or client_repo_dir == "None"
-            or client_repo_dir is None
-        ):
+        if client_repo_dir == "None" or client_repo_dir is None:
             client_repo_dir = f"/home/{client_config['user']}/{project_name}"
         client_binary = str(bin_dir / client_bin_name)
         client_exec_cmd_list = [

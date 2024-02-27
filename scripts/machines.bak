@@ -4,33 +4,33 @@ localhost:
   machine_type: common
   user: YOUR_USER_NAME # change this
   passwd: "1111" # change this if need
-  repo_dir: path/to/librdpma_fork # or "None", which means /home/YOUR_USER_NAME/librdpma_fork
-  numa_type: 1
-  threads_per_socket: 36
-  socket_count: 2
-  available_nic: [0, 1]
-
-machine-71:
-  ip: "192.168.98.71"
-  port: 8964
-  machine_type: common
-  user: YOUR_USER_NAME # change this
-  passwd: "1111" # change this if need
-  repo_dir: path/to/librdpma_fork # or "None", which means /home/YOUR_USER_NAME/librdpma_fork
+  repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
   numa_type: 1
   threads_per_socket: 56
   socket_count: 2
   available_nic: [0, 1]
 
-machine-74:
-  ip: "192.168.98.74"
+machine-72:
+  ip: "192.168.98.72"
   port: 8964
   machine_type: common
   user: YOUR_USER_NAME # change this
   passwd: "1111" # change this if need
-  repo_dir: path/to/librdpma_fork # or "None", which means /home/YOUR_USER_NAME/librdpma_fork
+  repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
   numa_type: 1
   threads_per_socket: 56
+  socket_count: 2
+  available_nic: [0, 1]
+
+machine-75:
+  ip: "192.168.98.75"
+  port: 8964
+  machine_type: common
+  user: YOUR_USER_NAME # change this
+  passwd: "1111" # change this if need
+  repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
+  numa_type: 1
+  threads_per_socket: 32
   socket_count: 2
   available_nic: [0, 1]
 
@@ -40,7 +40,7 @@ machine-144_dpu:
   machine_type: dpu
   user: ubuntu # change this if need
   passwd: ddstgogo # change this if need
-  repo_dir: path/to/librdpma_fork # or "None", which means /home/YOUR_USER_NAME/librdpma_fork
+  repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
   numa_type: 3
   threads_per_socket: 8
   socket_count: 1

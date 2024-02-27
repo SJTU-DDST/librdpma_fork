@@ -2,11 +2,11 @@
     localhost
   clients:
     - localhost
-  thread_count:
+  thread:
     [2, 4, 8]
   payload:
     [16, 256, 1024, 4096]
-  corotines:
+  corotine:
     [1, 2, 4, 8, 16]
   enable:
     True
@@ -15,11 +15,11 @@
     machine-74
   clients:
     - machine-74
-  thread_count:
+  thread:
     [1, 36]
   payload:
     [16, 256, 512, 8192]
-  corotines:
+  corotine:
     [1, 2, 4, 8, 16]
   enable:
     False
@@ -29,11 +29,11 @@
   clients:
     - machine-71
     - machine-74
-  thread_count:
+  thread:
     [1, 36]
   payload:
     [16, 256, 512, 8192]
-  corotines:
+  corotine:
     [1, 2, 4, 8, 16]
   enable:
     False
@@ -43,11 +43,11 @@
   clients:
     - machine-71
     - machine-144_dpu
-  thread_count:
+  thread:
     [1, 36]
   payload:
     [16, 256, 512, 8192]
-  corotines:
+  corotine:
     [1, 2, 4, 8, 16]
   enable:
     False

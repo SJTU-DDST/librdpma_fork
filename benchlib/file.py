@@ -1,7 +1,6 @@
 import yaml
 from pathlib import Path
 from datetime import datetime
-from typing import List
 
 
 def load_config(config_file_path: str) -> dict:
@@ -14,18 +13,20 @@ def generate_time_str():
     return datetime.now().strftime(r"%Y-%m-%d-%H-%M-%S-%f")
 
 
-def generate_bench_result_filename(clients: List[str], server: str, time_str: str):
+def generate_bench_result_filename(dir: str | Path, clients: list[str], server: str, time_str: str) -> Path:
+    dir = Path(dir)
+    dir.mkdir(parents=True, exist_ok=True)
     cn = ",".join(clients)
-    return f"benchres_{cn}_{server}_{time_str}.json"
+    return dir / f"benchres_{cn}_{server}_{time_str}.json"
 
 
-def generate_single_testcase_picture_filename(type: str, time_str: str):
-    Path("./img/").mkdir(parents=True, exist_ok=True)
-    return f"./img/{type}_{time_str}.png"
+def generate_single_testcase_picture_filename(dir: str | Path, type: str, time_str: str) -> Path:
+    dir = Path(dir)
+    dir.mkdir(parents=True, exist_ok=True)
+    return dir / f"{type}_{time_str}.png"
 
 
-def generate_compare_testcases_picture_filename(
-    about: str, fix_value: str, time_str: str
-):
-    Path("./img_compare/").mkdir(parents=True, exist_ok=True)
-    return f"./img_compare/{about}_WITH_{fix_value}_TIME_{time_str}.png"
+def generate_compare_testcases_picture_filename(dir: str | Path, about: str, fix_value: str, time_str: str) -> Path:
+    dir = Path(dir)
+    dir.mkdir(parents=True, exist_ok=True)
+    return dir / f"{about}_WITH_{fix_value}_TIME_{time_str}.png"
