@@ -195,19 +195,22 @@ def run_single_testcase(
     if server_config["numa_type"] == 3:  # DPU should use userver instead of server
         server_binary = str(bin_dir / numa_server_bin_name)
     server_exec_cmd_list = [
-        benchargs.build_exec_cmd(server_binary, server_args)
+        benchargs.build_sudo_exec_cmd(server_binary, server_args)
     ]
     server_exec_cmd_list.insert(0, f"cd {server_repo_dir}")
 
     print("setup server session OK")
     if server_config["numa_type"] == 3:
-        server_session.execute(f"sudo killall {numa_server_bin_name} || true")
+        server_session.execute(f"sudo -S killall {numa_server_bin_name} || true", sudo_S_num=1, password=str(server_config["passwd"]))
     else:
-        server_session.execute(f"sudo killall {server_bin_name} || true")
-    
+        server_session.execute(f"sudo -S killall {server_bin_name} || true", sudo_S_num=1, password=str(server_config["passwd"]))
+
     # todo: add a thread to show the server's stdout and stderr
     # note: if you add a thread for its stdout and stderr, please make `quick_show_out=False`
-    _, _ = server_session.execute_many_non_blocking(server_exec_cmd_list)  # stdout, stderr = ...
+    # stdout, stderr = ...
+    _, _ = server_session.execute_many_non_blocking(
+        server_exec_cmd_list, sudo_S_num=1, password=str(server_config["passwd"])
+    )
 
     # todo: change to wait for server_session to execute, but seems difficult
     w = 3
@@ -238,13 +241,15 @@ def run_single_testcase(
             client_repo_dir = f"/home/{client_config['user']}/{project_name}"
         client_binary = str(bin_dir / client_bin_name)
         client_exec_cmd_list = [
-            benchargs.build_exec_cmd(client_binary, client_args)
+            benchargs.build_sudo_exec_cmd(client_binary, client_args)
         ]
         client_exec_cmd_list.insert(0, f"cd {client_repo_dir}")
 
         print(f"setup client {num} session OK")
-        client_session.execute(f"sudo killall {client_bin_name} || true")
-        stdout, stderr = client_session.execute_many_non_blocking(client_exec_cmd_list, quick_show_out=False)
+        client_session.execute(f"sudo -S killall {client_bin_name} || true", sudo_S_num=1, password=str(client_config["passwd"]))
+        stdout, stderr = client_session.execute_many_non_blocking(
+            client_exec_cmd_list, quick_show_out=False, sudo_S_num=1, password=str(client_config["passwd"])
+        )
 
         w = 0
         print(
@@ -276,13 +281,13 @@ def run_single_testcase(
             password=str(client_config["passwd"]),
         )
         client_session = benchsession.Session(client_session_config)
-        client_session.execute(f"sudo killall {client_bin_name} || true")
+        client_session.execute(f"sudo -S killall {client_bin_name} || true", sudo_S_num=1, password=str(server_config["passwd"]))
         print(f"done, close client {num} session OK")
 
     if server_config["numa_type"] == 3:
-        server_session.execute(f"sudo killall {numa_server_bin_name} || true")
+        server_session.execute(f"sudo -S killall {numa_server_bin_name} || true", sudo_S_num=1, password=str(server_config["passwd"]))
     else:
-        server_session.execute(f"sudo killall {server_bin_name} || true")
+        server_session.execute(f"sudo -S killall {server_bin_name} || true", sudo_S_num=1, password=str(server_config["passwd"]))
     server_session.close()
     print("done, close server session OK")
 

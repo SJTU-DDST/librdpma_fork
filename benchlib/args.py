@@ -36,5 +36,9 @@ def make_thread_config(numa_type, force_use_numa_node, use_numa_node = 0) -> dic
     return numa_dict
 
 
+def build_sudo_exec_cmd(binary, cmd_dict: dict):
+    return "sudo -S " + binary + " " + " ".join([f"--{k}={v}" for k, v in cmd_dict.items()])
+
+
 def build_exec_cmd(binary, cmd_dict: dict):
-    return "sudo " + binary + " " + " ".join([f"--{k}={v}" for k, v in cmd_dict.items()])
+    return binary + " " + " ".join([f"--{k}={v}" for k, v in cmd_dict.items()])

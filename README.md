@@ -1,6 +1,10 @@
-# LibRDPMA, tools to analysis the performance when accessing NVM with RDMA
+# LibRDPMA-fork
 
-LibRDPMA provides a set of tools  to analyze the behavior when accessing NVM (i.e., Intel Optane DC persistent memory) with RDMA. These including benchmarks for one-sided RDMA and two-sided RDMA and tools to analyze NVM behavior. 
+**tools to analysis the performance when accessing NVM with RDMA**
+
+LibRDPMA provides a set of tools to analyze the behavior when accessing NVM (i.e., Intel Optane DC persistent memory) with RDMA. These including benchmarks for one-sided RDMA and two-sided RDMA and tools to analyze NVM behavior. 
+
+This version is forked from SJTU-IPADS/librdpma, and amended by SJTU-DDST.
 
 ## Getting Started
 
@@ -9,12 +13,13 @@ LibRDPMA provides a set of tools  to analyze the behavior when accessing NVM (i.
 Building the tools of librdpma is straightforward since it will automatically install dependencies. Specifically, using the following steps:
 
 1. clone the project
-   - use `git clone git@github.com:SJTU-DDST/librdpma_fork.git --recursive` to clone submodules
+   - use `git clone git@github.com:SJTU-DDST/librdpma_fork.git --recursive` to clone submodules,
    - or clone normally, and then use `git submodule update --init --recursive`
-2. `mkdir build && cd build && cmake ..`
-   - compile_commands.json will generate in build/
-3. `make -j`
+2. `mkdir build && cd build && cmake .. && make -j`
+   - compile_commands.json will generate in `build/`
 4. `cd ..` to go back
+
+It is worth mentioning that **each machine** (e.g., host, dpu, etc.) you want to test is required to build this.
 
 <!-- 不知道为啥，50 上得 sudo 才能编译，有点怪 -->
 
@@ -23,11 +28,11 @@ Building the tools of librdpma is straightforward since it will automatically in
 Install requirements and run.
 
 ```shell
-python3 -m pip install numpy matplotlib
+python3 -m pip install numpy matplotlib paramiko
 python3 bench_master.py
 ```
 
-2 new config files will be generated when you run this script for the first time. Modify them in `./configs/*.yaml`.
+2 new configuration files will be generated when you run this script **for the first time**. You can modify them in `./configs/*.yaml`.
 
 Within them, `machines.yaml` contains the configures of several machines, while `connections.yaml` contains several testcases of server (single) and clients (multiple) pair; only <server, clients> pairs that are enabled would be test in the script. Note that names of machines/servers/clients must correspond to each other in machines.yaml and connections.yaml.
 
