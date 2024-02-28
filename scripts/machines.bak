@@ -46,8 +46,8 @@ machine-114-dpu:
   socket_count: 1
   available_nic: [1]
 
-machine-144-dpu:
-  ip: "192.168.98.144"
+machine-152-dpu:
+  ip: "192.168.98.152"
   port: 8964
   machine_type: dpu
   user: YOUR_USER_NAME # change this

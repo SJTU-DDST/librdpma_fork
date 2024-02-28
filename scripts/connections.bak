@@ -1,7 +1,7 @@
-- server:
-    localhost
-  clients:
+- clients:
     - localhost
+  server:
+    localhost
   thread:
     [1, 2, 4, 8]
   payload:
@@ -11,42 +11,42 @@
   enable:
     True
 
-- server:
-    machine-74
-  clients:
-    - machine-74
+- clients:
+    - machine-72
+  server:
+    machine-75
   thread:
-    [1, 4, 16, 32, 64]
+    [1, 2, 4, 8, 16, 32, 56]
   payload:
-    [16, 256, 512, 8192]
+    [16, 256, 1024, 4096]
   corotine:
     [1, 2, 4, 8, 16]
   enable:
     False
 
-- server:
-    machine-144_dpu
-  clients:
-    - machine-71
-    - machine-74
+- clients:
+    - machine-72
+    - machine-75
+  server:
+    machine-114-dpu
   thread:
-    [1, 4, 16, 32, 64]
+    [1, 2, 4, 8, 16, 32]
   payload:
-    [16, 256, 512, 8192]
+    [16, 256, 1024, 4096]
   corotine:
     [1, 2, 4, 8, 16]
   enable:
     False
 
-- server:
-    machine-74
-  clients:
-    - machine-71
-    - machine-144_dpu
+- clients:
+    - machine-72
+    - machine-114-dpu
+  server:
+    machine-75
   thread:
     [1, 2, 4, 8]
   payload:
-    [16, 256, 512, 8192]
+    [16, 256, 1024, 4096]
   corotine:
     [1, 2, 4, 8, 16]
   enable:
