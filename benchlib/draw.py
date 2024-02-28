@@ -77,6 +77,7 @@ class Drawer:
         server_clients_name = f"clients_{'_'.join(self.one_testcase_dict['clients'])}_server_{self.one_testcase_dict['server']}"
 
         plt.figure(figsize=(12, 9), dpi=100)
+        colormap = plt.cm.gist_ncar
 
         # same thread, same corotine, different payload
         for y_axis_data in [('throughput', '(reqs/s)'), ('latency', '(μs)'), ('bandwidth', '(B/s)')]:
@@ -84,6 +85,7 @@ class Drawer:
             y_label = y_axis_data[0] + ' ' + y_axis_data[1]
             plt.clf()  # refresh
             pic = plt.axes()
+            pic.set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(self.thread_list) * len(self.corotine_list) + 1))))
             for t in range(len(self.thread_list)):
                 for c in range(len(self.corotine_list)):
                     y = self.one_testcase_dict[y_name][t, :, c]
@@ -112,6 +114,7 @@ class Drawer:
             y_label = y_axis_data[0] + ' ' + y_axis_data[1]
             plt.clf()  # refresh
             pic = plt.axes()
+            pic.set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(self.payload_list) * len(self.corotine_list) + 1))))
             for p in range(len(self.payload_list)):
                 for c in range(len(self.corotine_list)):
                     y = self.one_testcase_dict[y_name][:, p, c]
@@ -140,6 +143,7 @@ class Drawer:
             y_label = y_axis_data[0] + ' ' + y_axis_data[1]
             plt.clf()  # refresh
             pic = plt.axes()
+            pic.set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(self.thread_list) * len(self.payload_list) + 1))))
             for t in range(len(self.thread_list)):
                 for p in range(len(self.payload_list)):
                     y = self.one_testcase_dict[y_name][t, p, :]
