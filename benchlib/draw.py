@@ -73,8 +73,8 @@ class Drawer:
         if "bandwidth" not in self.one_testcase_dict:
             self.count_bandwidth()
 
-        server_clients_title = f"server={self.one_testcase_dict['server']}; clients={', '.join(self.one_testcase_dict['clients'])}"
-        server_clients_name = f"server_{self.one_testcase_dict['server']}_clients_{'_'.join(self.one_testcase_dict['clients'])}"
+        server_clients_title = f"clients={', '.join(self.one_testcase_dict['clients'])}; server={self.one_testcase_dict['server']}"
+        server_clients_name = f"clients_{'_'.join(self.one_testcase_dict['clients'])}_server_{self.one_testcase_dict['server']}"
 
         plt.figure(figsize=(12, 9), dpi=100)
 
