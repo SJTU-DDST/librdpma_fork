@@ -34,6 +34,21 @@ machine-75:
   socket_count: 2
   available_nic: [0, 1]
 
+machine-75-2:
+  ip: "192.168.98.75"
+  port: 8964
+  machine_type: common
+  user: YOUR_USER_NAME # change this
+  passwd: "1111" # change this if need
+  repo_dir: "None" # path/to/librdpma_fork, or "None" which means /home/YOUR_USER_NAME/librdpma_fork
+  numa_type: 1
+  threads_per_socket: 32
+  socket_count: 2
+  available_nic: [0, 1]
+  use_numa_node: 1 # default 0
+  use_nic: 1 # default available_nic[0]
+  # to_server_nic: 1 # default server's use_nic (or available_nic[0] if none). this is dangerous to use, so make sure you know who the server is!
+
 machine-114-dpu:
   ip: "192.168.98.114"
   port: 8964
@@ -44,7 +59,7 @@ machine-114-dpu:
   numa_type: 3
   threads_per_socket: 8
   socket_count: 1
-  available_nic: [1]
+  available_nic: [0, 1]
 
 machine-152-dpu:
   ip: "192.168.98.152"
@@ -56,4 +71,4 @@ machine-152-dpu:
   numa_type: 3
   threads_per_socket: 8
   socket_count: 1
-  available_nic: [1]
+  available_nic: [0, 1]

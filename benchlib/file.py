@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-def load_config(config_file_path: str) -> dict:
+def load_config(config_file_path: str) -> dict | list:
     with open(config_file_path, "r") as config_file:
         config_yaml = yaml.load(config_file, yaml.Loader)
         return config_yaml

@@ -6,7 +6,7 @@ import json
 import time
 import select
 import argparse
-from typing import Dict
+import paramiko
 from pathlib import Path
 
 import benchlib.color as color
@@ -31,8 +31,8 @@ numa_server_bin_name = "nvm_userver"
 
 
 def main_benchmark(args):
-    machine_config = benchfile.load_config(args.machine)
-    connection_config = benchfile.load_config(args.connect)
+    machine_config: dict[str, dict] = benchfile.load_config(args.machine)
+    connection_config: list[dict] = benchfile.load_config(args.connect)
 
     cstp_pairs = []
     for i in connection_config:
@@ -65,15 +65,9 @@ def main_benchmark(args):
                     f"Did you forget to change the user in `{config_dir / machine_config_name}`?"
                 )
 
-        t = -1
         for thread in thread_list:
-            t += 1
-            c = -1
             for corotine in corotine_list:
-                c += 1
-                p = -1
                 for payload in payload_list:
-                    p += 1
                     print(
                         f"{color.PURPLE}run: thread = {thread}, coroutine_count = {corotine}, payload = {payload}{color.RESET}"
                     )
@@ -81,7 +75,7 @@ def main_benchmark(args):
                     server_addr = (
                         f'{machine_config[server]["ip"]}:{machine_config[server]["port"]}'
                     )
-                    server_nic_idx = machine_config[server]["available_nic"][0]
+                    server_nic_idx = machine_config[server].get('use_nic', machine_config[server]["available_nic"][0])
                     server_config = {
                         "host": machine_config[server]["ip"],
                         "port": machine_config[server]["port"],
@@ -92,6 +86,7 @@ def main_benchmark(args):
                     }
 
                     client_configs = []
+                    client_id = 0
                     for name, config in machine_config.items():
                         if name not in clients:
                             continue
@@ -113,18 +108,20 @@ def main_benchmark(args):
                         else:
                             assert False, "wrong bench type"
                         thread_config = benchargs.make_thread_config(
-                            config["numa_type"], True, 0
+                            config["numa_type"], True, config.get("use_numa_node", 0)
                         )
 
                         client_config = {**exp_config, **thread_config}
                         client_config.update(
                             {
-                                "remote_nic_idx": server_nic_idx,
-                                "use_nic_idx": config["available_nic"][0],
+                                "remote_nic_idx": config.get("to_server_nic", server_nic_idx),
+                                "use_nic_idx": config.get("use_nic", config["available_nic"][0]),
                                 "address_space": 1,
                                 "addr": server_addr,
+                                "id": client_id
                             }
                         )
+                        client_id += 1
                         client_configs.append(client_config)
 
                     thpt, lat = run_single_testcase(
@@ -210,16 +207,14 @@ def run_single_testcase(
     # todo: change to wait for server_session to execute, but seems difficult
     w = 3
     print(
-        f"--- will wait [SERVER] for {w} seconds, if it's too short or too long, please change it manually"
+        f"--- will wait [SERVER START] for {w} seconds, if it's too short or too long, please change it manually"
     )
     time.sleep(w)
 
     # (2) init client and print result to stdout/stderr
 
-    client_recv_channels = {}
-    num = 0
-    for client_name, client_args in zip(client_names, clients_args):
-        num += 1
+    client_channelfile_dict: dict[str, paramiko.ChannelFile] = {}
+    for num, (client_name, client_args) in enumerate(zip(client_names, clients_args)):
         client_config = machine_config[client_name]
         client_session_config = benchsession.SessionConfig(
             host=client_config["ip"],
@@ -241,30 +236,23 @@ def run_single_testcase(
         stdout, stderr = client_session.execute_many_non_blocking(
             client_exec_cmd_list, quick_show_out=False, sudo_S_num=1, password=str(client_config["passwd"])
         )
+        stdout.channel.set_combine_stderr(True)
+        client_channelfile_dict[client_name] = stdout
 
         w = 0
         print(
-            f"--- will wait [CLIENT] for {w} seconds, if it's too short or too long, please change it manually"
+            f"--- will wait [CLIENT START] for {w} seconds, if it's too short or too long, please change it manually"
         )
         time.sleep(w)
 
-        # todo: make stderr strip from the stdout
-        # this maybe hard to do in select_client_recv_channels()
-        stdout.channel.set_combine_stderr(True)
-        client_recv_channels[client_name] = stdout
-
     # (3) deal with stdout/stderr and count latency and throughput
 
-    name_buffer_map = select_client_recv_channels(
-        client_recv_channel_map=client_recv_channels
-    )
+    name_buffer_map = receive_buffer_from_channelfile(client_channelfile_dict)
     thpt, lat = aggregate_statics(name_buffer_map)
 
     # (4) close client and server
 
-    num = 0
-    for client_name, client_args in zip(client_names, clients_args):
-        num += 1
+    for num, (client_name, client_args) in enumerate(zip(client_names, clients_args)):
         client_config = machine_config[client_name]
         client_session_config = benchsession.SessionConfig(
             host=client_config["ip"],
@@ -285,19 +273,28 @@ def run_single_testcase(
     return thpt, lat
 
 
-def select_client_recv_channels(client_recv_channel_map: Dict):
-    selected_channel_files = [
-        channel_file for channel_file in client_recv_channel_map.values()
-    ]
-    channel_client_map = {
-        hash(channel_file.channel): {"name": name, "buffer": ""}
-        for name, channel_file in client_recv_channel_map.items()
+def receive_buffer_from_channelfile(channelfile_dict: dict[str, paramiko.ChannelFile]) -> dict[str, str]:
+    """
+    channelfile_dict: dict of `name (str): stdout (channelfile)`
+    return: dict of `name (str): buffer (str)`
+    """
+
+    # channelfile_list: list of all `channelfile (stdout)`
+    channelfile_list = [channelfile for channelfile in channelfile_dict.values()]
+
+    # channel_buffer_map: dict of `hash_stdout_channel: {machine_name, buffer}`
+    channel_buffer_map = {
+        hash(channelfile.channel): {"name": name, "buffer": ""}
+        for name, channelfile in channelfile_dict.items()
     }
 
     # use select to listen to all the client socket file descriptors
-    while len(selected_channel_files) > 0:
-        time.sleep(1)
-        channel_list = [channel_file.channel for channel_file in selected_channel_files]
+    while len(channelfile_list) > 0:
+
+        time.sleep(1)  # mitigate the busy loop
+
+        channel_list = [channelfile.channel for channelfile in channelfile_list]
+
         if any([channel.recv_ready() for channel in channel_list]):
             read_list, _, _ = select.select(channel_list, [], [], 0.0)
             for c in read_list:
@@ -306,19 +303,24 @@ def select_client_recv_channels(client_recv_channel_map: Dict):
                     f"--- will receive up to {length} bytes from stdout, if it's too short or too long, please change it manually"
                 )
                 recved = c.recv(length).decode("utf-8")
-                channel_client_map[hash(c)]["buffer"] += recved
-                print(f"Output (stdout & stderr):\n{recved}")
+                channel_buffer_map[hash(c)]["buffer"] += recved
+                print(f"{channel_buffer_map[hash(c)]['name']} output (stdout & stderr): \n{recved}")
+
         # remove file discriptors that have closed.
-        selected_channel_files = [
-            channel_file for channel_file in selected_channel_files if not channel_file.channel.exit_status_ready()
-        ]
+        new_channelfile_list = []
+        for channelfile in channelfile_list:
+            if channelfile.channel.exit_status_ready():
+                print(channel_buffer_map[hash(channelfile.channel)]["name"], 'receive done')
+                continue
+            new_channelfile_list.append(channelfile)
+        channelfile_list = new_channelfile_list
 
-    return {x["name"]: x["buffer"] for x in channel_client_map.values()}
+    return {x["name"]: x["buffer"] for x in channel_buffer_map.values()}
 
 
-def aggregate_statics(name_buffer_map: Dict[str, str]):
+def aggregate_statics(name_buffer_map: dict[str, str]):
     name_stats_map = {
-        x: parse_buffer_into_statics(y) for (x, y) in name_buffer_map.items()
+        x: parse_buffer_into_statics(y) for x, y in name_buffer_map.items()
     }
 
     thpts = []
