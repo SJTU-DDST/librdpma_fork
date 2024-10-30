@@ -1,0 +1,693 @@
+[[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 2227.997803,
+    "bandwidth": 143626.712561
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 2227.292236,
+    "bandwidth": 287344.421878
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 2226.182129,
+    "bandwidth": 574975.417950
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 2225.373535,
+    "bandwidth": 1150368.672745
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 2235.378906,
+    "bandwidth": 2290439.435428
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 2231.820312,
+    "bandwidth": 4588182.992442
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 2225.925537,
+    "bandwidth": 9200667.164543
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 2236.117432,
+    "bandwidth": 18317463.752316
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 2226.333984,
+    "bandwidth": 36795916.773915
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 2234.186523,
+    "bandwidth": 73333178.891401
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 2248.671875,
+    "bandwidth": 145721571.761109
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 2223.232422,
+    "bandwidth": 294777996.916441
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 2234.162354,
+    "bandwidth": 586671777.875713
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 2232.743408,
+    "bandwidth": 1174089234.960363
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 1180.662842,
+    "bandwidth": 271034.192550
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 1174.208618,
+    "bandwidth": 545047.949827
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 1173.924927,
+    "bandwidth": 1090359.332888
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 1170.279785,
+    "bandwidth": 2187511.082795
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 1171.577026,
+    "bandwidth": 4370177.875437
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 1170.423462,
+    "bandwidth": 8748970.208828
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 1174.009399,
+    "bandwidth": 17444494.064717
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 1174.280762,
+    "bandwidth": 34880925.699616
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 1178.324951,
+    "bandwidth": 69522418.173805
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 1170.192017,
+    "bandwidth": 140011209.848978
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 1172.480957,
+    "bandwidth": 279475754.411989
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 1174.397095,
+    "bandwidth": 558039527.637446
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 1174.497681,
+    "bandwidth": 1115983472.405767
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 1179.852783,
+    "bandwidth": 2221836518.352044
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 622.034790,
+    "bandwidth": 514440.679403
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 621.915161,
+    "bandwidth": 1029079.269967
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 622.762451,
+    "bandwidth": 2055358.343444
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 630.300842,
+    "bandwidth": 4061552.560708
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 620.746948,
+    "bandwidth": 8248127.541341
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 620.442505,
+    "bandwidth": 16504349.588257
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 620.961365,
+    "bandwidth": 32981117.928930
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 622.106262,
+    "bandwidth": 65840841.811634
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 620.533630,
+    "bandwidth": 132015407.369637
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 622.153564,
+    "bandwidth": 263343343.767573
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 622.745972,
+    "bandwidth": 526185659.806313
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 620.049500,
+    "bandwidth": 1056947873.542496
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 620.444092,
+    "bandwidth": 2112551343.996216
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 628.320312,
+    "bandwidth": 4172139508.859186
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 347.752380,
+    "bandwidth": 920194.995239
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 349.966339,
+    "bandwidth": 1828747.306456
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 349.436371,
+    "bandwidth": 3663041.705956
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 350.543823,
+    "bandwidth": 7302938.549373
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 347.538605,
+    "bandwidth": 14732176.311419
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 346.201172,
+    "bandwidth": 29578178.330654
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 347.117554,
+    "bandwidth": 59000185.329304
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 350.027832,
+    "bandwidth": 117019266.046087
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 348.179565,
+    "bandwidth": 235280895.646195
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 347.888275,
+    "bandwidth": 470955797.320310
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 346.924683,
+    "bandwidth": 944527779.136364
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 347.051636,
+    "bandwidth": 1888364532.840998
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 347.343262,
+    "bandwidth": 3773558161.209741
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 352.406189,
+    "bandwidth": 7438688882.565330
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 215.682434,
+    "bandwidth": 1483662.781172
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 216.261978,
+    "bandwidth": 2959373.651700
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 215.806885,
+    "bandwidth": 5931228.752920
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 217.561813,
+    "bandwidth": 11766770.834130
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 217.221619,
+    "bandwidth": 23570397.973115
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 216.571884,
+    "bandwidth": 47282222.435939
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 216.771729,
+    "bandwidth": 94477264.817879
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 218.846207,
+    "bandwidth": 187163399.467519
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 215.780701,
+    "bandwidth": 379644702.888058
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 216.777435,
+    "bandwidth": 755798221.208743
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 217.413757,
+    "bandwidth": 1507172333.677793
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 213.972137,
+    "bandwidth": 3062828683.241771
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 217.414368,
+    "bandwidth": 6028672410.254913
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 219.374939,
+    "bandwidth": 11949587370.233311
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 170.711700,
+    "bandwidth": 1874505.374712
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 170.920944,
+    "bandwidth": 3744421.158821
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 172.823608,
+    "bandwidth": 7406395.525830
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 177.908859,
+    "bandwidth": 14389390.223454
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 177.995056,
+    "bandwidth": 28764843.870820
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 180.865662,
+    "bandwidth": 56616606.536692
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 196.918930,
+    "bandwidth": 104002190.111504
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 172.140030,
+    "bandwidth": 237945816.682355
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 184.754990,
+    "bandwidth": 443398038.487119
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 170.146759,
+    "bandwidth": 962933416.604354
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 173.895950,
+    "bandwidth": 1884345204.140414
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 174.058990,
+    "bandwidth": 3765160295.359130
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 185.336884,
+    "bandwidth": 7072094744.068081
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 185.282104,
+    "bandwidth": 14148371248.182440
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 8,
+    "latency": 214.789734,
+    "bandwidth": 1489829.118969
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16,
+    "latency": 214.923691,
+    "bandwidth": 2977801.086655
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32,
+    "latency": 217.974747,
+    "bandwidth": 5872239.878033
+}
+,
+{
+    "ops": 40000,
+    "file_size": 64,
+    "latency": 211.012390,
+    "bandwidth": 12131989.018945
+}
+,
+{
+    "ops": 40000,
+    "file_size": 128,
+    "latency": 224.814026,
+    "bandwidth": 22774379.756705
+}
+,
+{
+    "ops": 40000,
+    "file_size": 256,
+    "latency": 217.726196,
+    "bandwidth": 47031547.762884
+}
+,
+{
+    "ops": 40000,
+    "file_size": 512,
+    "latency": 211.787842,
+    "bandwidth": 96700546.293126
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1024,
+    "latency": 214.754562,
+    "bandwidth": 190729358.885134
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2048,
+    "latency": 208.842346,
+    "bandwidth": 392257611.992730
+}
+,
+{
+    "ops": 40000,
+    "file_size": 4096,
+    "latency": 228.368851,
+    "bandwidth": 717435847.717628
+}
+,
+{
+    "ops": 40000,
+    "file_size": 8192,
+    "latency": 221.772141,
+    "bandwidth": 1477552587.339848
+}
+,
+{
+    "ops": 40000,
+    "file_size": 16384,
+    "latency": 208.170471,
+    "bandwidth": 3148189059.904740
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 212.817627,
+    "bandwidth": 6158888334.417420
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 237.583130,
+    "bandwidth": 11033780055.397961
+}
+]
+]

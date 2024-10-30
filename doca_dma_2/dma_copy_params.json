@@ -1,0 +1,11 @@
+{
+	"doca_general_flags": {
+		"log-level": 70
+	},
+	"doca_program_flags": {
+		"file size": 4096,
+		"operations": 10000,
+		"pci-addr": "03:00.0",
+		"rep-pci": "ca:00.0"
+	}
+}

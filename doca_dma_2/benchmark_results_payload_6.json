@@ -1,0 +1,3205 @@
+[[{
+    "ops": 2500,
+    "file_size": 2097152,
+    "latency": 272.077850,
+    "bandwidth": 19269778827.690861,
+    "setup_lt": 0.171301,
+    "task_lt": 2267.557567,
+    "cleanup_lt": 0.542103
+}
+,
+{
+    "ops": 2500,
+    "file_size": 2064384,
+    "latency": 269.584534,
+    "bandwidth": 19144124958.992481,
+    "setup_lt": 0.177758,
+    "task_lt": 2227.144106,
+    "cleanup_lt": 0.540270
+}
+,
+{
+    "ops": 2500,
+    "file_size": 2031616,
+    "latency": 267.913147,
+    "bandwidth": 18957785601.011871,
+    "setup_lt": 0.176786,
+    "task_lt": 2170.429406,
+    "cleanup_lt": 0.566738
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1998848,
+    "latency": 264.651703,
+    "bandwidth": 18881873593.118721,
+    "setup_lt": 0.141319,
+    "task_lt": 2165.177133,
+    "cleanup_lt": 0.557640
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1966080,
+    "latency": 261.031494,
+    "bandwidth": 18829911755.215420,
+    "setup_lt": 0.143578,
+    "task_lt": 2131.145783,
+    "cleanup_lt": 0.568730
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1933312,
+    "latency": 259.382812,
+    "bandwidth": 18633771271.949642,
+    "setup_lt": 0.175164,
+    "task_lt": 2084.649351,
+    "cleanup_lt": 0.587503
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1900544,
+    "latency": 254.938766,
+    "bandwidth": 18637259705.978100,
+    "setup_lt": 0.164389,
+    "task_lt": 2036.589775,
+    "cleanup_lt": 0.496856
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1867776,
+    "latency": 253.135040,
+    "bandwidth": 18446438686.544189,
+    "setup_lt": 0.152027,
+    "task_lt": 2013.060365,
+    "cleanup_lt": 0.553876
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1835008,
+    "latency": 252.487549,
+    "bandwidth": 18169291995.950451,
+    "setup_lt": 0.145089,
+    "task_lt": 1983.127379,
+    "cleanup_lt": 0.547227
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1802240,
+    "latency": 245.970459,
+    "bandwidth": 18317646836.957008,
+    "setup_lt": 0.206919,
+    "task_lt": 1918.763040,
+    "cleanup_lt": 0.583389
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1769472,
+    "latency": 245.538986,
+    "bandwidth": 18016202104.409103,
+    "setup_lt": 0.179635,
+    "task_lt": 1905.908454,
+    "cleanup_lt": 0.552214
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1736704,
+    "latency": 242.287125,
+    "bandwidth": 17919895688.070351,
+    "setup_lt": 0.153282,
+    "task_lt": 1872.284774,
+    "cleanup_lt": 0.547437
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1703936,
+    "latency": 240.813904,
+    "bandwidth": 17689344064.559704,
+    "setup_lt": 0.148017,
+    "task_lt": 1850.017904,
+    "cleanup_lt": 0.581159
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1671168,
+    "latency": 234.296478,
+    "bandwidth": 17831766106.014423,
+    "setup_lt": 0.145403,
+    "task_lt": 1787.913139,
+    "cleanup_lt": 0.589381
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1638400,
+    "latency": 235.477341,
+    "bandwidth": 17394454973.266041,
+    "setup_lt": 0.224570,
+    "task_lt": 1773.180658,
+    "cleanup_lt": 0.607560
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1605632,
+    "latency": 230.936279,
+    "bandwidth": 17381764408.007065,
+    "setup_lt": 0.166315,
+    "task_lt": 1729.550562,
+    "cleanup_lt": 0.596353
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1572864,
+    "latency": 227.003754,
+    "bandwidth": 17322004312.990097,
+    "setup_lt": 0.171564,
+    "task_lt": 1683.572231,
+    "cleanup_lt": 0.502451
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1540096,
+    "latency": 225.885071,
+    "bandwidth": 17045128243.095398,
+    "setup_lt": 0.146688,
+    "task_lt": 1654.781751,
+    "cleanup_lt": 0.566258
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1507328,
+    "latency": 220.767441,
+    "bandwidth": 17069183691.284653,
+    "setup_lt": 0.178509,
+    "task_lt": 1606.421875,
+    "cleanup_lt": 0.525445
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1474560,
+    "latency": 218.674881,
+    "bandwidth": 16857903310.407166,
+    "setup_lt": 0.161760,
+    "task_lt": 1591.541579,
+    "cleanup_lt": 0.568824
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1441792,
+    "latency": 216.207108,
+    "bandwidth": 16671422327.165489,
+    "setup_lt": 0.188391,
+    "task_lt": 1548.248657,
+    "cleanup_lt": 0.523055
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1409024,
+    "latency": 203.537827,
+    "bandwidth": 17306660191.445347,
+    "setup_lt": 0.194849,
+    "task_lt": 1531.082563,
+    "cleanup_lt": 0.565034
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1376256,
+    "latency": 199.645004,
+    "bandwidth": 17233789608.401447,
+    "setup_lt": 0.157461,
+    "task_lt": 1470.080066,
+    "cleanup_lt": 0.557185
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1343488,
+    "latency": 197.279419,
+    "bandwidth": 17025192075.059109,
+    "setup_lt": 0.188018,
+    "task_lt": 1450.220803,
+    "cleanup_lt": 0.543236
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1310720,
+    "latency": 194.434509,
+    "bandwidth": 16852975390.937071,
+    "setup_lt": 0.194201,
+    "task_lt": 1406.904397,
+    "cleanup_lt": 0.595364
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1277952,
+    "latency": 194.590393,
+    "bandwidth": 16418487827.966459,
+    "setup_lt": 0.167711,
+    "task_lt": 1375.805032,
+    "cleanup_lt": 0.556129
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1245184,
+    "latency": 193.512650,
+    "bandwidth": 16086596961.294491,
+    "setup_lt": 0.186235,
+    "task_lt": 1280.708521,
+    "cleanup_lt": 0.582611
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1212416,
+    "latency": 186.552277,
+    "bandwidth": 16247670921.298981,
+    "setup_lt": 0.201112,
+    "task_lt": 1297.758357,
+    "cleanup_lt": 0.581798
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1179648,
+    "latency": 183.370743,
+    "bandwidth": 16082827363.856613,
+    "setup_lt": 0.169202,
+    "task_lt": 1256.539347,
+    "cleanup_lt": 0.574014
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1146880,
+    "latency": 180.631958,
+    "bandwidth": 15873160162.920843,
+    "setup_lt": 0.184399,
+    "task_lt": 1220.479364,
+    "cleanup_lt": 0.580633
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1114112,
+    "latency": 177.305237,
+    "bandwidth": 15708955076.629044,
+    "setup_lt": 0.216177,
+    "task_lt": 1191.883952,
+    "cleanup_lt": 0.532270
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1081344,
+    "latency": 175.044800,
+    "bandwidth": 15443817828.443750,
+    "setup_lt": 0.204869,
+    "task_lt": 1133.993274,
+    "cleanup_lt": 0.589425
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1048576,
+    "latency": 172.295822,
+    "bandwidth": 15214762420.738499,
+    "setup_lt": 0.177884,
+    "task_lt": 1121.055035,
+    "cleanup_lt": 0.573866
+}
+,
+{
+    "ops": 2500,
+    "file_size": 1015808,
+    "latency": 169.499817,
+    "bandwidth": 14982435064.104988,
+    "setup_lt": 0.173618,
+    "task_lt": 1077.511872,
+    "cleanup_lt": 0.497416
+}
+,
+{
+    "ops": 2500,
+    "file_size": 983040,
+    "latency": 166.979034,
+    "bandwidth": 14718015399.239231,
+    "setup_lt": 0.208555,
+    "task_lt": 1044.313611,
+    "cleanup_lt": 0.524575
+}
+,
+{
+    "ops": 2500,
+    "file_size": 950272,
+    "latency": 163.681076,
+    "bandwidth": 14514078580.941946,
+    "setup_lt": 0.201012,
+    "task_lt": 1012.574238,
+    "cleanup_lt": 0.628882
+}
+,
+{
+    "ops": 2500,
+    "file_size": 917504,
+    "latency": 160.537582,
+    "bandwidth": 14287993912.360538,
+    "setup_lt": 0.216888,
+    "task_lt": 978.300484,
+    "cleanup_lt": 0.584198
+}
+,
+{
+    "ops": 2500,
+    "file_size": 884736,
+    "latency": 159.044418,
+    "bandwidth": 13907058312.110512,
+    "setup_lt": 0.231714,
+    "task_lt": 936.119203,
+    "cleanup_lt": 0.608354
+}
+,
+{
+    "ops": 2500,
+    "file_size": 851968,
+    "latency": 155.060974,
+    "bandwidth": 13736015861.325974,
+    "setup_lt": 0.207212,
+    "task_lt": 899.355284,
+    "cleanup_lt": 0.584015
+}
+,
+{
+    "ops": 2500,
+    "file_size": 819200,
+    "latency": 151.292725,
+    "bandwidth": 13536672072.551821,
+    "setup_lt": 0.200081,
+    "task_lt": 860.028560,
+    "cleanup_lt": 0.550194
+}
+,
+{
+    "ops": 2500,
+    "file_size": 786432,
+    "latency": 157.221298,
+    "bandwidth": 12505175967.168930,
+    "setup_lt": 0.218107,
+    "task_lt": 828.956258,
+    "cleanup_lt": 0.576325
+}
+,
+{
+    "ops": 2500,
+    "file_size": 753664,
+    "latency": 146.606262,
+    "bandwidth": 12851838466.076351,
+    "setup_lt": 0.229988,
+    "task_lt": 779.969587,
+    "cleanup_lt": 0.597256
+}
+,
+{
+    "ops": 2500,
+    "file_size": 720896,
+    "latency": 143.788544,
+    "bandwidth": 12533961006.973545,
+    "setup_lt": 0.225834,
+    "task_lt": 762.430098,
+    "cleanup_lt": 0.581759
+}
+,
+{
+    "ops": 2500,
+    "file_size": 688128,
+    "latency": 140.328217,
+    "bandwidth": 12259259343.993128,
+    "setup_lt": 0.264016,
+    "task_lt": 711.735818,
+    "cleanup_lt": 0.632339
+}
+,
+{
+    "ops": 2500,
+    "file_size": 655360,
+    "latency": 139.187424,
+    "bandwidth": 11771178432.471621,
+    "setup_lt": 0.181388,
+    "task_lt": 689.360766,
+    "cleanup_lt": 0.520025
+}
+,
+{
+    "ops": 2500,
+    "file_size": 622592,
+    "latency": 136.004700,
+    "bandwidth": 11444310405.102364,
+    "setup_lt": 0.231485,
+    "task_lt": 642.597601,
+    "cleanup_lt": 0.597348
+}
+,
+{
+    "ops": 2500,
+    "file_size": 589824,
+    "latency": 132.203629,
+    "bandwidth": 11153702937.536364,
+    "setup_lt": 0.225857,
+    "task_lt": 612.359306,
+    "cleanup_lt": 0.579405
+}
+,
+{
+    "ops": 2500,
+    "file_size": 557056,
+    "latency": 130.840546,
+    "bandwidth": 10643795415.525042,
+    "setup_lt": 0.235130,
+    "task_lt": 575.505431,
+    "cleanup_lt": 0.574141
+}
+,
+{
+    "ops": 2500,
+    "file_size": 524288,
+    "latency": 127.390114,
+    "bandwidth": 10289024482.255400,
+    "setup_lt": 0.267339,
+    "task_lt": 535.345108,
+    "cleanup_lt": 0.586353
+}
+,
+{
+    "ops": 2500,
+    "file_size": 491520,
+    "latency": 123.406548,
+    "bandwidth": 9957332284.481194,
+    "setup_lt": 0.276674,
+    "task_lt": 510.253914,
+    "cleanup_lt": 0.632493
+}
+,
+{
+    "ops": 2500,
+    "file_size": 458752,
+    "latency": 121.831184,
+    "bandwidth": 9413681774.240625,
+    "setup_lt": 0.251839,
+    "task_lt": 482.140652,
+    "cleanup_lt": 0.551366
+}
+,
+{
+    "ops": 2500,
+    "file_size": 425984,
+    "latency": 119.853134,
+    "bandwidth": 8885541521.344877,
+    "setup_lt": 0.278956,
+    "task_lt": 430.545716,
+    "cleanup_lt": 0.609308
+}
+,
+{
+    "ops": 2500,
+    "file_size": 393216,
+    "latency": 117.037254,
+    "bandwidth": 8399376810.385868,
+    "setup_lt": 0.334687,
+    "task_lt": 399.735154,
+    "cleanup_lt": 0.657481
+}
+,
+{
+    "ops": 2500,
+    "file_size": 360448,
+    "latency": 112.050507,
+    "bandwidth": 8042087692.497503,
+    "setup_lt": 0.312960,
+    "task_lt": 357.941182,
+    "cleanup_lt": 0.638222
+}
+,
+{
+    "ops": 2500,
+    "file_size": 327680,
+    "latency": 108.956551,
+    "bandwidth": 7518593379.680198,
+    "setup_lt": 0.390307,
+    "task_lt": 330.905782,
+    "cleanup_lt": 0.674635
+}
+,
+{
+    "ops": 2500,
+    "file_size": 294912,
+    "latency": 106.909058,
+    "bandwidth": 6896328678.155603,
+    "setup_lt": 0.358707,
+    "task_lt": 297.013511,
+    "cleanup_lt": 0.669634
+}
+,
+{
+    "ops": 2500,
+    "file_size": 262144,
+    "latency": 112.016930,
+    "bandwidth": 5850544218.497899,
+    "setup_lt": 0.372250,
+    "task_lt": 255.357200,
+    "cleanup_lt": 0.658442
+}
+,
+{
+    "ops": 2500,
+    "file_size": 229376,
+    "latency": 101.557076,
+    "bandwidth": 5646480042.616459,
+    "setup_lt": 0.440240,
+    "task_lt": 212.995852,
+    "cleanup_lt": 0.720810
+}
+,
+{
+    "ops": 2500,
+    "file_size": 196608,
+    "latency": 99.062981,
+    "bandwidth": 4961692014.168097,
+    "setup_lt": 0.471640,
+    "task_lt": 184.065446,
+    "cleanup_lt": 0.761389
+}
+,
+{
+    "ops": 2500,
+    "file_size": 163840,
+    "latency": 96.235718,
+    "bandwidth": 4256215981.724155,
+    "setup_lt": 0.491972,
+    "task_lt": 153.595722,
+    "cleanup_lt": 0.746243
+}
+,
+{
+    "ops": 2500,
+    "file_size": 131072,
+    "latency": 92.092529,
+    "bandwidth": 3558160499.031046,
+    "setup_lt": 0.643577,
+    "task_lt": 115.866110,
+    "cleanup_lt": 0.945629
+}
+,
+{
+    "ops": 2500,
+    "file_size": 98304,
+    "latency": 92.316528,
+    "bandwidth": 2662145170.226524,
+    "setup_lt": 0.894890,
+    "task_lt": 91.802728,
+    "cleanup_lt": 1.148250
+}
+,
+{
+    "ops": 2500,
+    "file_size": 65536,
+    "latency": 88.546112,
+    "bandwidth": 1850335335.875255,
+    "setup_lt": 1.470190,
+    "task_lt": 57.781546,
+    "cleanup_lt": 1.727200
+}
+,
+{
+    "ops": 2500,
+    "file_size": 32768,
+    "latency": 86.849518,
+    "bandwidth": 943240700.168840,
+    "setup_lt": 3.585135,
+    "task_lt": 46.098195,
+    "cleanup_lt": 4.719455
+}
+]
+,
+[{
+    "ops": 5000,
+    "file_size": 2097152,
+    "latency": 443.727936,
+    "bandwidth": 23631056677.347721,
+    "setup_lt": 0.134513,
+    "task_lt": 2295.282233,
+    "cleanup_lt": 0.494838
+}
+,
+{
+    "ops": 5000,
+    "file_size": 2064384,
+    "latency": 435.637909,
+    "bandwidth": 23693805769.155735,
+    "setup_lt": 0.141444,
+    "task_lt": 2253.190930,
+    "cleanup_lt": 0.556128
+}
+,
+{
+    "ops": 5000,
+    "file_size": 2031616,
+    "latency": 430.763794,
+    "bandwidth": 23581554770.338047,
+    "setup_lt": 0.159382,
+    "task_lt": 2220.194680,
+    "cleanup_lt": 0.517405
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1998848,
+    "latency": 424.598145,
+    "bandwidth": 23538115106.540306,
+    "setup_lt": 0.143006,
+    "task_lt": 2181.575133,
+    "cleanup_lt": 0.520947
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1966080,
+    "latency": 420.898865,
+    "bandwidth": 23355729424.288578,
+    "setup_lt": 0.202454,
+    "task_lt": 2151.885392,
+    "cleanup_lt": 0.574156
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1933312,
+    "latency": 413.487610,
+    "bandwidth": 23378112836.793892,
+    "setup_lt": 0.174569,
+    "task_lt": 2101.427040,
+    "cleanup_lt": 0.509137
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1900544,
+    "latency": 411.207489,
+    "bandwidth": 23109306746.317677,
+    "setup_lt": 0.152134,
+    "task_lt": 2069.636944,
+    "cleanup_lt": 0.499387
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1867776,
+    "latency": 402.459045,
+    "bandwidth": 23204547410.488708,
+    "setup_lt": 0.163118,
+    "task_lt": 2039.312919,
+    "cleanup_lt": 0.579141
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1835008,
+    "latency": 396.385071,
+    "bandwidth": 23146784972.159744,
+    "setup_lt": 0.157248,
+    "task_lt": 1997.364633,
+    "cleanup_lt": 0.580418
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1802240,
+    "latency": 391.478149,
+    "bandwidth": 23018398379.289730,
+    "setup_lt": 0.155209,
+    "task_lt": 1970.296330,
+    "cleanup_lt": 0.561714
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1769472,
+    "latency": 385.375427,
+    "bandwidth": 22957768904.010159,
+    "setup_lt": 0.154861,
+    "task_lt": 1937.787441,
+    "cleanup_lt": 0.560812
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1736704,
+    "latency": 380.438232,
+    "bandwidth": 22825045592.080990,
+    "setup_lt": 0.173868,
+    "task_lt": 1890.852264,
+    "cleanup_lt": 0.575101
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1703936,
+    "latency": 373.843933,
+    "bandwidth": 22789402864.527508,
+    "setup_lt": 0.152586,
+    "task_lt": 1858.000926,
+    "cleanup_lt": 0.505913
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1671168,
+    "latency": 369.139679,
+    "bandwidth": 22635984361.401718,
+    "setup_lt": 0.152481,
+    "task_lt": 1822.757362,
+    "cleanup_lt": 0.530193
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1638400,
+    "latency": 363.329163,
+    "bandwidth": 22547047810.394630,
+    "setup_lt": 0.173486,
+    "task_lt": 1792.635279,
+    "cleanup_lt": 0.554473
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1605632,
+    "latency": 357.510681,
+    "bandwidth": 22455720690.982689,
+    "setup_lt": 0.160209,
+    "task_lt": 1752.313201,
+    "cleanup_lt": 0.565420
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1572864,
+    "latency": 352.263428,
+    "bandwidth": 22325110643.986885,
+    "setup_lt": 0.157995,
+    "task_lt": 1712.858686,
+    "cleanup_lt": 0.555630
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1540096,
+    "latency": 346.951477,
+    "bandwidth": 22194688621.754810,
+    "setup_lt": 0.167225,
+    "task_lt": 1670.359647,
+    "cleanup_lt": 0.595398
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1507328,
+    "latency": 342.247620,
+    "bandwidth": 22021015100.621773,
+    "setup_lt": 0.160021,
+    "task_lt": 1644.736807,
+    "cleanup_lt": 0.604233
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1474560,
+    "latency": 335.041138,
+    "bandwidth": 22005655934.420952,
+    "setup_lt": 0.161169,
+    "task_lt": 1597.698756,
+    "cleanup_lt": 0.575081
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1441792,
+    "latency": 329.689301,
+    "bandwidth": 21865920393.096195,
+    "setup_lt": 0.173470,
+    "task_lt": 1564.820118,
+    "cleanup_lt": 0.571251
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1409024,
+    "latency": 323.690887,
+    "bandwidth": 21764962416.690651,
+    "setup_lt": 0.232350,
+    "task_lt": 1528.623817,
+    "cleanup_lt": 0.687187
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1376256,
+    "latency": 317.176331,
+    "bandwidth": 21695439844.806728,
+    "setup_lt": 0.175901,
+    "task_lt": 1494.690743,
+    "cleanup_lt": 0.618954
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1343488,
+    "latency": 314.555847,
+    "bandwidth": 21355317538.932838,
+    "setup_lt": 0.163156,
+    "task_lt": 1460.003718,
+    "cleanup_lt": 0.556291
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1310720,
+    "latency": 305.590454,
+    "bandwidth": 21445696068.182552,
+    "setup_lt": 0.170917,
+    "task_lt": 1428.178511,
+    "cleanup_lt": 0.559232
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1277952,
+    "latency": 302.753357,
+    "bandwidth": 21105496780.343006,
+    "setup_lt": 0.227788,
+    "task_lt": 1383.438095,
+    "cleanup_lt": 0.771347
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1245184,
+    "latency": 297.420746,
+    "bandwidth": 20933038756.980770,
+    "setup_lt": 0.155205,
+    "task_lt": 1356.438417,
+    "cleanup_lt": 0.564561
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1212416,
+    "latency": 291.773621,
+    "bandwidth": 20776655502.373325,
+    "setup_lt": 0.180101,
+    "task_lt": 1312.164460,
+    "cleanup_lt": 0.557269
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1179648,
+    "latency": 285.540649,
+    "bandwidth": 20656393449.070580,
+    "setup_lt": 0.171867,
+    "task_lt": 1279.175177,
+    "cleanup_lt": 0.559254
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1146880,
+    "latency": 278.404480,
+    "bandwidth": 20597369698.944115,
+    "setup_lt": 0.149165,
+    "task_lt": 1244.937666,
+    "cleanup_lt": 0.481706
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1114112,
+    "latency": 275.549438,
+    "bandwidth": 20216190716.258045,
+    "setup_lt": 0.162804,
+    "task_lt": 1212.165549,
+    "cleanup_lt": 0.505461
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1081344,
+    "latency": 270.952393,
+    "bandwidth": 19954501780.016777,
+    "setup_lt": 0.219199,
+    "task_lt": 1176.858721,
+    "cleanup_lt": 0.621403
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1048576,
+    "latency": 261.841888,
+    "bandwidth": 20023075877.895603,
+    "setup_lt": 0.181884,
+    "task_lt": 1129.674176,
+    "cleanup_lt": 0.604148
+}
+,
+{
+    "ops": 5000,
+    "file_size": 1015808,
+    "latency": 256.289917,
+    "bandwidth": 19817556849.709480,
+    "setup_lt": 0.193923,
+    "task_lt": 1102.080767,
+    "cleanup_lt": 0.573367
+}
+,
+{
+    "ops": 5000,
+    "file_size": 983040,
+    "latency": 251.468811,
+    "bandwidth": 19545962697.190456,
+    "setup_lt": 0.230565,
+    "task_lt": 1065.551883,
+    "cleanup_lt": 0.583427
+}
+,
+{
+    "ops": 5000,
+    "file_size": 950272,
+    "latency": 243.093536,
+    "bandwidth": 19545398330.263710,
+    "setup_lt": 0.199630,
+    "task_lt": 1019.209297,
+    "cleanup_lt": 0.540288
+}
+,
+{
+    "ops": 5000,
+    "file_size": 917504,
+    "latency": 237.749924,
+    "bandwidth": 19295568757.665897,
+    "setup_lt": 0.219631,
+    "task_lt": 983.709454,
+    "cleanup_lt": 0.590268
+}
+,
+{
+    "ops": 5000,
+    "file_size": 884736,
+    "latency": 236.155411,
+    "bandwidth": 18732071332.348324,
+    "setup_lt": 0.175054,
+    "task_lt": 953.120612,
+    "cleanup_lt": 0.578161
+}
+,
+{
+    "ops": 5000,
+    "file_size": 851968,
+    "latency": 226.688995,
+    "bandwidth": 18791560627.855270,
+    "setup_lt": 0.192972,
+    "task_lt": 918.212997,
+    "cleanup_lt": 0.608942
+}
+,
+{
+    "ops": 5000,
+    "file_size": 819200,
+    "latency": 223.779968,
+    "bandwidth": 18303693721.189468,
+    "setup_lt": 0.208951,
+    "task_lt": 886.213416,
+    "cleanup_lt": 0.600470
+}
+,
+{
+    "ops": 5000,
+    "file_size": 786432,
+    "latency": 215.354645,
+    "bandwidth": 18258997868.846256,
+    "setup_lt": 0.208991,
+    "task_lt": 842.757115,
+    "cleanup_lt": 0.572315
+}
+,
+{
+    "ops": 5000,
+    "file_size": 753664,
+    "latency": 212.881424,
+    "bandwidth": 17701497528.885456,
+    "setup_lt": 0.173572,
+    "task_lt": 804.720727,
+    "cleanup_lt": 0.515069
+}
+,
+{
+    "ops": 5000,
+    "file_size": 720896,
+    "latency": 204.477295,
+    "bandwidth": 17627776234.897717,
+    "setup_lt": 0.213996,
+    "task_lt": 767.490377,
+    "cleanup_lt": 0.594812
+}
+,
+{
+    "ops": 5000,
+    "file_size": 688128,
+    "latency": 200.011734,
+    "bandwidth": 17202190746.712933,
+    "setup_lt": 0.216803,
+    "task_lt": 740.554617,
+    "cleanup_lt": 0.579708
+}
+,
+{
+    "ops": 5000,
+    "file_size": 655360,
+    "latency": 193.414062,
+    "bandwidth": 16941891182.291876,
+    "setup_lt": 0.225466,
+    "task_lt": 700.250856,
+    "cleanup_lt": 0.629636
+}
+,
+{
+    "ops": 5000,
+    "file_size": 622592,
+    "latency": 190.087921,
+    "bandwidth": 16376421927.751423,
+    "setup_lt": 0.205197,
+    "task_lt": 665.985142,
+    "cleanup_lt": 0.541377
+}
+,
+{
+    "ops": 5000,
+    "file_size": 589824,
+    "latency": 183.628418,
+    "bandwidth": 16060259259.554712,
+    "setup_lt": 0.340386,
+    "task_lt": 633.827629,
+    "cleanup_lt": 0.681573
+}
+,
+{
+    "ops": 5000,
+    "file_size": 557056,
+    "latency": 177.147644,
+    "bandwidth": 15722929960.752995,
+    "setup_lt": 0.253498,
+    "task_lt": 584.740727,
+    "cleanup_lt": 0.584209
+}
+,
+{
+    "ops": 5000,
+    "file_size": 524288,
+    "latency": 171.312500,
+    "bandwidth": 15302094126.231302,
+    "setup_lt": 0.245860,
+    "task_lt": 557.824579,
+    "cleanup_lt": 0.589588
+}
+,
+{
+    "ops": 5000,
+    "file_size": 491520,
+    "latency": 167.231491,
+    "bandwidth": 14695796730.617117,
+    "setup_lt": 0.238628,
+    "task_lt": 524.961349,
+    "cleanup_lt": 0.562901
+}
+,
+{
+    "ops": 5000,
+    "file_size": 458752,
+    "latency": 160.892090,
+    "bandwidth": 14256511940.565754,
+    "setup_lt": 0.281953,
+    "task_lt": 486.634304,
+    "cleanup_lt": 0.646028
+}
+,
+{
+    "ops": 5000,
+    "file_size": 425984,
+    "latency": 153.927551,
+    "bandwidth": 13837158990.923288,
+    "setup_lt": 0.315288,
+    "task_lt": 450.182833,
+    "cleanup_lt": 0.590302
+}
+,
+{
+    "ops": 5000,
+    "file_size": 393216,
+    "latency": 149.673309,
+    "bandwidth": 13135808975.235981,
+    "setup_lt": 0.301104,
+    "task_lt": 411.098969,
+    "cleanup_lt": 0.622372
+}
+,
+{
+    "ops": 5000,
+    "file_size": 360448,
+    "latency": 144.876663,
+    "bandwidth": 12439822674.632006,
+    "setup_lt": 0.301402,
+    "task_lt": 381.571423,
+    "cleanup_lt": 0.649959
+}
+,
+{
+    "ops": 5000,
+    "file_size": 327680,
+    "latency": 136.639252,
+    "bandwidth": 11990697983.983990,
+    "setup_lt": 0.326567,
+    "task_lt": 341.796214,
+    "cleanup_lt": 0.609286
+}
+,
+{
+    "ops": 5000,
+    "file_size": 294912,
+    "latency": 132.296814,
+    "bandwidth": 11145846644.438816,
+    "setup_lt": 0.411551,
+    "task_lt": 304.653688,
+    "cleanup_lt": 0.703948
+}
+,
+{
+    "ops": 5000,
+    "file_size": 262144,
+    "latency": 128.071259,
+    "bandwidth": 10234302488.253099,
+    "setup_lt": 0.340442,
+    "task_lt": 269.294278,
+    "cleanup_lt": 0.608601
+}
+,
+{
+    "ops": 5000,
+    "file_size": 229376,
+    "latency": 122.249031,
+    "bandwidth": 9381505849.092813,
+    "setup_lt": 0.384704,
+    "task_lt": 235.672154,
+    "cleanup_lt": 0.711303
+}
+,
+{
+    "ops": 5000,
+    "file_size": 196608,
+    "latency": 116.165611,
+    "bandwidth": 8462401129.537197,
+    "setup_lt": 0.512716,
+    "task_lt": 198.964799,
+    "cleanup_lt": 0.833205
+}
+,
+{
+    "ops": 5000,
+    "file_size": 163840,
+    "latency": 107.423393,
+    "bandwidth": 7625899491.903487,
+    "setup_lt": 0.496408,
+    "task_lt": 162.001106,
+    "cleanup_lt": 0.771733
+}
+,
+{
+    "ops": 5000,
+    "file_size": 131072,
+    "latency": 106.913567,
+    "bandwidth": 6129811406.602621,
+    "setup_lt": 0.656871,
+    "task_lt": 128.546375,
+    "cleanup_lt": 1.002518
+}
+,
+{
+    "ops": 5000,
+    "file_size": 98304,
+    "latency": 99.464478,
+    "bandwidth": 4941663719.160101,
+    "setup_lt": 0.861050,
+    "task_lt": 97.428436,
+    "cleanup_lt": 1.184750
+}
+,
+{
+    "ops": 5000,
+    "file_size": 65536,
+    "latency": 95.517471,
+    "bandwidth": 3430576579.279352,
+    "setup_lt": 1.635939,
+    "task_lt": 61.134466,
+    "cleanup_lt": 2.482670
+}
+,
+{
+    "ops": 5000,
+    "file_size": 32768,
+    "latency": 92.864189,
+    "bandwidth": 1764296888.857487,
+    "setup_lt": 4.404759,
+    "task_lt": 46.285279,
+    "cleanup_lt": 5.775361
+}
+]
+,
+[{
+    "ops": 10000,
+    "file_size": 2097152,
+    "latency": 804.260315,
+    "bandwidth": 26075537497.492790,
+    "setup_lt": 0.146815,
+    "task_lt": 2303.410025,
+    "cleanup_lt": 0.505569
+}
+,
+{
+    "ops": 10000,
+    "file_size": 2064384,
+    "latency": 792.586182,
+    "bandwidth": 26046177031.837711,
+    "setup_lt": 0.175722,
+    "task_lt": 2264.594232,
+    "cleanup_lt": 0.559400
+}
+,
+{
+    "ops": 10000,
+    "file_size": 2031616,
+    "latency": 780.637451,
+    "bandwidth": 26025090097.204338,
+    "setup_lt": 0.142845,
+    "task_lt": 2230.088748,
+    "cleanup_lt": 0.571278
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1998848,
+    "latency": 768.756958,
+    "bandwidth": 26001039459.595848,
+    "setup_lt": 0.167482,
+    "task_lt": 2188.320319,
+    "cleanup_lt": 0.575136
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1966080,
+    "latency": 760.437073,
+    "bandwidth": 25854604811.413048,
+    "setup_lt": 0.172576,
+    "task_lt": 2158.485089,
+    "cleanup_lt": 0.509192
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1933312,
+    "latency": 790.815796,
+    "bandwidth": 24447058468.319851,
+    "setup_lt": 0.152988,
+    "task_lt": 2119.414901,
+    "cleanup_lt": 0.511836
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1900544,
+    "latency": 746.350342,
+    "bandwidth": 25464502306.307613,
+    "setup_lt": 0.138922,
+    "task_lt": 2082.479805,
+    "cleanup_lt": 0.565909
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1867776,
+    "latency": 736.962708,
+    "bandwidth": 25344240365.792183,
+    "setup_lt": 0.139659,
+    "task_lt": 2049.241674,
+    "cleanup_lt": 0.549099
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1835008,
+    "latency": 724.721802,
+    "bandwidth": 25320171071.840099,
+    "setup_lt": 0.181497,
+    "task_lt": 2014.129620,
+    "cleanup_lt": 0.580709
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1802240,
+    "latency": 714.042725,
+    "bandwidth": 25239946264.923229,
+    "setup_lt": 0.165449,
+    "task_lt": 1974.797526,
+    "cleanup_lt": 0.576973
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1769472,
+    "latency": 702.028198,
+    "bandwidth": 25205141395.040703,
+    "setup_lt": 0.149830,
+    "task_lt": 1935.034261,
+    "cleanup_lt": 0.591859
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1736704,
+    "latency": 690.877563,
+    "bandwidth": 25137652339.739304,
+    "setup_lt": 0.147487,
+    "task_lt": 1904.234951,
+    "cleanup_lt": 0.555002
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1703936,
+    "latency": 679.511353,
+    "bandwidth": 25075901876.150734,
+    "setup_lt": 0.129795,
+    "task_lt": 1865.669521,
+    "cleanup_lt": 0.549556
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1671168,
+    "latency": 667.621338,
+    "bandwidth": 25031674471.042507,
+    "setup_lt": 0.182329,
+    "task_lt": 1831.667343,
+    "cleanup_lt": 0.562740
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1638400,
+    "latency": 657.531372,
+    "bandwidth": 24917442263.497036,
+    "setup_lt": 0.153608,
+    "task_lt": 1796.485583,
+    "cleanup_lt": 0.570920
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1605632,
+    "latency": 646.212585,
+    "bandwidth": 24846807941.442902,
+    "setup_lt": 0.144276,
+    "task_lt": 1759.399164,
+    "cleanup_lt": 0.563301
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1572864,
+    "latency": 636.047852,
+    "bandwidth": 24728705491.829582,
+    "setup_lt": 0.145858,
+    "task_lt": 1720.264351,
+    "cleanup_lt": 0.538892
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1540096,
+    "latency": 621.766357,
+    "bandwidth": 24769690119.387222,
+    "setup_lt": 0.196405,
+    "task_lt": 1687.613216,
+    "cleanup_lt": 0.613139
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1507328,
+    "latency": 611.022583,
+    "bandwidth": 24668940918.354362,
+    "setup_lt": 0.171275,
+    "task_lt": 1650.205125,
+    "cleanup_lt": 0.551870
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1474560,
+    "latency": 598.735046,
+    "bandwidth": 24627921964.794960,
+    "setup_lt": 0.140456,
+    "task_lt": 1611.811107,
+    "cleanup_lt": 0.545219
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1441792,
+    "latency": 590.707703,
+    "bandwidth": 24407875393.605495,
+    "setup_lt": 0.185745,
+    "task_lt": 1581.514038,
+    "cleanup_lt": 0.564213
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1409024,
+    "latency": 577.306152,
+    "bandwidth": 24406876564.187618,
+    "setup_lt": 0.172303,
+    "task_lt": 1544.103387,
+    "cleanup_lt": 0.523949
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1376256,
+    "latency": 566.937073,
+    "bandwidth": 24275286731.820404,
+    "setup_lt": 0.245336,
+    "task_lt": 1504.158253,
+    "cleanup_lt": 0.606734
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1343488,
+    "latency": 554.413269,
+    "bandwidth": 24232609048.465530,
+    "setup_lt": 0.208150,
+    "task_lt": 1471.016026,
+    "cleanup_lt": 0.587422
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1310720,
+    "latency": 541.749634,
+    "bandwidth": 24194201864.663307,
+    "setup_lt": 0.168616,
+    "task_lt": 1432.428761,
+    "cleanup_lt": 0.504907
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1277952,
+    "latency": 533.371948,
+    "bandwidth": 23959865234.977112,
+    "setup_lt": 0.194998,
+    "task_lt": 1397.479173,
+    "cleanup_lt": 0.570488
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1245184,
+    "latency": 520.556641,
+    "bandwidth": 23920240427.727230,
+    "setup_lt": 0.140748,
+    "task_lt": 1361.675606,
+    "cleanup_lt": 0.566542
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1212416,
+    "latency": 508.858185,
+    "bandwidth": 23826206125.427418,
+    "setup_lt": 0.180005,
+    "task_lt": 1325.613532,
+    "cleanup_lt": 0.572725
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1179648,
+    "latency": 497.714600,
+    "bandwidth": 23701293892.641121,
+    "setup_lt": 0.172875,
+    "task_lt": 1285.425140,
+    "cleanup_lt": 0.572535
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1146880,
+    "latency": 487.624542,
+    "bandwidth": 23519734973.555996,
+    "setup_lt": 0.197310,
+    "task_lt": 1255.125645,
+    "cleanup_lt": 0.576803
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1114112,
+    "latency": 476.550842,
+    "bandwidth": 23378659759.735413,
+    "setup_lt": 0.194083,
+    "task_lt": 1215.936473,
+    "cleanup_lt": 0.573700
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1081344,
+    "latency": 463.117310,
+    "bandwidth": 23349246025.878151,
+    "setup_lt": 0.208564,
+    "task_lt": 1178.248272,
+    "cleanup_lt": 0.575683
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1048576,
+    "latency": 453.243835,
+    "bandwidth": 23134920278.854668,
+    "setup_lt": 0.203863,
+    "task_lt": 1142.783961,
+    "cleanup_lt": 0.597529
+}
+,
+{
+    "ops": 10000,
+    "file_size": 1015808,
+    "latency": 444.534668,
+    "bandwidth": 22851041171.695736,
+    "setup_lt": 0.175681,
+    "task_lt": 1111.072529,
+    "cleanup_lt": 0.513004
+}
+,
+{
+    "ops": 10000,
+    "file_size": 983040,
+    "latency": 431.202850,
+    "bandwidth": 22797622956.823784,
+    "setup_lt": 0.173927,
+    "task_lt": 1074.230807,
+    "cleanup_lt": 0.566196
+}
+,
+{
+    "ops": 10000,
+    "file_size": 950272,
+    "latency": 418.154114,
+    "bandwidth": 22725401202.766819,
+    "setup_lt": 0.215160,
+    "task_lt": 1035.585030,
+    "cleanup_lt": 0.527976
+}
+,
+{
+    "ops": 10000,
+    "file_size": 917504,
+    "latency": 408.184875,
+    "bandwidth": 22477657921.608639,
+    "setup_lt": 0.199077,
+    "task_lt": 995.484009,
+    "cleanup_lt": 0.582105
+}
+,
+{
+    "ops": 10000,
+    "file_size": 884736,
+    "latency": 396.573181,
+    "bandwidth": 22309526767.018780,
+    "setup_lt": 0.194405,
+    "task_lt": 964.885711,
+    "cleanup_lt": 0.575086
+}
+,
+{
+    "ops": 10000,
+    "file_size": 851968,
+    "latency": 384.555511,
+    "bandwidth": 22154616812.877270,
+    "setup_lt": 0.178256,
+    "task_lt": 930.272668,
+    "cleanup_lt": 0.512317
+}
+,
+{
+    "ops": 10000,
+    "file_size": 819200,
+    "latency": 372.064484,
+    "bandwidth": 22017688761.364288,
+    "setup_lt": 0.235239,
+    "task_lt": 886.641739,
+    "cleanup_lt": 0.579274
+}
+,
+{
+    "ops": 10000,
+    "file_size": 786432,
+    "latency": 363.755524,
+    "bandwidth": 21619795406.551308,
+    "setup_lt": 0.231743,
+    "task_lt": 855.382097,
+    "cleanup_lt": 0.537165
+}
+,
+{
+    "ops": 10000,
+    "file_size": 753664,
+    "latency": 351.319580,
+    "bandwidth": 21452376774.229416,
+    "setup_lt": 0.249736,
+    "task_lt": 818.485965,
+    "cleanup_lt": 0.603539
+}
+,
+{
+    "ops": 10000,
+    "file_size": 720896,
+    "latency": 338.695404,
+    "bandwidth": 21284493127.865341,
+    "setup_lt": 0.183546,
+    "task_lt": 785.014487,
+    "cleanup_lt": 0.514928
+}
+,
+{
+    "ops": 10000,
+    "file_size": 688128,
+    "latency": 328.650940,
+    "bandwidth": 20937959286.612213,
+    "setup_lt": 0.267990,
+    "task_lt": 744.997124,
+    "cleanup_lt": 0.619153
+}
+,
+{
+    "ops": 10000,
+    "file_size": 655360,
+    "latency": 317.703064,
+    "bandwidth": 20628066718.063522,
+    "setup_lt": 0.257644,
+    "task_lt": 710.440455,
+    "cleanup_lt": 0.590556
+}
+,
+{
+    "ops": 10000,
+    "file_size": 622592,
+    "latency": 305.672852,
+    "bandwidth": 20367919388.899361,
+    "setup_lt": 0.228038,
+    "task_lt": 670.085455,
+    "cleanup_lt": 0.588237
+}
+,
+{
+    "ops": 10000,
+    "file_size": 589824,
+    "latency": 296.186859,
+    "bandwidth": 19913915213.213688,
+    "setup_lt": 0.245523,
+    "task_lt": 640.229941,
+    "cleanup_lt": 0.788545
+}
+,
+{
+    "ops": 10000,
+    "file_size": 557056,
+    "latency": 285.789612,
+    "bandwidth": 19491821149.813438,
+    "setup_lt": 0.270121,
+    "task_lt": 605.153300,
+    "cleanup_lt": 0.655398
+}
+,
+{
+    "ops": 10000,
+    "file_size": 524288,
+    "latency": 273.193024,
+    "bandwidth": 19191119631.625999,
+    "setup_lt": 0.229463,
+    "task_lt": 567.568583,
+    "cleanup_lt": 0.541222
+}
+,
+{
+    "ops": 10000,
+    "file_size": 491520,
+    "latency": 261.461945,
+    "bandwidth": 18798911665.305916,
+    "setup_lt": 0.232380,
+    "task_lt": 531.219500,
+    "cleanup_lt": 0.556032
+}
+,
+{
+    "ops": 10000,
+    "file_size": 458752,
+    "latency": 249.448242,
+    "bandwidth": 18390668780.707420,
+    "setup_lt": 0.258807,
+    "task_lt": 496.213817,
+    "cleanup_lt": 0.608948
+}
+,
+{
+    "ops": 10000,
+    "file_size": 425984,
+    "latency": 238.871582,
+    "bandwidth": 17833180338.055923,
+    "setup_lt": 0.323348,
+    "task_lt": 460.371670,
+    "cleanup_lt": 0.677776
+}
+,
+{
+    "ops": 10000,
+    "file_size": 393216,
+    "latency": 227.884125,
+    "bandwidth": 17255085250.947899,
+    "setup_lt": 0.263814,
+    "task_lt": 421.559823,
+    "cleanup_lt": 0.604677
+}
+,
+{
+    "ops": 10000,
+    "file_size": 360448,
+    "latency": 214.005447,
+    "bandwidth": 16842935747.659136,
+    "setup_lt": 0.306412,
+    "task_lt": 386.818981,
+    "cleanup_lt": 0.664620
+}
+,
+{
+    "ops": 10000,
+    "file_size": 327680,
+    "latency": 203.280228,
+    "bandwidth": 16119619884.834103,
+    "setup_lt": 0.354261,
+    "task_lt": 347.716555,
+    "cleanup_lt": 0.666475
+}
+,
+{
+    "ops": 10000,
+    "file_size": 294912,
+    "latency": 193.311890,
+    "bandwidth": 15255761067.585411,
+    "setup_lt": 0.338903,
+    "task_lt": 314.233643,
+    "cleanup_lt": 0.690965
+}
+,
+{
+    "ops": 10000,
+    "file_size": 262144,
+    "latency": 183.314941,
+    "bandwidth": 14300198226.562145,
+    "setup_lt": 0.337577,
+    "task_lt": 280.849090,
+    "cleanup_lt": 0.617471
+}
+,
+{
+    "ops": 10000,
+    "file_size": 229376,
+    "latency": 171.360962,
+    "bandwidth": 13385545776.466408,
+    "setup_lt": 0.402446,
+    "task_lt": 243.773337,
+    "cleanup_lt": 0.683376
+}
+,
+{
+    "ops": 10000,
+    "file_size": 196608,
+    "latency": 159.552643,
+    "bandwidth": 12322453362.243103,
+    "setup_lt": 0.441751,
+    "task_lt": 205.722639,
+    "cleanup_lt": 0.730761
+}
+,
+{
+    "ops": 10000,
+    "file_size": 163840,
+    "latency": 151.138916,
+    "bandwidth": 10840358282.248228,
+    "setup_lt": 0.535009,
+    "task_lt": 169.350256,
+    "cleanup_lt": 0.816670
+}
+,
+{
+    "ops": 10000,
+    "file_size": 131072,
+    "latency": 139.496750,
+    "bandwidth": 9396061206.780661,
+    "setup_lt": 0.659136,
+    "task_lt": 136.495421,
+    "cleanup_lt": 0.931891
+}
+,
+{
+    "ops": 10000,
+    "file_size": 98304,
+    "latency": 127.395050,
+    "bandwidth": 7716469357.508155,
+    "setup_lt": 0.884531,
+    "task_lt": 97.409106,
+    "cleanup_lt": 1.213939
+}
+,
+{
+    "ops": 10000,
+    "file_size": 65536,
+    "latency": 116.612541,
+    "bandwidth": 5619978719.811440,
+    "setup_lt": 2.411013,
+    "task_lt": 62.254047,
+    "cleanup_lt": 3.008667
+}
+,
+{
+    "ops": 10000,
+    "file_size": 32768,
+    "latency": 113.116234,
+    "bandwidth": 2896843263.938290,
+    "setup_lt": 3.983990,
+    "task_lt": 46.751016,
+    "cleanup_lt": 4.996482
+}
+]
+,
+[{
+    "ops": 20000,
+    "file_size": 2097152,
+    "latency": 1538.109131,
+    "bandwidth": 27269222422.836483,
+    "setup_lt": 0.135557,
+    "task_lt": 2306.148019,
+    "cleanup_lt": 0.574151
+}
+,
+{
+    "ops": 20000,
+    "file_size": 2064384,
+    "latency": 1518.588867,
+    "bandwidth": 27188188252.997520,
+    "setup_lt": 0.136115,
+    "task_lt": 2271.184881,
+    "cleanup_lt": 0.556629
+}
+,
+{
+    "ops": 20000,
+    "file_size": 2031616,
+    "latency": 1494.400146,
+    "bandwidth": 27189718962.212936,
+    "setup_lt": 0.148998,
+    "task_lt": 2233.786681,
+    "cleanup_lt": 0.567500
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1998848,
+    "latency": 1471.661255,
+    "bandwidth": 27164512123.534393,
+    "setup_lt": 0.176040,
+    "task_lt": 2198.059487,
+    "cleanup_lt": 0.597664
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1966080,
+    "latency": 1449.653931,
+    "bandwidth": 27124818667.574974,
+    "setup_lt": 0.154328,
+    "task_lt": 2161.506344,
+    "cleanup_lt": 0.584108
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1933312,
+    "latency": 1425.938599,
+    "bandwidth": 27116342903.595657,
+    "setup_lt": 0.141999,
+    "task_lt": 2127.392194,
+    "cleanup_lt": 0.546501
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1900544,
+    "latency": 1402.920166,
+    "bandwidth": 27094114776.290596,
+    "setup_lt": 0.159438,
+    "task_lt": 2085.508519,
+    "cleanup_lt": 0.506066
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1867776,
+    "latency": 1382.291260,
+    "bandwidth": 27024347970.147648,
+    "setup_lt": 0.160735,
+    "task_lt": 2054.088675,
+    "cleanup_lt": 0.558428
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1835008,
+    "latency": 1358.322754,
+    "bandwidth": 27018733135.742645,
+    "setup_lt": 0.149046,
+    "task_lt": 2015.870244,
+    "cleanup_lt": 0.605321
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1802240,
+    "latency": 1337.022949,
+    "bandwidth": 26958998737.502388,
+    "setup_lt": 0.148798,
+    "task_lt": 1981.486850,
+    "cleanup_lt": 0.556057
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1769472,
+    "latency": 1314.587891,
+    "bandwidth": 26920558338.001011,
+    "setup_lt": 0.164510,
+    "task_lt": 1945.495019,
+    "cleanup_lt": 0.570451
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1736704,
+    "latency": 1292.603882,
+    "bandwidth": 26871403132.927147,
+    "setup_lt": 0.157609,
+    "task_lt": 1910.790525,
+    "cleanup_lt": 0.562849
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1703936,
+    "latency": 1268.173340,
+    "bandwidth": 26872288613.320633,
+    "setup_lt": 0.147560,
+    "task_lt": 1872.586237,
+    "cleanup_lt": 0.506966
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1671168,
+    "latency": 1247.555664,
+    "bandwidth": 26791077114.075417,
+    "setup_lt": 0.188645,
+    "task_lt": 1836.878512,
+    "cleanup_lt": 0.597549
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1638400,
+    "latency": 1222.422485,
+    "bandwidth": 26805789645.284615,
+    "setup_lt": 0.178628,
+    "task_lt": 1800.663488,
+    "cleanup_lt": 0.577607
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1605632,
+    "latency": 1201.744019,
+    "bandwidth": 26721697386.620823,
+    "setup_lt": 0.186906,
+    "task_lt": 1763.797250,
+    "cleanup_lt": 0.571304
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1572864,
+    "latency": 1178.065063,
+    "bandwidth": 26702497998.851692,
+    "setup_lt": 0.165123,
+    "task_lt": 1728.139875,
+    "cleanup_lt": 0.550834
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1540096,
+    "latency": 1157.451294,
+    "bandwidth": 26611849812.710423,
+    "setup_lt": 0.151893,
+    "task_lt": 1692.240709,
+    "cleanup_lt": 0.503862
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1507328,
+    "latency": 1132.679565,
+    "bandwidth": 26615259001.837608,
+    "setup_lt": 0.138697,
+    "task_lt": 1652.353313,
+    "cleanup_lt": 0.505097
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1474560,
+    "latency": 1110.015747,
+    "bandwidth": 26568271736.537731,
+    "setup_lt": 0.167363,
+    "task_lt": 1619.913031,
+    "cleanup_lt": 0.525966
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1441792,
+    "latency": 1089.354248,
+    "bandwidth": 26470581127.948372,
+    "setup_lt": 0.155100,
+    "task_lt": 1583.355134,
+    "cleanup_lt": 0.498493
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1409024,
+    "latency": 1066.014893,
+    "bandwidth": 26435353010.731731,
+    "setup_lt": 0.158079,
+    "task_lt": 1547.306066,
+    "cleanup_lt": 0.510596
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1376256,
+    "latency": 1042.313599,
+    "bandwidth": 26407714565.083195,
+    "setup_lt": 0.175939,
+    "task_lt": 1511.336016,
+    "cleanup_lt": 0.498994
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1343488,
+    "latency": 1017.904846,
+    "bandwidth": 26397123562.714058,
+    "setup_lt": 0.187167,
+    "task_lt": 1473.696494,
+    "cleanup_lt": 0.573841
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1310720,
+    "latency": 998.910828,
+    "bandwidth": 26242983131.957386,
+    "setup_lt": 0.166595,
+    "task_lt": 1438.979306,
+    "cleanup_lt": 0.556352
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1277952,
+    "latency": 974.619019,
+    "bandwidth": 26224647286.180412,
+    "setup_lt": 0.166038,
+    "task_lt": 1402.543547,
+    "cleanup_lt": 0.560078
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1245184,
+    "latency": 952.810547,
+    "bandwidth": 26137074239.656937,
+    "setup_lt": 0.161756,
+    "task_lt": 1367.994725,
+    "cleanup_lt": 0.562456
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1212416,
+    "latency": 928.090576,
+    "bandwidth": 26127105072.026295,
+    "setup_lt": 0.165045,
+    "task_lt": 1330.186872,
+    "cleanup_lt": 0.514091
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1179648,
+    "latency": 905.510315,
+    "bandwidth": 26054877134.697968,
+    "setup_lt": 0.174032,
+    "task_lt": 1294.127825,
+    "cleanup_lt": 0.569368
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1146880,
+    "latency": 883.844299,
+    "bandwidth": 25952082304.248253,
+    "setup_lt": 0.163091,
+    "task_lt": 1257.255366,
+    "cleanup_lt": 0.557016
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1114112,
+    "latency": 861.869690,
+    "bandwidth": 25853374657.501701,
+    "setup_lt": 0.194223,
+    "task_lt": 1219.560219,
+    "cleanup_lt": 0.568822
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1081344,
+    "latency": 839.366394,
+    "bandwidth": 25765720611.984474,
+    "setup_lt": 0.184552,
+    "task_lt": 1185.559331,
+    "cleanup_lt": 0.576360
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1048576,
+    "latency": 817.982361,
+    "bandwidth": 25638107866.370121,
+    "setup_lt": 0.196199,
+    "task_lt": 1149.949834,
+    "cleanup_lt": 0.585970
+}
+,
+{
+    "ops": 20000,
+    "file_size": 1015808,
+    "latency": 797.781738,
+    "bandwidth": 25465812295.690502,
+    "setup_lt": 0.187986,
+    "task_lt": 1112.638547,
+    "cleanup_lt": 0.576696
+}
+,
+{
+    "ops": 20000,
+    "file_size": 983040,
+    "latency": 772.431641,
+    "bandwidth": 25453126161.548477,
+    "setup_lt": 0.163758,
+    "task_lt": 1077.644506,
+    "cleanup_lt": 0.559296
+}
+,
+{
+    "ops": 20000,
+    "file_size": 950272,
+    "latency": 749.691833,
+    "bandwidth": 25351003106.663864,
+    "setup_lt": 0.181139,
+    "task_lt": 1041.283606,
+    "cleanup_lt": 0.581041
+}
+,
+{
+    "ops": 20000,
+    "file_size": 917504,
+    "latency": 726.896912,
+    "bandwidth": 25244404958.436886,
+    "setup_lt": 0.196758,
+    "task_lt": 1004.286494,
+    "cleanup_lt": 0.579268
+}
+,
+{
+    "ops": 20000,
+    "file_size": 884736,
+    "latency": 702.296875,
+    "bandwidth": 25195498698.467083,
+    "setup_lt": 0.203033,
+    "task_lt": 969.649428,
+    "cleanup_lt": 0.588761
+}
+,
+{
+    "ops": 20000,
+    "file_size": 851968,
+    "latency": 681.306519,
+    "bandwidth": 25009829696.253342,
+    "setup_lt": 0.198355,
+    "task_lt": 932.743066,
+    "cleanup_lt": 0.537935
+}
+,
+{
+    "ops": 20000,
+    "file_size": 819200,
+    "latency": 656.624084,
+    "bandwidth": 24951871835.706749,
+    "setup_lt": 0.219438,
+    "task_lt": 895.146009,
+    "cleanup_lt": 0.590955
+}
+,
+{
+    "ops": 20000,
+    "file_size": 786432,
+    "latency": 632.010559,
+    "bandwidth": 24886672815.791538,
+    "setup_lt": 0.183099,
+    "task_lt": 858.516094,
+    "cleanup_lt": 0.583288
+}
+,
+{
+    "ops": 20000,
+    "file_size": 753664,
+    "latency": 613.530029,
+    "bandwidth": 24568121005.054077,
+    "setup_lt": 0.203345,
+    "task_lt": 823.349800,
+    "cleanup_lt": 0.574882
+}
+,
+{
+    "ops": 20000,
+    "file_size": 720896,
+    "latency": 590.470032,
+    "bandwidth": 24417699840.845722,
+    "setup_lt": 0.216280,
+    "task_lt": 788.518231,
+    "cleanup_lt": 0.582925
+}
+,
+{
+    "ops": 20000,
+    "file_size": 688128,
+    "latency": 566.416260,
+    "bandwidth": 24297607568.142117,
+    "setup_lt": 0.209462,
+    "task_lt": 750.700016,
+    "cleanup_lt": 0.582380
+}
+,
+{
+    "ops": 20000,
+    "file_size": 655360,
+    "latency": 544.988342,
+    "bandwidth": 24050422702.696770,
+    "setup_lt": 0.264301,
+    "task_lt": 714.413053,
+    "cleanup_lt": 0.628016
+}
+,
+{
+    "ops": 20000,
+    "file_size": 622592,
+    "latency": 521.048950,
+    "bandwidth": 23897639550.626659,
+    "setup_lt": 0.202890,
+    "task_lt": 679.592322,
+    "cleanup_lt": 0.548724
+}
+,
+{
+    "ops": 20000,
+    "file_size": 589824,
+    "latency": 501.236023,
+    "bandwidth": 23534780941.303425,
+    "setup_lt": 0.224368,
+    "task_lt": 643.587881,
+    "cleanup_lt": 0.599147
+}
+,
+{
+    "ops": 20000,
+    "file_size": 557056,
+    "latency": 475.516907,
+    "bandwidth": 23429492920.494492,
+    "setup_lt": 0.298252,
+    "task_lt": 606.909106,
+    "cleanup_lt": 0.650475
+}
+,
+{
+    "ops": 20000,
+    "file_size": 524288,
+    "latency": 454.847229,
+    "bandwidth": 23053366781.992523,
+    "setup_lt": 0.221216,
+    "task_lt": 570.788931,
+    "cleanup_lt": 0.530500
+}
+,
+{
+    "ops": 20000,
+    "file_size": 491520,
+    "latency": 433.093262,
+    "bandwidth": 22698113475.577103,
+    "setup_lt": 0.238981,
+    "task_lt": 536.613919,
+    "cleanup_lt": 0.553548
+}
+,
+{
+    "ops": 20000,
+    "file_size": 458752,
+    "latency": 407.243713,
+    "bandwidth": 22529604997.151649,
+    "setup_lt": 0.258019,
+    "task_lt": 497.382222,
+    "cleanup_lt": 0.604074
+}
+,
+{
+    "ops": 20000,
+    "file_size": 425984,
+    "latency": 386.290222,
+    "bandwidth": 22055127236.162422,
+    "setup_lt": 0.252281,
+    "task_lt": 463.629391,
+    "cleanup_lt": 0.597688
+}
+,
+{
+    "ops": 20000,
+    "file_size": 393216,
+    "latency": 362.551819,
+    "bandwidth": 21691575082.966488,
+    "setup_lt": 0.310736,
+    "task_lt": 426.777938,
+    "cleanup_lt": 0.689666
+}
+,
+{
+    "ops": 20000,
+    "file_size": 360448,
+    "latency": 341.820068,
+    "bandwidth": 21089926155.010910,
+    "setup_lt": 0.345342,
+    "task_lt": 388.596950,
+    "cleanup_lt": 0.645444
+}
+,
+{
+    "ops": 20000,
+    "file_size": 327680,
+    "latency": 359.934692,
+    "bandwidth": 18207747512.790031,
+    "setup_lt": 0.322224,
+    "task_lt": 354.900797,
+    "cleanup_lt": 0.648816
+}
+,
+{
+    "ops": 20000,
+    "file_size": 294912,
+    "latency": 296.829437,
+    "bandwidth": 19870805451.535683,
+    "setup_lt": 0.302462,
+    "task_lt": 319.442220,
+    "cleanup_lt": 0.582318
+}
+,
+{
+    "ops": 20000,
+    "file_size": 262144,
+    "latency": 273.960999,
+    "bandwidth": 19137322567.931889,
+    "setup_lt": 0.334937,
+    "task_lt": 282.684136,
+    "cleanup_lt": 0.632223
+}
+,
+{
+    "ops": 20000,
+    "file_size": 229376,
+    "latency": 251.708252,
+    "bandwidth": 18225544710.605366,
+    "setup_lt": 0.369113,
+    "task_lt": 246.208460,
+    "cleanup_lt": 0.676787
+}
+,
+{
+    "ops": 20000,
+    "file_size": 196608,
+    "latency": 229.809067,
+    "bandwidth": 17110552056.213339,
+    "setup_lt": 0.459538,
+    "task_lt": 208.877648,
+    "cleanup_lt": 0.744925
+}
+,
+{
+    "ops": 20000,
+    "file_size": 163840,
+    "latency": 206.525436,
+    "bandwidth": 15866326478.215387,
+    "setup_lt": 0.512834,
+    "task_lt": 174.797896,
+    "cleanup_lt": 0.836291
+}
+,
+{
+    "ops": 20000,
+    "file_size": 131072,
+    "latency": 183.643265,
+    "bandwidth": 14274631869.978550,
+    "setup_lt": 0.683641,
+    "task_lt": 138.243312,
+    "cleanup_lt": 0.981081
+}
+,
+{
+    "ops": 20000,
+    "file_size": 98304,
+    "latency": 163.822556,
+    "bandwidth": 12001277806.315506,
+    "setup_lt": 0.872034,
+    "task_lt": 102.334408,
+    "cleanup_lt": 1.189300
+}
+,
+{
+    "ops": 20000,
+    "file_size": 65536,
+    "latency": 139.078003,
+    "bandwidth": 9424351604.060995,
+    "setup_lt": 1.615866,
+    "task_lt": 63.899669,
+    "cleanup_lt": 2.095321
+}
+,
+{
+    "ops": 20000,
+    "file_size": 32768,
+    "latency": 134.635422,
+    "bandwidth": 4867664032.743592,
+    "setup_lt": 5.386548,
+    "task_lt": 46.286071,
+    "cleanup_lt": 6.699523
+}
+]
+,
+[{
+    "ops": 40000,
+    "file_size": 2097152,
+    "latency": 2985.173828,
+    "bandwidth": 28100902938.938465,
+    "setup_lt": 0.146937,
+    "task_lt": 2308.740250,
+    "cleanup_lt": 0.512123
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2064384,
+    "latency": 2942.348389,
+    "bandwidth": 28064440063.561981,
+    "setup_lt": 0.167890,
+    "task_lt": 2274.238356,
+    "cleanup_lt": 0.509480
+}
+,
+{
+    "ops": 40000,
+    "file_size": 2031616,
+    "latency": 2896.735596,
+    "bandwidth": 28053868679.124172,
+    "setup_lt": 0.167370,
+    "task_lt": 2236.030625,
+    "cleanup_lt": 0.581959
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1998848,
+    "latency": 2854.457275,
+    "bandwidth": 28010200288.970348,
+    "setup_lt": 0.159919,
+    "task_lt": 2201.405669,
+    "cleanup_lt": 0.558072
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1966080,
+    "latency": 2805.761475,
+    "bandwidth": 28029182349.133545,
+    "setup_lt": 0.177422,
+    "task_lt": 2164.343112,
+    "cleanup_lt": 0.560767
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1933312,
+    "latency": 2759.191895,
+    "bandwidth": 28027220634.155193,
+    "setup_lt": 0.136633,
+    "task_lt": 2127.689656,
+    "cleanup_lt": 0.556454
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1900544,
+    "latency": 2715.970947,
+    "bandwidth": 27990638146.014374,
+    "setup_lt": 0.167860,
+    "task_lt": 2091.592669,
+    "cleanup_lt": 0.572249
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1867776,
+    "latency": 2667.632080,
+    "bandwidth": 28006500805.692810,
+    "setup_lt": 0.144556,
+    "task_lt": 2054.000844,
+    "cleanup_lt": 0.544629
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1835008,
+    "latency": 2624.099609,
+    "bandwidth": 27971621099.201439,
+    "setup_lt": 0.139209,
+    "task_lt": 2019.605006,
+    "cleanup_lt": 0.578232
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1802240,
+    "latency": 2581.256836,
+    "bandwidth": 27928100372.010212,
+    "setup_lt": 0.175491,
+    "task_lt": 1983.773881,
+    "cleanup_lt": 0.585491
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1769472,
+    "latency": 2534.256104,
+    "bandwidth": 27928858453.497498,
+    "setup_lt": 0.139582,
+    "task_lt": 1947.317625,
+    "cleanup_lt": 0.492148
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1736704,
+    "latency": 2496.029053,
+    "bandwidth": 27831470921.341366,
+    "setup_lt": 0.134007,
+    "task_lt": 1910.787681,
+    "cleanup_lt": 0.508799
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1703936,
+    "latency": 2440.573242,
+    "bandwidth": 27926816053.637501,
+    "setup_lt": 0.167225,
+    "task_lt": 1873.567088,
+    "cleanup_lt": 0.601817
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1671168,
+    "latency": 2397.525391,
+    "bandwidth": 27881548308.680908,
+    "setup_lt": 0.173790,
+    "task_lt": 1837.625894,
+    "cleanup_lt": 0.563424
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1638400,
+    "latency": 2352.385010,
+    "bandwidth": 27859385146.536682,
+    "setup_lt": 0.165493,
+    "task_lt": 1803.023425,
+    "cleanup_lt": 0.560289
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1605632,
+    "latency": 2309.886719,
+    "bandwidth": 27804515034.726742,
+    "setup_lt": 0.148278,
+    "task_lt": 1766.294125,
+    "cleanup_lt": 0.506076
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1572864,
+    "latency": 2262.761719,
+    "bandwidth": 27804324016.386227,
+    "setup_lt": 0.178388,
+    "task_lt": 1730.246988,
+    "cleanup_lt": 0.561638
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1540096,
+    "latency": 2216.647461,
+    "bandwidth": 27791446806.767151,
+    "setup_lt": 0.167882,
+    "task_lt": 1693.837456,
+    "cleanup_lt": 0.575651
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1507328,
+    "latency": 2172.208252,
+    "bandwidth": 27756602041.166119,
+    "setup_lt": 0.147391,
+    "task_lt": 1656.899909,
+    "cleanup_lt": 0.558037
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1474560,
+    "latency": 2127.971191,
+    "bandwidth": 27717668471.358406,
+    "setup_lt": 0.156878,
+    "task_lt": 1622.128181,
+    "cleanup_lt": 0.563189
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1441792,
+    "latency": 2079.961914,
+    "bandwidth": 27727276932.373219,
+    "setup_lt": 0.161006,
+    "task_lt": 1584.718169,
+    "cleanup_lt": 0.515298
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1409024,
+    "latency": 2039.641357,
+    "bandwidth": 27632779554.558926,
+    "setup_lt": 0.173231,
+    "task_lt": 1549.583591,
+    "cleanup_lt": 0.567592
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1376256,
+    "latency": 1992.761963,
+    "bandwidth": 27625095734.036499,
+    "setup_lt": 0.160663,
+    "task_lt": 1514.287769,
+    "cleanup_lt": 0.570776
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1343488,
+    "latency": 1948.514771,
+    "bandwidth": 27579734479.505466,
+    "setup_lt": 0.163169,
+    "task_lt": 1478.519344,
+    "cleanup_lt": 0.550564
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1310720,
+    "latency": 1900.402100,
+    "bandwidth": 27588266720.383369,
+    "setup_lt": 0.194632,
+    "task_lt": 1440.582413,
+    "cleanup_lt": 0.572254
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1277952,
+    "latency": 1852.953613,
+    "bandwidth": 27587350073.744698,
+    "setup_lt": 0.142072,
+    "task_lt": 1404.841378,
+    "cleanup_lt": 0.509713
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1245184,
+    "latency": 1810.305176,
+    "bandwidth": 27513239572.165108,
+    "setup_lt": 0.198529,
+    "task_lt": 1368.197875,
+    "cleanup_lt": 0.576318
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1212416,
+    "latency": 1766.310059,
+    "bandwidth": 27456470490.017288,
+    "setup_lt": 0.191045,
+    "task_lt": 1332.767281,
+    "cleanup_lt": 0.539529
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1179648,
+    "latency": 1719.711182,
+    "bandwidth": 27438281790.424873,
+    "setup_lt": 0.169566,
+    "task_lt": 1295.282444,
+    "cleanup_lt": 0.564444
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1146880,
+    "latency": 1675.002930,
+    "bandwidth": 27388131200.796642,
+    "setup_lt": 0.164260,
+    "task_lt": 1260.399569,
+    "cleanup_lt": 0.567686
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1114112,
+    "latency": 1629.503418,
+    "bandwidth": 27348503543.215420,
+    "setup_lt": 0.164254,
+    "task_lt": 1223.531144,
+    "cleanup_lt": 0.568979
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1081344,
+    "latency": 1582.276855,
+    "bandwidth": 27336404403.884212,
+    "setup_lt": 0.164384,
+    "task_lt": 1187.814303,
+    "cleanup_lt": 0.559819
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1048576,
+    "latency": 1537.762573,
+    "bandwidth": 27275367946.800880,
+    "setup_lt": 0.160301,
+    "task_lt": 1151.077669,
+    "cleanup_lt": 0.566489
+}
+,
+{
+    "ops": 40000,
+    "file_size": 1015808,
+    "latency": 1492.718994,
+    "bandwidth": 27220340974.754250,
+    "setup_lt": 0.257048,
+    "task_lt": 1115.525881,
+    "cleanup_lt": 0.612281
+}
+,
+{
+    "ops": 40000,
+    "file_size": 983040,
+    "latency": 1450.118774,
+    "bandwidth": 27116123654.000931,
+    "setup_lt": 0.204712,
+    "task_lt": 1078.891906,
+    "cleanup_lt": 0.534730
+}
+,
+{
+    "ops": 40000,
+    "file_size": 950272,
+    "latency": 1403.963867,
+    "bandwidth": 27073973118.799381,
+    "setup_lt": 0.190839,
+    "task_lt": 1044.825112,
+    "cleanup_lt": 0.587474
+}
+,
+{
+    "ops": 40000,
+    "file_size": 917504,
+    "latency": 1358.355957,
+    "bandwidth": 27018072700.332470,
+    "setup_lt": 0.194319,
+    "task_lt": 1007.461275,
+    "cleanup_lt": 0.559514
+}
+,
+{
+    "ops": 40000,
+    "file_size": 884736,
+    "latency": 1316.412231,
+    "bandwidth": 26883250667.722301,
+    "setup_lt": 0.217982,
+    "task_lt": 970.175181,
+    "cleanup_lt": 0.597174
+}
+,
+{
+    "ops": 40000,
+    "file_size": 851968,
+    "latency": 1269.450439,
+    "bandwidth": 26845254403.693771,
+    "setup_lt": 0.186750,
+    "task_lt": 934.120213,
+    "cleanup_lt": 0.576190
+}
+,
+{
+    "ops": 40000,
+    "file_size": 819200,
+    "latency": 1224.409912,
+    "bandwidth": 26762279262.790607,
+    "setup_lt": 0.203444,
+    "task_lt": 898.817250,
+    "cleanup_lt": 0.587544
+}
+,
+{
+    "ops": 40000,
+    "file_size": 786432,
+    "latency": 1175.659424,
+    "bandwidth": 26757136771.438736,
+    "setup_lt": 0.233096,
+    "task_lt": 862.257609,
+    "cleanup_lt": 0.606245
+}
+,
+{
+    "ops": 40000,
+    "file_size": 753664,
+    "latency": 1132.984131,
+    "bandwidth": 26608104366.946129,
+    "setup_lt": 0.198008,
+    "task_lt": 826.238059,
+    "cleanup_lt": 0.567205
+}
+,
+{
+    "ops": 40000,
+    "file_size": 720896,
+    "latency": 1086.648193,
+    "bandwidth": 26536500199.622055,
+    "setup_lt": 0.200834,
+    "task_lt": 791.130498,
+    "cleanup_lt": 0.577951
+}
+,
+{
+    "ops": 40000,
+    "file_size": 688128,
+    "latency": 1041.503418,
+    "bandwidth": 26428257003.402252,
+    "setup_lt": 0.223313,
+    "task_lt": 752.841691,
+    "cleanup_lt": 0.543711
+}
+,
+{
+    "ops": 40000,
+    "file_size": 655360,
+    "latency": 997.798828,
+    "bandwidth": 26272229693.093979,
+    "setup_lt": 0.312522,
+    "task_lt": 718.162008,
+    "cleanup_lt": 0.660863
+}
+,
+{
+    "ops": 40000,
+    "file_size": 622592,
+    "latency": 951.662415,
+    "bandwidth": 26168607291.016560,
+    "setup_lt": 0.241729,
+    "task_lt": 681.378984,
+    "cleanup_lt": 0.595440
+}
+,
+{
+    "ops": 40000,
+    "file_size": 589824,
+    "latency": 905.503723,
+    "bandwidth": 26055066806.427948,
+    "setup_lt": 0.233222,
+    "task_lt": 645.422097,
+    "cleanup_lt": 0.598706
+}
+,
+{
+    "ops": 40000,
+    "file_size": 557056,
+    "latency": 863.316650,
+    "bandwidth": 25810043151.511040,
+    "setup_lt": 0.244808,
+    "task_lt": 610.204584,
+    "cleanup_lt": 0.597125
+}
+,
+{
+    "ops": 40000,
+    "file_size": 524288,
+    "latency": 815.401733,
+    "bandwidth": 25719248734.724590,
+    "setup_lt": 0.275581,
+    "task_lt": 573.272363,
+    "cleanup_lt": 0.622581
+}
+,
+{
+    "ops": 40000,
+    "file_size": 491520,
+    "latency": 771.678101,
+    "bandwidth": 25477981019.639530,
+    "setup_lt": 0.304262,
+    "task_lt": 537.569947,
+    "cleanup_lt": 0.648643
+}
+,
+{
+    "ops": 40000,
+    "file_size": 458752,
+    "latency": 725.437378,
+    "bandwidth": 25295195089.573353,
+    "setup_lt": 0.251236,
+    "task_lt": 501.685408,
+    "cleanup_lt": 0.637218
+}
+,
+{
+    "ops": 40000,
+    "file_size": 425984,
+    "latency": 681.068787,
+    "bandwidth": 25018559556.275314,
+    "setup_lt": 0.278183,
+    "task_lt": 464.961148,
+    "cleanup_lt": 0.615846
+}
+,
+{
+    "ops": 40000,
+    "file_size": 393216,
+    "latency": 633.691711,
+    "bandwidth": 24820649720.368259,
+    "setup_lt": 0.242728,
+    "task_lt": 428.244511,
+    "cleanup_lt": 0.550829
+}
+,
+{
+    "ops": 40000,
+    "file_size": 360448,
+    "latency": 589.853577,
+    "bandwidth": 24443218741.906307,
+    "setup_lt": 0.276959,
+    "task_lt": 392.274688,
+    "cleanup_lt": 0.582176
+}
+,
+{
+    "ops": 40000,
+    "file_size": 327680,
+    "latency": 545.691284,
+    "bandwidth": 24019441724.643723,
+    "setup_lt": 0.302867,
+    "task_lt": 356.406050,
+    "cleanup_lt": 0.632530
+}
+,
+{
+    "ops": 40000,
+    "file_size": 294912,
+    "latency": 500.738953,
+    "bandwidth": 23558143295.790752,
+    "setup_lt": 0.297419,
+    "task_lt": 320.544792,
+    "cleanup_lt": 0.585278
+}
+,
+{
+    "ops": 40000,
+    "file_size": 262144,
+    "latency": 454.059021,
+    "bandwidth": 23093385474.418774,
+    "setup_lt": 0.425296,
+    "task_lt": 282.826068,
+    "cleanup_lt": 0.737014
+}
+,
+{
+    "ops": 40000,
+    "file_size": 229376,
+    "latency": 409.326172,
+    "bandwidth": 22414984993.439106,
+    "setup_lt": 0.422429,
+    "task_lt": 247.269569,
+    "cleanup_lt": 0.719935
+}
+,
+{
+    "ops": 40000,
+    "file_size": 196608,
+    "latency": 363.982056,
+    "bandwidth": 21606339866.541058,
+    "setup_lt": 0.468311,
+    "task_lt": 212.006944,
+    "cleanup_lt": 0.727082
+}
+,
+{
+    "ops": 40000,
+    "file_size": 163840,
+    "latency": 319.864685,
+    "bandwidth": 20488663819.825851,
+    "setup_lt": 0.523261,
+    "task_lt": 175.410531,
+    "cleanup_lt": 0.804732
+}
+,
+{
+    "ops": 40000,
+    "file_size": 131072,
+    "latency": 274.180542,
+    "bandwidth": 19121998818.389496,
+    "setup_lt": 0.650308,
+    "task_lt": 139.445897,
+    "cleanup_lt": 0.938121
+}
+,
+{
+    "ops": 40000,
+    "file_size": 98304,
+    "latency": 229.242325,
+    "bandwidth": 17152853439.832262,
+    "setup_lt": 0.811683,
+    "task_lt": 102.542833,
+    "cleanup_lt": 1.119886
+}
+,
+{
+    "ops": 40000,
+    "file_size": 65536,
+    "latency": 183.618698,
+    "bandwidth": 14276541696.669378,
+    "setup_lt": 1.837190,
+    "task_lt": 64.306689,
+    "cleanup_lt": 2.371386
+}
+,
+{
+    "ops": 40000,
+    "file_size": 32768,
+    "latency": 171.530090,
+    "bandwidth": 7641341513.100329,
+    "setup_lt": 4.554956,
+    "task_lt": 45.597759,
+    "cleanup_lt": 5.683347
+}
+]
+]

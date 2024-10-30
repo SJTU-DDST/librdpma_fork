@@ -1,0 +1,110 @@
+[{
+    "ops": 640000,
+    "file_size": 1024,
+    "latency": 1754.924316,
+    "bandwidth": 373440605.884391,
+    "setup_lt": 27.942266,
+    "task_lt": 96.270599,
+    "cleanup_lt": 25.868304
+}
+,
+{
+    "ops": 640000,
+    "file_size": 2048,
+    "latency": 1316.737305,
+    "bandwidth": 995430140.343044,
+    "setup_lt": 13.487698,
+    "task_lt": 76.252473,
+    "cleanup_lt": 12.578786
+}
+,
+{
+    "ops": 640000,
+    "file_size": 4096,
+    "latency": 1323.854004,
+    "bandwidth": 1980157926.980625,
+    "setup_lt": 12.823998,
+    "task_lt": 75.511917,
+    "cleanup_lt": 12.082731
+}
+,
+{
+    "ops": 640000,
+    "file_size": 8192,
+    "latency": 1367.848877,
+    "bandwidth": 3832938044.792261,
+    "setup_lt": 16.416845,
+    "task_lt": 82.356592,
+    "cleanup_lt": 16.628922
+}
+,
+{
+    "ops": 640000,
+    "file_size": 16384,
+    "latency": 1339.286499,
+    "bandwidth": 7829362879.149355,
+    "setup_lt": 16.286718,
+    "task_lt": 80.590431,
+    "cleanup_lt": 16.368170
+}
+,
+{
+    "ops": 640000,
+    "file_size": 32768,
+    "latency": 1273.629272,
+    "bandwidth": 16465953204.324770,
+    "setup_lt": 13.107288,
+    "task_lt": 77.619296,
+    "cleanup_lt": 13.907143
+}
+,
+{
+    "ops": 640000,
+    "file_size": 65536,
+    "latency": 1689.750000,
+    "bandwidth": 24822038763.130642,
+    "setup_lt": 19.604573,
+    "task_lt": 109.875340,
+    "cleanup_lt": 17.830164
+}
+,
+{
+    "ops": 640000,
+    "file_size": 131072,
+    "latency": 3021.177002,
+    "bandwidth": 27766026269.155857,
+    "setup_lt": 0.832372,
+    "task_lt": 282.966084,
+    "cleanup_lt": 1.328557
+}
+,
+{
+    "ops": 640000,
+    "file_size": 262144,
+    "latency": 5915.862793,
+    "bandwidth": 28359711148.034775,
+    "setup_lt": 0.415897,
+    "task_lt": 573.541353,
+    "cleanup_lt": 0.767654
+}
+,
+{
+    "ops": 640000,
+    "file_size": 524288,
+    "latency": 11699.107422,
+    "bandwidth": 28681189760.904232,
+    "setup_lt": 0.312330,
+    "task_lt": 1151.872781,
+    "cleanup_lt": 0.748009
+}
+,
+{
+    "ops": 640000,
+    "file_size": 1048576,
+    "latency": 23279.894531,
+    "bandwidth": 28826962214.075214,
+    "setup_lt": 0.270169,
+    "task_lt": 2309.321781,
+    "cleanup_lt": 0.667009
+}
+]
