@@ -8,8 +8,9 @@ DOCA_LOG_REGISTER(DMA::COMMON);
 
 doca_error_t allocate_buffer(struct dma_state *state) {
   state->buffer = (char *)malloc(state->buffer_size);
-  if (state->buffer == NULL)
+  if (state->buffer == NULL) {
     return DOCA_ERROR_NO_MEMORY;
+  }
   return DOCA_SUCCESS;
 }
 
@@ -182,7 +183,7 @@ doca_error_t dma_task_resubmit(struct dma_resources *resources,
                    doca_error_get_descr(doca_task_get_status(task)));
 
       (void)dma_task_free(dma_task);
-      resources->state.num_completed_tasks++;
+      resources->state->num_completed_tasks++;
     }
   } else
     doca_task_free(task);
@@ -196,7 +197,7 @@ static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
   uint32_t task_idx = (uint32_t)task_user_data.u64;
   DOCA_LOG_INFO("Dma task idx: %u is completed successfully", task_idx);
 
-  resources->state.num_completed_tasks++;
+  resources->state->num_completed_tasks++;
 
   (void)free_dma_memcpy_task_buffers(dma_task);
   (void)dma_task_resubmit(resources, dma_task);
@@ -208,10 +209,9 @@ static void dma_memcpy_error_callback(struct doca_dma_task_memcpy *dma_task,
 
 doca_error_t create_dma_dpu_resources(const char *pcie_addr,
                                       struct dma_resources *resources) {
-  memset(resources, 0, sizeof(*resources));
   union doca_data ctx_user_data = {0};
   EXIT_ON_FAIL(create_dma_state(pcie_addr, &resources->state));
-  EXIT_ON_FAIL(doca_dma_create(resources->state.dev, &resources->dma_ctx));
+  EXIT_ON_FAIL(doca_dma_create(resources->state->dev, &resources->dma_ctx));
   resources->ctx = doca_dma_as_ctx(resources->dma_ctx);
   EXIT_ON_FAIL(doca_dma_task_memcpy_set_conf(
       resources->dma_ctx, dma_memcpy_completed_callback,

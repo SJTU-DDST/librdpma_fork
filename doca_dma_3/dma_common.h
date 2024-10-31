@@ -41,7 +41,7 @@ struct dma_state {
 };
 
 struct dma_resources {
-  struct dma_state state;
+  struct dma_state *state;
   struct doca_ctx *ctx;
   struct doca_dma *dma_ctx;
 

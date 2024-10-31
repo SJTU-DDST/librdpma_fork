@@ -41,9 +41,10 @@ exit:
 
 doca_error_t dma_copy_dpu() {
   struct dma_resources resources = {0};
-  struct dma_state state = resources.state;
-  state.buffer_size = 4096;
-  state.buf_inv_size = 4096;
+  resources.state = (struct dma_state *)malloc(sizeof(struct dma_state));
+  struct dma_state *state = resources.state;
+  state->buffer_size = 4096;
+  state->buf_inv_size = 4096;
   resources.num_buf_pairs = 2048;
   resources.num_tasks = 64;
   char pcie_addr[16] = "03:00.0\0";
@@ -60,21 +61,21 @@ doca_error_t dma_copy_dpu() {
   resources.tasks = (struct doca_dma_task_memcpy **)malloc(
       resources.num_tasks * sizeof(struct doca_dma_task_memcpy *));
 
-  EXIT_ON_FAIL(allocate_buffer(&state));
+  EXIT_ON_FAIL(allocate_buffer(state));
   EXIT_ON_FAIL(create_dma_dpu_resources(pcie_addr, &resources));
   EXIT_ON_FAIL(import_mmap_to_config("export_desc.txt", "buffer_info.txt",
                                      exported_desc, &exported_desc_len,
                                      &remote_addr, &remote_addr_len));
   EXIT_ON_FAIL(doca_mmap_create_from_export(
-      NULL, exported_desc, exported_desc_len, state.dev, &remote_mmap));
-  EXIT_ON_FAIL(allocate_doca_bufs(&state, remote_mmap, remote_addr,
+      NULL, exported_desc, exported_desc_len, state->dev, &remote_mmap));
+  EXIT_ON_FAIL(allocate_doca_bufs(state, remote_mmap, remote_addr,
                                   resources.num_buf_pairs, resources.src_bufs,
                                   resources.dst_bufs));
   EXIT_ON_FAIL(allocate_dma_tasks(&resources, remote_mmap, remote_addr,
                                   resources.num_tasks));
 
   EXIT_ON_FAIL(submit_dma_tasks(resources.num_tasks, resources.tasks));
-  EXIT_ON_FAIL(poll_for_completion(&state, resources.num_buf_pairs));
+  EXIT_ON_FAIL(poll_for_completion(state, resources.num_buf_pairs));
 
   free(resources.src_bufs);
   free(resources.dst_bufs);
@@ -83,6 +84,7 @@ doca_error_t dma_copy_dpu() {
   //   doca_mmap_stop(remote_mmap);
   //   doca_mmap_destroy(remote_mmap);
   // }
-  dma_state_cleanup(&state);
+  dma_state_cleanup(state);
+  free(resources.state);
   return DOCA_SUCCESS;
 }
