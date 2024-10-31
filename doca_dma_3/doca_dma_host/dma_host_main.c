@@ -42,7 +42,6 @@ exit:
 doca_error_t dma_copy_host() {
   struct dma_state state = {0};
   state.buffer_size = 4096;
-  state.buf_inv_size = 64;
 
   EXIT_ON_FAIL(allocate_buffer(&state));
   char pcie_addr[16] = "03:00.0\0";

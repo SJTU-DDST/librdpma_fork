@@ -42,6 +42,8 @@ exit:
 doca_error_t dma_copy_dpu() {
   struct dma_resources resources = {0};
   struct dma_state state = resources.state;
+  state.buffer_size = 4096;
+  state.buf_inv_size = 4096;
   resources.num_buf_pairs = 2048;
   resources.num_tasks = 64;
   char pcie_addr[16] = "03:00.0\0";
