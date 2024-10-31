@@ -210,7 +210,7 @@ static void dma_memcpy_error_callback(struct doca_dma_task_memcpy *dma_task,
 doca_error_t create_dma_dpu_resources(const char *pcie_addr,
                                       struct dma_resources *resources) {
   union doca_data ctx_user_data = {0};
-  EXIT_ON_FAIL(create_dma_state(pcie_addr, &resources->state));
+  EXIT_ON_FAIL(create_dma_state(pcie_addr, resources->state));
   EXIT_ON_FAIL(doca_dma_create(resources->state->dev, &resources->dma_ctx));
   resources->ctx = doca_dma_as_ctx(resources->dma_ctx);
   EXIT_ON_FAIL(doca_dma_task_memcpy_set_conf(
