@@ -8,6 +8,7 @@
 #include <doca_log.h>
 #include <doca_mmap.h>
 #include <doca_pe.h>
+#include <doca_buf.h>
 
 #define NUM_DMA_TASKS 256
 
@@ -43,9 +44,22 @@ struct dma_resources {
   struct dma_state state;
   struct doca_ctx *ctx;
   struct doca_dma *dma_ctx;
+
+  uint32_t buf_pair_idx;
+  struct doca_buf **src_bufs;
+  struct doca_buf **dst_bufs;
+  uint32_t num_buf_pairs;
+  struct doca_dma_task_memcpy **tasks;
+  uint32_t num_tasks;
 };
 
 doca_error_t allocate_buffer(struct dma_state *state);
+
+doca_error_t allocate_doca_bufs(struct dma_state *state,
+                                struct doca_mmap *remote_mmap,
+                                char *remote_addr, uint32_t num_buf_pairs,
+                                struct doca_buf **src_bufs,
+                                struct doca_buf **dst_bufs);
 
 doca_error_t
 free_dma_memcpy_task_buffers(struct doca_dma_task_memcpy *dma_task);
@@ -54,11 +68,13 @@ doca_error_t dma_task_free(struct doca_dma_task_memcpy *dma_task);
 
 doca_error_t allocate_dma_tasks(struct dma_resources *resources,
                                 struct doca_mmap *remote_mmap,
-                                void *remote_addr, uint32_t num_tasks,
-                                struct doca_dma_task_memcpy **tasks);
+                                void *remote_addr, uint32_t num_tasks);
 
 doca_error_t submit_dma_tasks(uint32_t num_tasks,
                               struct doca_dma_task_memcpy **tasks);
+
+doca_error_t dma_task_resubmit(struct dma_resources *resources,
+                               struct doca_dma_task_memcpy *dma_task);
 
 doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
                                        struct doca_dev **retval);
@@ -88,5 +104,12 @@ doca_error_t export_mmap_to_files(struct doca_mmap *mmap,
                                   size_t src_buffer_size,
                                   const char *export_desc_file_path,
                                   const char *buffer_info_file_path);
+
+doca_error_t import_mmap_to_config(const char *export_desc_file_path,
+                                   const char *buffer_info_file_path,
+                                   char *export_desc, size_t *export_desc_len,
+                                   char **remote_addr, size_t *remote_addr_len);
+
+doca_error_t poll_for_completion(struct dma_state *state, uint32_t num_tasks);
 
 #endif
