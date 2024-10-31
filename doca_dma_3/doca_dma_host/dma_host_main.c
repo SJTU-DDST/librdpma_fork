@@ -44,7 +44,7 @@ doca_error_t dma_copy_host() {
   state.buffer_size = 4096;
 
   EXIT_ON_FAIL(allocate_buffer(&state));
-  char pcie_addr[16] = "03:00.0\0";
+  char pcie_addr[16] = "b5:00.0\0";
   EXIT_ON_FAIL(create_dma_host_state(pcie_addr, &state));
   EXIT_ON_FAIL(export_mmap_to_files(state.local_mmap, state.dev, state.buffer,
                                     state.buffer_size, "export_desc.txt",
