@@ -1,10 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
 #include "dma_common.h"
 
 DOCA_LOG_REGISTER(DMA_HOST::MAIN)
 
 doca_error_t dma_copy_host(struct dma_cfg *cfg);
+void wait_for_dpu();
 
 int main(int argc, char **argv) {
 #ifndef DOCA_ARCH_HOST
@@ -44,13 +49,26 @@ doca_error_t dma_copy_host(struct dma_cfg *cfg) {
   }
 
   DOCA_LOG_INFO("Wait till the DPU has finished and press enter");
-  int enter = 0;
-  while (enter != '\r' && enter != '\n')
-    enter = getchar();
+  wait_for_dpu();
 
   for (uint32_t t = 0; t < num_threads; t++) {
     dma_state_cleanup(&state[t]);
   }
   free(state);
   return DOCA_SUCCESS;
+}
+
+void wait_for_dpu() {
+    int server_fd, client_fd;
+    struct sockaddr_in address;
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(8080);
+    bind(server_fd, (struct sockaddr *)&address, sizeof(address));
+    listen(server_fd, 1);
+    client_fd = accept(server_fd, NULL, NULL);
+    close(client_fd);
+    printf("Dpu finished, dma copy completed.\n");
+    close(server_fd);
 }
