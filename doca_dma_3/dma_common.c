@@ -67,7 +67,6 @@ static doca_error_t num_working_tasks_callback(void *param, void *config) {
 }
 
 doca_error_t register_dma_params(bool isdpu) {
-  doca_error_t result;
   struct doca_argp_param *pci_address_param, *num_ops_param,
       *num_working_tasks_param, *payload_param;
 
@@ -317,7 +316,7 @@ static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
                                           union doca_data ctx_user_data) {
   struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
   uint32_t task_idx = (uint32_t)task_user_data.u64;
-
+  DOCA_LOG_INFO("Task %u completed", task_idx);
   resources->state->num_completed_tasks++;
 
   (void)free_dma_memcpy_task_buffers(dma_task);
