@@ -1,13 +1,16 @@
+#include <pthread.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
-#include "dma_common.h"
 #include "benchmark.h"
+#include "dma_common.h"
 
 DOCA_LOG_REGISTER(DMA_DPU::MAIN)
 
 doca_error_t dma_copy_dpu(struct dma_cfg *cfg);
+
+void *dma_copy_dpu_thread(void *arg);
 
 int main(int argc, char **argv) {
 #ifndef DOCA_ARCH_DPU
@@ -30,57 +33,101 @@ int main(int argc, char **argv) {
 doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
   struct timespec start = {0};
   struct timespec end = {0};
-  struct dma_resources resources = {0};
-  resources.state = (struct dma_state *)malloc(sizeof(struct dma_state));
-  struct dma_state *state = resources.state;
+  uint32_t num_threads = 16;
+  struct dma_resources *resources_array =
+      (struct dma_resources *)calloc(num_threads, sizeof(struct dma_resources));
 
-  state->buffer_size = cfg->payload;
-  resources.num_buf_pairs = cfg->ops;
-  state->buf_inv_size = cfg->ops * 2;
-  resources.num_tasks = cfg->num_working_tasks;
+  char export_desc_file_name[32];
+  char buffer_info_file_name[32];
 
-  struct doca_mmap *remote_mmap;
-  char exported_desc[1024] = {0};
-  size_t exported_desc_len;
-  char *remote_addr = NULL;
-  size_t remote_addr_len;
+  for (uint32_t t = 0; t < num_threads; t++) {
+    char exported_desc[1024] = {0};
+    size_t exported_desc_len;
+    char *remote_addr = NULL;
+    size_t remote_addr_len;
+    sprintf(export_desc_file_name, "export_desc_%d.txt", t);
+    sprintf(buffer_info_file_name, "buffer_info_%d.txt", t);
+    EXIT_ON_FAIL(import_mmap_to_config(
+        export_desc_file_name, buffer_info_file_name, exported_desc,
+        &exported_desc_len, &remote_addr, &remote_addr_len));
 
-  resources.src_bufs = (struct doca_buf **)malloc(resources.num_buf_pairs *
-                                                  sizeof(struct doca_buf *));
-  resources.dst_bufs = (struct doca_buf **)malloc(resources.num_buf_pairs *
-                                                  sizeof(struct doca_buf *));
-  resources.tasks = (struct doca_dma_task_memcpy **)malloc(
-      resources.num_tasks * sizeof(struct doca_dma_task_memcpy *));
+    resources_array[t].state =
+        (struct dma_state *)calloc(1, sizeof(struct dma_state));
+    resources_array[t].thread_idx = t;
+    resources_array[t].state->buffer_size = cfg->payload;
+    resources_array[t].num_buf_pairs = cfg->ops / num_threads;
+    resources_array[t].state->buf_inv_size =
+        resources_array[t].num_buf_pairs * 2;
+    resources_array[t].num_tasks = cfg->num_working_tasks;
 
-  EXIT_ON_FAIL(allocate_buffer(state));
-  EXIT_ON_FAIL(create_dma_dpu_resources(cfg->local_pcie_addr, &resources));
+    resources_array[t].src_bufs = (struct doca_buf **)malloc(
+        resources_array[t].num_buf_pairs * sizeof(struct doca_buf *));
+    resources_array[t].dst_bufs = (struct doca_buf **)malloc(
+        resources_array[t].num_buf_pairs * sizeof(struct doca_buf *));
+    resources_array[t].tasks = (struct doca_dma_task_memcpy **)malloc(
+        resources_array[t].num_tasks * sizeof(struct doca_dma_task_memcpy *));
+    EXIT_ON_FAIL(allocate_buffer(resources_array[t].state));
+    EXIT_ON_FAIL(
+        create_dma_dpu_resources(cfg->local_pcie_addr, &resources_array[t]));
+    EXIT_ON_FAIL(doca_mmap_create_from_export(
+        NULL, exported_desc, exported_desc_len, resources_array[t].state->dev,
+        &resources_array[t].remote_mmap));
+    EXIT_ON_FAIL(allocate_doca_bufs(
+        resources_array[t].state, resources_array[t].remote_mmap, remote_addr,
+        resources_array[t].num_buf_pairs, resources_array[t].src_bufs,
+        resources_array[t].dst_bufs));
+    EXIT_ON_FAIL(allocate_dma_tasks(&resources_array[t],
+                                    resources_array[t].remote_mmap, remote_addr,
+                                    resources_array[t].num_tasks));
+  }
 
-  EXIT_ON_FAIL(import_mmap_to_config("export_desc.txt", "buffer_info.txt",
-                                     exported_desc, &exported_desc_len,
-                                     &remote_addr, &remote_addr_len));
-  EXIT_ON_FAIL(doca_mmap_create_from_export(
-      NULL, exported_desc, exported_desc_len, state->dev, &remote_mmap));
-  EXIT_ON_FAIL(allocate_doca_bufs(state, remote_mmap, remote_addr,
-                                  resources.num_buf_pairs, resources.src_bufs,
-                                  resources.dst_bufs));
-  EXIT_ON_FAIL(allocate_dma_tasks(&resources, remote_mmap, remote_addr,
-                                  resources.num_tasks));
-
+  pthread_t *threads = (pthread_t *)calloc(num_threads, sizeof(pthread_t));
   clock_gettime(CLOCK_REALTIME, &start);
-  EXIT_ON_FAIL(submit_dma_tasks(resources.num_tasks, resources.tasks));
+  for (uint32_t t = 0; t < num_threads; t++) {
+    pthread_create(&threads[t], NULL, dma_copy_dpu_thread,
+                   (void *)&resources_array[t]);
+  }
 
-  EXIT_ON_FAIL(poll_for_completion(state, resources.num_buf_pairs));
+  for (uint32_t t = 0; t < num_threads; t++) {
+    void *ret;
+    pthread_join(threads[t], &ret);
+    doca_error_t result = (doca_error_t)ret;
+    if (result != DOCA_SUCCESS) {
+      DOCA_LOG_ERR("Thead execution failed");
+    }
+  }
   clock_gettime(CLOCK_REALTIME, &end);
   timespec_sub(&end, start);
   write_statistics_to_file(cfg, &end, "result.json");
 
-  if (remote_mmap != NULL) {
-    doca_mmap_stop(remote_mmap);
-    doca_mmap_destroy(remote_mmap);
+  free(threads);
+  for (uint32_t t = 0; t < num_threads; t++) {
+    if (resources_array[t].remote_mmap != NULL) {
+      doca_mmap_stop(resources_array[t].remote_mmap);
+      doca_mmap_destroy(resources_array[t].remote_mmap);
+    }
+    dma_resources_cleanup(&resources_array[t]);
+    free(resources_array[t].src_bufs);
+    free(resources_array[t].dst_bufs);
+    free(resources_array[t].tasks);
   }
-  dma_resources_cleanup(&resources);
-  free(resources.src_bufs);
-  free(resources.dst_bufs);
-  free(resources.tasks);
+  free(resources_array);
   return DOCA_SUCCESS;
+}
+
+void *dma_copy_dpu_thread(void *arg) {
+  doca_error_t result = DOCA_SUCCESS;
+  struct dma_resources *resources = (struct dma_resources *)arg;
+  result = submit_dma_tasks(resources->num_tasks, resources->tasks);
+  if (result != DOCA_SUCCESS) {
+    DOCA_LOG_ERR("Failed to submit dma tasks in thread %u",
+                 resources->thread_idx);
+    return (void *)result;
+  }
+  result = poll_for_completion(resources->state, resources->num_buf_pairs);
+  if (result != DOCA_SUCCESS) {
+    DOCA_LOG_ERR("Failed to run dma tasks in thread %u", resources->thread_idx);
+    return (void *)result;
+  }
+  return (void *)DOCA_SUCCESS;
 }

@@ -63,6 +63,9 @@ struct dma_resources {
   uint32_t num_buf_pairs;
   struct doca_dma_task_memcpy **tasks;
   uint32_t num_tasks;
+
+  struct doca_mmap *remote_mmap;
+  uint32_t thread_idx;
 };
 
 doca_error_t init_log_backend();

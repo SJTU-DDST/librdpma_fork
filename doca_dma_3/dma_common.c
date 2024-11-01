@@ -174,9 +174,9 @@ doca_error_t dma_task_free(struct doca_dma_task_memcpy *dma_task) {
 doca_error_t allocate_dma_tasks(struct dma_resources *resources,
                                 struct doca_mmap *remote_mmap,
                                 void *remote_addr, uint32_t num_tasks) {
-  DOCA_LOG_INFO("Allocating tasks");
 
   for (uint32_t i = 0; i < num_tasks; i++) {
+  DOCA_LOG_INFO("Allocating tasks"); 
     union doca_data user_data = {0};
     user_data.u64 = resources->buf_pair_idx;
     EXIT_ON_FAIL(doca_dma_task_memcpy_alloc_init(
