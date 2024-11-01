@@ -1,10 +1,132 @@
 #include <limits.h>
 
+#include <doca_argp.h>
+
 #include "dma_common.h"
 
 DOCA_LOG_REGISTER(DMA::COMMON);
 
 #define RECV_BUF_SIZE (512)
+
+doca_error_t init_log_backend() {
+  struct doca_log_backend *sdk_log;
+  EXIT_ON_FAIL(doca_log_backend_create_standard());
+  EXIT_ON_FAIL(doca_log_backend_create_with_file_sdk(stderr, &sdk_log));
+  EXIT_ON_FAIL(doca_log_backend_set_sdk_level(sdk_log, DOCA_LOG_LEVEL_WARNING));
+  return DOCA_SUCCESS;
+}
+
+static doca_error_t pci_callback(void *param, void *config) {
+  struct dma_cfg *cfg = (struct dma_cfg *)config;
+  const char *addr = (char *)param;
+  int addr_len = strnlen(addr, DOCA_DEVINFO_PCI_ADDR_SIZE);
+  if (addr_len >= DOCA_DEVINFO_PCI_ADDR_SIZE) {
+    DOCA_LOG_ERR("Entered device PCI address exceeding the maximum size of %d",
+                 DOCA_DEVINFO_PCI_ADDR_SIZE - 1);
+    return DOCA_ERROR_INVALID_VALUE;
+  }
+  strncpy(cfg->local_pcie_addr, addr, addr_len + 1);
+  return DOCA_SUCCESS;
+}
+
+static doca_error_t payload_callback(void *param, void *config) {
+  struct dma_cfg *cfg = (struct dma_cfg *)config;
+  int *payload = (int *)param;
+  if (*payload > MAX_PAYLOAD || *payload < 1) {
+    DOCA_LOG_ERR("Entered payload number is not within the range of 1 to %d",
+                 MAX_PAYLOAD);
+    return DOCA_ERROR_INVALID_VALUE;
+  }
+  cfg->payload = *payload;
+  return DOCA_SUCCESS;
+}
+
+static doca_error_t num_ops_callback(void *param, void *config) {
+  struct dma_cfg *cfg = (struct dma_cfg *)config;
+  int *ops = (int *)param;
+  if (*ops > MAX_OPS || *ops < 1) {
+    DOCA_LOG_INFO("Entered oprations number is not within the range of 1 to %d",
+                  MAX_OPS);
+    return DOCA_ERROR_INVALID_VALUE;
+  }
+  cfg->ops = *ops;
+  return DOCA_SUCCESS;
+}
+
+static doca_error_t num_working_tasks_callback(void *param, void *config) {
+  struct dma_cfg *cfg = (struct dma_cfg *)config;
+  int *num_working_tasks = (int *)param;
+  if (*num_working_tasks > MAX_WORKING_TASKS || *num_working_tasks < 1) {
+    DOCA_LOG_INFO(
+        "Entered number of woring tasks is not within the range of 1 to %d",
+        MAX_WORKING_TASKS);
+    return DOCA_ERROR_INVALID_VALUE;
+  }
+  cfg->num_working_tasks = *num_working_tasks;
+  return DOCA_SUCCESS;
+}
+
+doca_error_t register_dma_params(bool isdpu) {
+  doca_error_t result;
+  struct doca_argp_param *pci_address_param, *num_ops_param,
+      *num_working_tasks_param, *payload_param;
+
+  /* Create and register PCI address param */
+  EXIT_ON_FAIL(doca_argp_param_create(&pci_address_param));
+  doca_argp_param_set_short_name(pci_address_param, "p");
+  doca_argp_param_set_long_name(pci_address_param, "pci-addr");
+  doca_argp_param_set_description(pci_address_param,
+                                  "DOCA DMA device PCI address");
+  doca_argp_param_set_callback(pci_address_param, pci_callback);
+  doca_argp_param_set_type(pci_address_param, DOCA_ARGP_TYPE_STRING);
+  doca_argp_param_set_mandatory(pci_address_param);
+  EXIT_ON_FAIL(doca_argp_register_param(pci_address_param));
+
+  /* Create and register payload param */
+  EXIT_ON_FAIL(doca_argp_param_create(&payload_param));
+  doca_argp_param_set_short_name(payload_param, "f");
+  doca_argp_param_set_long_name(payload_param, "payload");
+  doca_argp_param_set_description(payload_param,
+                                  "DOCA DMA payload size (Bytes)");
+  doca_argp_param_set_callback(payload_param, payload_callback);
+  doca_argp_param_set_type(payload_param, DOCA_ARGP_TYPE_INT);
+  doca_argp_param_set_mandatory(payload_param);
+  EXIT_ON_FAIL(doca_argp_register_param(payload_param));
+
+  if (isdpu) {
+    /* Create and register ops param */
+    EXIT_ON_FAIL(doca_argp_param_create(&num_ops_param));
+    doca_argp_param_set_short_name(num_ops_param, "o");
+    doca_argp_param_set_long_name(num_ops_param, "operations");
+    doca_argp_param_set_description(num_ops_param,
+                                    "Total number of dma copy operations");
+    doca_argp_param_set_callback(num_ops_param, num_ops_callback);
+    doca_argp_param_set_type(num_ops_param, DOCA_ARGP_TYPE_INT);
+    doca_argp_param_set_mandatory(num_ops_param);
+    EXIT_ON_FAIL(doca_argp_register_param(num_ops_param));
+
+    /* Create and register number of working tasks param */
+    EXIT_ON_FAIL(doca_argp_param_create(&num_working_tasks_param));
+    doca_argp_param_set_short_name(num_working_tasks_param, "w");
+    doca_argp_param_set_long_name(num_working_tasks_param, "working-tasks");
+    doca_argp_param_set_description(num_working_tasks_param,
+                                    "Number of working tasks");
+    doca_argp_param_set_callback(num_working_tasks_param,
+                                 num_working_tasks_callback);
+    doca_argp_param_set_type(num_working_tasks_param, DOCA_ARGP_TYPE_INT);
+    doca_argp_param_set_mandatory(num_working_tasks_param);
+    EXIT_ON_FAIL(doca_argp_register_param(num_working_tasks_param));
+  }
+  return DOCA_SUCCESS;
+}
+
+doca_error_t init_argp(const char *name, struct dma_cfg *cfg, int argc,
+                       char **argv, bool is_dpu) {
+  EXIT_ON_FAIL(doca_argp_init(name, cfg));
+  EXIT_ON_FAIL(register_dma_params(is_dpu));
+  EXIT_ON_FAIL(doca_argp_start(argc, argv));
+  return DOCA_SUCCESS;
+}
 
 doca_error_t allocate_buffer(struct dma_state *state) {
   state->buffer = (char *)malloc(state->buffer_size);
@@ -22,11 +144,11 @@ doca_error_t allocate_doca_bufs(struct dma_state *state,
   DOCA_LOG_INFO("Allocating doca bufs");
   for (uint32_t i = 0; i < num_buf_pairs; i++) {
     EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_data(
-        state->buf_inv, state->local_mmap, (void *)state->buffer,
-        state->buffer_size, &src_bufs[i]));
-    EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_addr(
         state->buf_inv, remote_mmap, (void *)remote_addr, state->buffer_size,
-        &dst_bufs[i]));
+        &src_bufs[i]));
+    EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_addr(
+        state->buf_inv, state->local_mmap, (void *)state->buffer,
+        state->buffer_size, &dst_bufs[i]));
   }
   return DOCA_SUCCESS;
 }
@@ -155,7 +277,7 @@ doca_error_t create_buf_inventory(struct dma_state *state) {
 
 doca_error_t create_dma_state(const char *pcie_addr, struct dma_state *state) {
   EXIT_ON_FAIL(open_device(pcie_addr, state));
-  EXIT_ON_FAIL(create_mmap(state, DOCA_ACCESS_FLAG_PCI_READ_ONLY));
+  EXIT_ON_FAIL(create_mmap(state, DOCA_ACCESS_FLAG_PCI_READ_WRITE));
   EXIT_ON_FAIL(create_buf_inventory(state));
   EXIT_ON_FAIL(create_pe(state));
   return DOCA_SUCCESS;
@@ -195,7 +317,6 @@ static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
                                           union doca_data ctx_user_data) {
   struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
   uint32_t task_idx = (uint32_t)task_user_data.u64;
-  DOCA_LOG_INFO("Dma task idx: %u is completed successfully", task_idx);
 
   resources->state->num_completed_tasks++;
 
@@ -205,7 +326,17 @@ static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
 
 static void dma_memcpy_error_callback(struct doca_dma_task_memcpy *dma_task,
                                       union doca_data task_user_data,
-                                      union doca_data ctx_user_data) {}
+                                      union doca_data ctx_user_data) {
+  struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
+  struct doca_task *task = doca_dma_task_memcpy_as_task(dma_task);
+  (void)task_user_data;
+
+  resources->state->num_completed_tasks++;
+  DOCA_LOG_ERR("Task failed with status %s",
+               doca_error_get_descr(doca_task_get_status(task)));
+  (void)free_dma_memcpy_task_buffers(dma_task);
+  dma_task_resubmit(resources, dma_task);
+}
 
 doca_error_t create_dma_dpu_resources(const char *pcie_addr,
                                       struct dma_resources *resources) {
@@ -213,6 +344,7 @@ doca_error_t create_dma_dpu_resources(const char *pcie_addr,
   EXIT_ON_FAIL(create_dma_state(pcie_addr, resources->state));
   EXIT_ON_FAIL(doca_dma_create(resources->state->dev, &resources->dma_ctx));
   resources->ctx = doca_dma_as_ctx(resources->dma_ctx);
+  EXIT_ON_FAIL(doca_pe_connect_ctx(resources->state->pe, resources->ctx));
   EXIT_ON_FAIL(doca_dma_task_memcpy_set_conf(
       resources->dma_ctx, dma_memcpy_completed_callback,
       dma_memcpy_error_callback, NUM_DMA_TASKS));
@@ -244,6 +376,16 @@ void dma_state_cleanup(struct dma_state *state) {
     (void)doca_dev_close(state->dev);
   if (state->buffer != NULL)
     free(state->buffer);
+}
+
+void dma_resources_cleanup(struct dma_resources *resources) {
+  if (resources->ctx != NULL)
+    doca_ctx_stop(resources->ctx);
+  if (resources->dma_ctx != NULL)
+    doca_dma_destroy(resources->dma_ctx);
+  dma_state_cleanup(resources->state);
+  if (resources->state != NULL)
+    free(resources->state);
 }
 
 doca_error_t export_mmap_to_files(struct doca_mmap *mmap,

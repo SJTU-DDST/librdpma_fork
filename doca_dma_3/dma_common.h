@@ -1,6 +1,9 @@
 #ifndef DMA_COMMON_H_
 #define DMA_COMMON_H_
 
+#include <stdbool.h>
+
+#include <doca_buf.h>
 #include <doca_buf_inventory.h>
 #include <doca_ctx.h>
 #include <doca_dev.h>
@@ -8,9 +11,11 @@
 #include <doca_log.h>
 #include <doca_mmap.h>
 #include <doca_pe.h>
-#include <doca_buf.h>
 
-#define NUM_DMA_TASKS 256
+#define NUM_DMA_TASKS 1024
+#define MAX_PAYLOAD 2097152
+#define MAX_OPS 1000000000
+#define MAX_WORKING_TASKS 4096
 
 #define EXIT_ON_FAIL(_expression_)                                             \
   {                                                                            \
@@ -25,6 +30,13 @@
 
 /* Function to check if a given device is capable of executing some task */
 typedef doca_error_t (*tasks_check)(struct doca_devinfo *);
+
+struct dma_cfg {
+  uint32_t ops;
+  uint32_t num_working_tasks;
+  size_t payload;
+  char local_pcie_addr[16];
+};
 
 struct dma_state {
   struct doca_dev *dev;
@@ -52,6 +64,13 @@ struct dma_resources {
   struct doca_dma_task_memcpy **tasks;
   uint32_t num_tasks;
 };
+
+doca_error_t init_log_backend();
+
+doca_error_t register_dma_params(bool isdpu);
+
+doca_error_t init_argp(const char *name, struct dma_cfg *cfg, int argc,
+                       char **argv, bool is_dpu);
 
 doca_error_t allocate_buffer(struct dma_state *state);
 
@@ -97,6 +116,8 @@ doca_error_t create_dma_host_state(const char *pcie_addr,
                                    struct dma_state *state);
 
 void dma_state_cleanup(struct dma_state *state);
+
+void dma_resources_cleanup(struct dma_resources *resources);
 
 doca_error_t export_mmap_to_files(struct doca_mmap *mmap,
                                   const struct doca_dev *dev,
