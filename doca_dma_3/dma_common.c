@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <malloc.h>
 
 #include <doca_argp.h>
 
@@ -128,7 +129,7 @@ doca_error_t init_argp(const char *name, struct dma_cfg *cfg, int argc,
 }
 
 doca_error_t allocate_buffer(struct dma_state *state) {
-  state->buffer = (char *)malloc(state->buffer_size);
+  state->buffer = (char *)memalign(64, state->buffer_size);
   if (state->buffer == NULL) {
     return DOCA_ERROR_NO_MEMORY;
   }

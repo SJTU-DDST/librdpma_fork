@@ -1,5 +1,6 @@
-#include "dma_common.h"
 #include <stdio.h>
+
+#include "dma_common.h"
 
 DOCA_LOG_REGISTER(DMA_HOST::MAIN)
 

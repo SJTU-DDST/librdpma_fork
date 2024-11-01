@@ -133,4 +133,4 @@ doca_error_t import_mmap_to_config(const char *export_desc_file_path,
 
 doca_error_t poll_for_completion(struct dma_state *state, uint32_t num_tasks);
 
-#endif
+#endif // DMA_COMMON_H_

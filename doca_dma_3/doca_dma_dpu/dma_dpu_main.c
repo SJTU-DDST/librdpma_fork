@@ -1,6 +1,9 @@
-#include "dma_common.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
+
+#include "dma_common.h"
+#include "benchmark.h"
 
 DOCA_LOG_REGISTER(DMA_DPU::MAIN)
 
@@ -25,6 +28,8 @@ int main(int argc, char **argv) {
 }
 
 doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
+  struct timespec start = {0};
+  struct timespec end = {0};
   struct dma_resources resources = {0};
   resources.state = (struct dma_state *)malloc(sizeof(struct dma_state));
   struct dma_state *state = resources.state;
@@ -60,9 +65,14 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
                                   resources.dst_bufs));
   EXIT_ON_FAIL(allocate_dma_tasks(&resources, remote_mmap, remote_addr,
                                   resources.num_tasks));
+
+  clock_gettime(CLOCK_REALTIME, &start);
   EXIT_ON_FAIL(submit_dma_tasks(resources.num_tasks, resources.tasks));
 
   EXIT_ON_FAIL(poll_for_completion(state, resources.num_buf_pairs));
+  clock_gettime(CLOCK_REALTIME, &end);
+  timespec_sub(&end, start);
+  write_statistics_to_file(cfg, &end, "result.json");
 
   if (remote_mmap != NULL) {
     doca_mmap_stop(remote_mmap);

@@ -28,6 +28,7 @@ sample_dependencies += dependency('doca-argp')
 sample_srcs = [
   'dma_host_main.c',
   '../dma_common.c',
+  '../benchmark.c',
 ]
 
 inc_dirs = []
