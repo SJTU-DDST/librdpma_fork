@@ -13,6 +13,7 @@ _RUNS=15
 OPS=1000000
 INIT_PAYLOAD=8
 NUM_WORK_TASKS=1
+THREADS=16
 
 num=1
 
@@ -53,7 +54,7 @@ do
     for i in $(seq 1 $_RUNS) 
     do
         echo "Running program on host for payload size: $PAYLOAD B, operations: $OPS, number of working tasks: $NUM_WORK_TASKS"
-        sshpass -p "$SSH_PASS" ssh ${REMOTE_USER}@${REMOTE_IP} "cd ${REMOTE_DIR} && $REMOTE_PROGRAM -p b5:00.0 -f $PAYLOAD -l 10" &
+        sshpass -p "$SSH_PASS" ssh ${REMOTE_USER}@${REMOTE_IP} "cd ${REMOTE_DIR} && $REMOTE_PROGRAM -p b5:00.0 -f $PAYLOAD -t $THREADS -l 10" &
 
         sleep 0.1
 
@@ -61,7 +62,7 @@ do
         sshpass -p "$SSH_PASS" scp yiyang@192.168.98.75:/home/yiyang/librdpma_fork/doca_dma_3/\{export_desc_*.txt,buffer_info_*.txt\} .
 
         echo "Running program on dpu"
-        $HOST_PROGRAM -p 03:00.0 -f $PAYLOAD -o $OPS -w $NUM_WORK_TASKS -l 10 &
+        $HOST_PROGRAM -p 03:00.0 -f $PAYLOAD -o $OPS -w $NUM_WORK_TASKS -t $THREADS -l 10 &
         DPU_PID=$!
 
         wait $DPU_PID

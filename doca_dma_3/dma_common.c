@@ -106,6 +106,15 @@ doca_error_t register_dma_params(bool isdpu) {
   doca_argp_param_set_mandatory(payload_param);
   EXIT_ON_FAIL(doca_argp_register_param(payload_param));
 
+  /* Create and register number of threads param */
+  EXIT_ON_FAIL(doca_argp_param_create(&num_threads_param));
+  doca_argp_param_set_short_name(num_threads_param, "t");
+  doca_argp_param_set_long_name(num_threads_param, "threads");
+  doca_argp_param_set_description(num_threads_param, "Number of threads");
+  doca_argp_param_set_callback(num_threads_param, num_threads_callback);
+  doca_argp_param_set_type(num_threads_param, DOCA_ARGP_TYPE_INT);
+  EXIT_ON_FAIL(doca_argp_register_param(num_threads_param));
+
   if (isdpu) {
     /* Create and register ops param */
     EXIT_ON_FAIL(doca_argp_param_create(&num_ops_param));
@@ -129,15 +138,6 @@ doca_error_t register_dma_params(bool isdpu) {
     doca_argp_param_set_type(num_working_tasks_param, DOCA_ARGP_TYPE_INT);
     doca_argp_param_set_mandatory(num_working_tasks_param);
     EXIT_ON_FAIL(doca_argp_register_param(num_working_tasks_param));
-
-    /* Create and register number of threads param */
-    EXIT_ON_FAIL(doca_argp_param_create(&num_threads_param));
-    doca_argp_param_set_short_name(num_threads_param, "t");
-    doca_argp_param_set_long_name(num_threads_param, "threads");
-    doca_argp_param_set_description(num_threads_param, "Number of threads");
-    doca_argp_param_set_callback(num_threads_param, num_threads_callback);
-    doca_argp_param_set_type(num_threads_param, DOCA_ARGP_TYPE_INT);
-    EXIT_ON_FAIL(doca_argp_register_param(num_threads_param));
   }
   return DOCA_SUCCESS;
 }
