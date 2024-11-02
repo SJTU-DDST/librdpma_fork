@@ -30,7 +30,8 @@ int main(int argc, char **argv) {
 }
 
 doca_error_t dma_copy_host(struct dma_cfg *cfg) {
-  uint32_t num_threads = 16;
+  uint32_t num_threads = cfg->num_threads == 0 ? 1 : cfg->num_threads;
+  DOCA_LOG_INFO("Starting host with threads: %u, num of working tasks: %u", num_threads, cfg->num_working_tasks);
   struct dma_state *state =
       (struct dma_state *)calloc(num_threads, sizeof(struct dma_state));
 

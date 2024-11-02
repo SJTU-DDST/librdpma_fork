@@ -1,10 +1,10 @@
+#include <arpa/inet.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "benchmark.h"
 #include "dma_common.h"
@@ -37,7 +37,8 @@ int main(int argc, char **argv) {
 doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
   struct timespec start = {0};
   struct timespec end = {0};
-  uint32_t num_threads = 1;
+  uint32_t num_threads = cfg->num_threads == 0 ? 1 : cfg->num_threads;
+  DOCA_LOG_INFO("Starting dpu with threads: %u, num of working tasks: %u", num_threads, cfg->num_working_tasks);
   struct dma_resources *resources_array =
       (struct dma_resources *)calloc(num_threads, sizeof(struct dma_resources));
 
@@ -138,12 +139,12 @@ void *dma_copy_dpu_thread(void *arg) {
 }
 
 void signal_host() {
-    int sock;
-    struct sockaddr_in server_addr;
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8080);
-    inet_pton(AF_INET, "192.168.98.75", &server_addr.sin_addr);
-    connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr));
-    close(sock);
+  int sock;
+  struct sockaddr_in server_addr;
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(8080);
+  inet_pton(AF_INET, "192.168.98.75", &server_addr.sin_addr);
+  connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr));
+  close(sock);
 }

@@ -16,6 +16,7 @@
 #define MAX_PAYLOAD 2097152
 #define MAX_OPS 1000000000
 #define MAX_WORKING_TASKS 4096
+#define MAX_THREADS 128
 
 #define EXIT_ON_FAIL(_expression_)                                             \
   {                                                                            \
@@ -34,6 +35,7 @@ typedef doca_error_t (*tasks_check)(struct doca_devinfo *);
 struct dma_cfg {
   uint32_t ops;
   uint32_t num_working_tasks;
+  uint32_t num_threads;
   size_t payload;
   char local_pcie_addr[16];
 };

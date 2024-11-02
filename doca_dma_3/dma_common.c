@@ -67,9 +67,22 @@ static doca_error_t num_working_tasks_callback(void *param, void *config) {
   return DOCA_SUCCESS;
 }
 
+static doca_error_t num_threads_callback(void *param, void *config) {
+  struct dma_cfg *cfg = (struct dma_cfg *)config;
+  int *num_threads = (int *)param;
+  if (*num_threads > MAX_THREADS || *num_threads < 1) {
+    DOCA_LOG_INFO(
+        "Entered number of woring tasks is not within the range of 1 to %d",
+        MAX_THREADS);
+    return DOCA_ERROR_INVALID_VALUE;
+  }
+  cfg->num_threads = *num_threads;
+  return DOCA_SUCCESS;
+}
+
 doca_error_t register_dma_params(bool isdpu) {
   struct doca_argp_param *pci_address_param, *num_ops_param,
-      *num_working_tasks_param, *payload_param;
+      *num_working_tasks_param, *payload_param, *num_threads_param;
 
   /* Create and register PCI address param */
   EXIT_ON_FAIL(doca_argp_param_create(&pci_address_param));
@@ -116,6 +129,15 @@ doca_error_t register_dma_params(bool isdpu) {
     doca_argp_param_set_type(num_working_tasks_param, DOCA_ARGP_TYPE_INT);
     doca_argp_param_set_mandatory(num_working_tasks_param);
     EXIT_ON_FAIL(doca_argp_register_param(num_working_tasks_param));
+
+    /* Create and register number of threads param */
+    EXIT_ON_FAIL(doca_argp_param_create(&num_threads_param));
+    doca_argp_param_set_short_name(num_threads_param, "t");
+    doca_argp_param_set_long_name(num_threads_param, "threads");
+    doca_argp_param_set_description(num_threads_param, "Number of threads");
+    doca_argp_param_set_callback(num_threads_param, num_threads_callback);
+    doca_argp_param_set_type(num_threads_param, DOCA_ARGP_TYPE_INT);
+    EXIT_ON_FAIL(doca_argp_register_param(num_threads_param));
   }
   return DOCA_SUCCESS;
 }
@@ -176,7 +198,7 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
                                 void *remote_addr, uint32_t num_tasks) {
 
   for (uint32_t i = 0; i < num_tasks; i++) {
-  DOCA_LOG_INFO("Allocating tasks"); 
+    DOCA_LOG_INFO("Allocating tasks");
     union doca_data user_data = {0};
     user_data.u64 = resources->buf_pair_idx;
     EXIT_ON_FAIL(doca_dma_task_memcpy_alloc_init(
