@@ -56,7 +56,7 @@ do
         echo "Running program on host for payload size: $PAYLOAD B, operations: $OPS, number of working tasks: $NUM_WORK_TASKS"
         sshpass -p "$SSH_PASS" ssh ${REMOTE_USER}@${REMOTE_IP} "cd ${REMOTE_DIR} && $REMOTE_PROGRAM -p b5:00.0 -f $PAYLOAD -t $THREADS -l 10" &
 
-        sleep 0.1
+        sleep 1
 
         echo "Copying metadata"
         sshpass -p "$SSH_PASS" scp yiyang@192.168.98.75:/home/yiyang/librdpma_fork/doca_dma_3/\{export_desc_*.txt,buffer_info_*.txt\} .
