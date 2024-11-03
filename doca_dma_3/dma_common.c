@@ -198,7 +198,6 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
                                 void *remote_addr, uint32_t num_tasks) {
 
   for (uint32_t i = 0; i < num_tasks; i++) {
-    DOCA_LOG_INFO("Allocating tasks");
     union doca_data user_data = {0};
     uint64_t ctx_idx = (uint64_t)(i % resources->state->num_ctxs);
     user_data.u64 = ctx_idx;
@@ -273,9 +272,10 @@ doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
 doca_error_t open_device(const char *pcie_addr, struct dma_state *state) {
   state->dev =
       (struct doca_dev **)malloc(state->num_ctxs * sizeof(struct doca_dev *));
-  for (uint32_t i = 0; i < state->num_ctxs; i++)
+  for (uint32_t i = 0; i < state->num_ctxs; i++) {
     EXIT_ON_FAIL(open_doca_device_with_pci(pcie_addr, check_dev_dma_capable,
                                            &state->dev[i]));
+  }
   return DOCA_SUCCESS;
 }
 
@@ -292,8 +292,7 @@ doca_error_t create_mmap(struct dma_state *state,
   EXIT_ON_FAIL(doca_mmap_create(&state->local_mmap));
   EXIT_ON_FAIL(doca_mmap_set_memrange(state->local_mmap, state->buffer,
                                       state->buffer_size));
-  for (uint32_t i = 0; i < state->num_ctxs; i++)
-    EXIT_ON_FAIL(doca_mmap_add_dev(state->local_mmap, state->dev[i]));
+  EXIT_ON_FAIL(doca_mmap_add_dev(state->local_mmap, state->dev[0]));
   EXIT_ON_FAIL(doca_mmap_set_permissions(state->local_mmap, access_flag));
   EXIT_ON_FAIL(doca_mmap_start(state->local_mmap));
   return DOCA_SUCCESS;
@@ -371,11 +370,11 @@ doca_error_t create_dma_dpu_resources(const char *pcie_addr,
                                       struct dma_resources *resources) {
   union doca_data ctx_user_data = {0};
   EXIT_ON_FAIL(create_dma_state(pcie_addr, resources->state));
+  resources->ctx = (struct doca_ctx **)malloc(resources->state->num_ctxs *
+                                              sizeof(struct doca_ctx *));
+  resources->dma_ctx = (struct doca_dma **)malloc(resources->state->num_ctxs *
+                                                  sizeof(struct doca_dma *));
   for (uint32_t i = 0; i < resources->state->num_ctxs; i++) {
-    resources->ctx = (struct doca_ctx **)malloc(resources->state->num_ctxs *
-                                                sizeof(struct doca_ctx *));
-    resources->dma_ctx = (struct doca_dma **)malloc(resources->state->num_ctxs *
-                                                    sizeof(struct doca_dma *));
     EXIT_ON_FAIL(
         doca_dma_create(resources->state->dev[i], &resources->dma_ctx[i]));
     resources->ctx[i] = doca_dma_as_ctx(resources->dma_ctx[i]);

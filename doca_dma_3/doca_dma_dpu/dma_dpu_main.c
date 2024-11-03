@@ -76,7 +76,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
     EXIT_ON_FAIL(
         create_dma_dpu_resources(cfg->local_pcie_addr, &resources_array[t]));
     EXIT_ON_FAIL(doca_mmap_create_from_export(
-        NULL, exported_desc, exported_desc_len, resources_array[t].state->dev,
+        NULL, exported_desc, exported_desc_len, resources_array[t].state->dev[0],
         &resources_array[t].remote_mmap));
     EXIT_ON_FAIL(allocate_doca_bufs(
         resources_array[t].state, resources_array[t].remote_mmap, remote_addr,
