@@ -44,7 +44,8 @@ struct dma_state {
   struct doca_dev *dev;
   struct doca_mmap *local_mmap;
   struct doca_buf_inventory *buf_inv;
-  struct doca_pe *pe;
+  struct doca_pe **pe;
+  uint32_t num_ctxs;
 
   char *buffer;
   size_t buffer_size;
@@ -56,8 +57,8 @@ struct dma_state {
 
 struct dma_resources {
   struct dma_state *state;
-  struct doca_ctx *ctx;
-  struct doca_dma *dma_ctx;
+  struct doca_ctx **ctx;
+  struct doca_dma **dma_ctx;
 
   uint32_t buf_pair_idx;
   struct doca_buf **src_bufs;

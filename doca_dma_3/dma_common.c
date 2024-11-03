@@ -200,9 +200,11 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
   for (uint32_t i = 0; i < num_tasks; i++) {
     DOCA_LOG_INFO("Allocating tasks");
     union doca_data user_data = {0};
-    user_data.u64 = resources->buf_pair_idx;
+    uint64_t ctx_idx = (uint64_t)(i % resources->state->num_ctxs);
+    user_data.u64 = ctx_idx;
     EXIT_ON_FAIL(doca_dma_task_memcpy_alloc_init(
-        resources->dma_ctx, resources->src_bufs[resources->buf_pair_idx],
+        resources->dma_ctx[ctx_idx],
+        resources->src_bufs[resources->buf_pair_idx],
         resources->dst_bufs[resources->buf_pair_idx], user_data,
         &resources->tasks[i]));
     resources->buf_pair_idx++;
@@ -276,7 +278,10 @@ doca_error_t open_device(const char *pcie_addr, struct dma_state *state) {
 }
 
 doca_error_t create_pe(struct dma_state *state) {
-  EXIT_ON_FAIL(doca_pe_create(&state->pe));
+  state->pe =
+      (struct doca_pe **)malloc(state->num_ctxs * sizeof(struct doca_pe *));
+  for (uint32_t i = 0; i < state->num_ctxs; i++)
+    EXIT_ON_FAIL(doca_pe_create(&state->pe[i]));
   return DOCA_SUCCESS;
 }
 
@@ -338,8 +343,7 @@ static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
                                           union doca_data task_user_data,
                                           union doca_data ctx_user_data) {
   struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
-  uint32_t task_idx = (uint32_t)task_user_data.u64;
-  DOCA_LOG_INFO("Task %u completed", task_idx);
+  uint32_t ctx_idx = (uint32_t)task_user_data.u64;
   resources->state->num_completed_tasks++;
 
   (void)free_dma_memcpy_task_buffers(dma_task);
@@ -364,15 +368,23 @@ doca_error_t create_dma_dpu_resources(const char *pcie_addr,
                                       struct dma_resources *resources) {
   union doca_data ctx_user_data = {0};
   EXIT_ON_FAIL(create_dma_state(pcie_addr, resources->state));
-  EXIT_ON_FAIL(doca_dma_create(resources->state->dev, &resources->dma_ctx));
-  resources->ctx = doca_dma_as_ctx(resources->dma_ctx);
-  EXIT_ON_FAIL(doca_pe_connect_ctx(resources->state->pe, resources->ctx));
-  EXIT_ON_FAIL(doca_dma_task_memcpy_set_conf(
-      resources->dma_ctx, dma_memcpy_completed_callback,
-      dma_memcpy_error_callback, NUM_DMA_TASKS));
-  ctx_user_data.ptr = resources;
-  EXIT_ON_FAIL(doca_ctx_set_user_data(resources->ctx, ctx_user_data));
-  doca_ctx_start(resources->ctx);
+  for (uint32_t i = 0; i < resources->state->num_ctxs; i++) {
+    resources->ctx = (struct doca_ctx **)malloc(resources->state->num_ctxs *
+                                                sizeof(struct doca_ctx *));
+    resources->dma_ctx = (struct doca_dma **)malloc(resources->state->num_ctxs *
+                                                    sizeof(struct doca_dma *));
+    EXIT_ON_FAIL(
+        doca_dma_create(resources->state->dev, &resources->dma_ctx[i]));
+    resources->ctx[i] = doca_dma_as_ctx(resources->dma_ctx[i]);
+    EXIT_ON_FAIL(
+        doca_pe_connect_ctx(resources->state->pe[i], resources->ctx[i]));
+    EXIT_ON_FAIL(doca_dma_task_memcpy_set_conf(
+        resources->dma_ctx[i], dma_memcpy_completed_callback,
+        dma_memcpy_error_callback, NUM_DMA_TASKS));
+    ctx_user_data.ptr = resources;
+    EXIT_ON_FAIL(doca_ctx_set_user_data(resources->ctx[i], ctx_user_data));
+    doca_ctx_start(resources->ctx[i]);
+  }
   return DOCA_SUCCESS;
 }
 
@@ -384,8 +396,11 @@ doca_error_t create_dma_host_state(const char *pcie_addr,
 }
 
 void dma_state_cleanup(struct dma_state *state) {
-  if (state->pe != NULL)
-    (void)doca_pe_destroy(state->pe);
+  if (state->pe != NULL) {
+    for (uint32_t i = 0; i < state->num_ctxs; i++)
+      (void)doca_pe_destroy(state->pe[i]);
+    free(state->pe);
+  }
   if (state->buf_inv != NULL) {
     (void)doca_buf_inventory_stop(state->buf_inv);
     (void)doca_buf_inventory_destroy(state->buf_inv);
@@ -401,10 +416,16 @@ void dma_state_cleanup(struct dma_state *state) {
 }
 
 void dma_resources_cleanup(struct dma_resources *resources) {
-  if (resources->ctx != NULL)
-    doca_ctx_stop(resources->ctx);
-  if (resources->dma_ctx != NULL)
-    doca_dma_destroy(resources->dma_ctx);
+  if (resources->ctx != NULL) {
+    for (uint32_t i = 0; i < resources->state->num_ctxs; i++)
+      doca_ctx_stop(resources->ctx[i]);
+    free(resources->ctx);
+  }
+  if (resources->dma_ctx != NULL) {
+    for (uint32_t i = 0; i < resources->state->num_ctxs; i++)
+      doca_dma_destroy(resources->dma_ctx[i]);
+    free(resources->dma_ctx);
+  }
   dma_state_cleanup(resources->state);
   if (resources->state != NULL)
     free(resources->state);
@@ -547,7 +568,8 @@ doca_error_t import_mmap_to_config(const char *export_desc_file_path,
 doca_error_t poll_for_completion(struct dma_state *state, uint32_t num_tasks) {
   DOCA_LOG_INFO("Polling until all tasks are completed");
   while (state->num_completed_tasks < num_tasks) {
-    (void)doca_pe_progress(state->pe);
+    for (uint32_t i = 0; i < state->num_ctxs; i++)
+      (void)doca_pe_progress(state->pe[i]);
   }
   DOCA_LOG_INFO("All tasks are completed");
   return DOCA_SUCCESS;
