@@ -202,7 +202,7 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
     uint64_t ctx_idx = (uint64_t)(i % resources->state->num_ctxs);
     user_data.u64 = ctx_idx;
     EXIT_ON_FAIL(doca_dma_task_memcpy_alloc_init(
-        resources->dma_ctx[15], resources->src_bufs[resources->buf_pair_idx],
+        resources->dma_ctx[ctx_idx], resources->src_bufs[resources->buf_pair_idx],
         resources->dst_bufs[resources->buf_pair_idx], user_data,
         &resources->tasks[i]));
     resources->buf_pair_idx++;
