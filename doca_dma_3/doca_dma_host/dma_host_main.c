@@ -47,7 +47,7 @@ doca_error_t dma_copy_host(struct dma_cfg *cfg) {
     EXIT_ON_FAIL(allocate_buffer(&state[t]));
     EXIT_ON_FAIL(create_dma_host_state(cfg->local_pcie_addr, &state[t]));
     EXIT_ON_FAIL(export_mmap_to_files(
-        state[t].local_mmap, *state[t].dev, state[t].buffer,
+        state[t].local_mmap, state[t].dev[0], state[t].buffer,
         state[t].buffer_size, export_desc_file_name, buffer_info_file_name));
   }
 
