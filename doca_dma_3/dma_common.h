@@ -41,7 +41,7 @@ struct dma_cfg {
 };
 
 struct dma_state {
-  struct doca_dev *dev;
+  struct doca_dev **dev;
   struct doca_mmap *local_mmap;
   struct doca_buf_inventory *buf_inv;
   struct doca_pe **pe;

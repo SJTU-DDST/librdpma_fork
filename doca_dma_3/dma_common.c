@@ -203,8 +203,7 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
     uint64_t ctx_idx = (uint64_t)(i % resources->state->num_ctxs);
     user_data.u64 = ctx_idx;
     EXIT_ON_FAIL(doca_dma_task_memcpy_alloc_init(
-        resources->dma_ctx[ctx_idx],
-        resources->src_bufs[resources->buf_pair_idx],
+        resources->dma_ctx[15], resources->src_bufs[resources->buf_pair_idx],
         resources->dst_bufs[resources->buf_pair_idx], user_data,
         &resources->tasks[i]));
     resources->buf_pair_idx++;
@@ -272,8 +271,11 @@ doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
 }
 
 doca_error_t open_device(const char *pcie_addr, struct dma_state *state) {
-  EXIT_ON_FAIL(
-      open_doca_device_with_pci(pcie_addr, check_dev_dma_capable, &state->dev));
+  state->dev =
+      (struct doca_dev **)malloc(state->num_ctxs * sizeof(struct doca_dev *));
+  for (uint32_t i = 0; i < state->num_ctxs; i++)
+    EXIT_ON_FAIL(open_doca_device_with_pci(pcie_addr, check_dev_dma_capable,
+                                           &state->dev[i]));
   return DOCA_SUCCESS;
 }
 
@@ -290,7 +292,8 @@ doca_error_t create_mmap(struct dma_state *state,
   EXIT_ON_FAIL(doca_mmap_create(&state->local_mmap));
   EXIT_ON_FAIL(doca_mmap_set_memrange(state->local_mmap, state->buffer,
                                       state->buffer_size));
-  EXIT_ON_FAIL(doca_mmap_add_dev(state->local_mmap, state->dev));
+  for (uint32_t i = 0; i < state->num_ctxs; i++)
+    EXIT_ON_FAIL(doca_mmap_add_dev(state->local_mmap, state->dev[i]));
   EXIT_ON_FAIL(doca_mmap_set_permissions(state->local_mmap, access_flag));
   EXIT_ON_FAIL(doca_mmap_start(state->local_mmap));
   return DOCA_SUCCESS;
@@ -374,7 +377,7 @@ doca_error_t create_dma_dpu_resources(const char *pcie_addr,
     resources->dma_ctx = (struct doca_dma **)malloc(resources->state->num_ctxs *
                                                     sizeof(struct doca_dma *));
     EXIT_ON_FAIL(
-        doca_dma_create(resources->state->dev, &resources->dma_ctx[i]));
+        doca_dma_create(resources->state->dev[i], &resources->dma_ctx[i]));
     resources->ctx[i] = doca_dma_as_ctx(resources->dma_ctx[i]);
     EXIT_ON_FAIL(
         doca_pe_connect_ctx(resources->state->pe[i], resources->ctx[i]));
@@ -409,8 +412,11 @@ void dma_state_cleanup(struct dma_state *state) {
     (void)doca_mmap_stop(state->local_mmap);
     (void)doca_mmap_destroy(state->local_mmap);
   }
-  if (state->dev != NULL)
-    (void)doca_dev_close(state->dev);
+  if (state->dev != NULL) {
+    for (uint32_t i = 0; i < state->num_ctxs; i++)
+      (void)doca_dev_close(state->dev[i]);
+    free(state->dev);
+  }
   if (state->buffer != NULL)
     free(state->buffer);
 }
