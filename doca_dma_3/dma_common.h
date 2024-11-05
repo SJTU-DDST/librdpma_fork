@@ -29,6 +29,9 @@
     }                                                                          \
   }
 
+#define GET_TIME(_timespec_ref_)                                               \
+  { clock_gettime(CLOCK_REALTIME, _timespec_ref_); }
+
 /* Function to check if a given device is capable of executing some task */
 typedef doca_error_t (*tasks_check)(struct doca_devinfo *);
 
@@ -69,6 +72,9 @@ struct dma_resources {
 
   struct doca_mmap *remote_mmap;
   uint32_t thread_idx;
+
+  struct timespec *timer;
+  struct timespec total_time;
 };
 
 doca_error_t init_log_backend();
@@ -96,10 +102,12 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
                                 void *remote_addr, uint32_t num_tasks);
 
 doca_error_t submit_dma_tasks(uint32_t num_tasks,
-                              struct doca_dma_task_memcpy **tasks);
+                              struct doca_dma_task_memcpy **tasks,
+                              struct timespec *timer);
 
 doca_error_t dma_task_resubmit(struct dma_resources *resources,
-                               struct doca_dma_task_memcpy *dma_task);
+                               struct doca_dma_task_memcpy *dma_task,
+                               union doca_data task_user_data);
 
 doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
                                        struct doca_dev **retval);

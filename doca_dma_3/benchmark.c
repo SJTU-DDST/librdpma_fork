@@ -45,7 +45,7 @@ double average(const double *duration_vec, int len) {
 }
 
 void write_statistics_to_file(const struct dma_cfg *cfg,
-                              const struct timespec *total_time,
+                              const struct timespec *total_time, double latency,
                               const char *filename) {
 
   double time_in_ms = timespec_to_ms(*total_time);
@@ -60,7 +60,10 @@ void write_statistics_to_file(const struct dma_cfg *cfg,
   fprintf(file, "{\n");
   fprintf(file, "    \"ops\": %u,\n", cfg->ops);
   fprintf(file, "    \"payload\": %lu,\n", cfg->payload);
-  fprintf(file, "    \"bandwidth\": %lf\n", bandwidth);
+  fprintf(file, "    \"bandwidth\": %lf,\n", bandwidth);
+  fprintf(file, "    \"threads\": %u,\n", cfg->num_threads);
+  fprintf(file, "    \"latency\": %lf,\n", latency);
+  fprintf(file, "    \"working_tasks\": %u\n", cfg->num_working_tasks);
   fprintf(file, "}\n");
 
   fclose(file);

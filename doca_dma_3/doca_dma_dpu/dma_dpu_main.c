@@ -35,10 +35,12 @@ int main(int argc, char **argv) {
 }
 
 doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
+  printf("Start initializing... \n");
   struct timespec start = {0};
   struct timespec end = {0};
   uint32_t num_threads = cfg->num_threads == 0 ? 1 : cfg->num_threads;
-  DOCA_LOG_INFO("Starting dpu with threads: %u, num of working tasks: %u", num_threads, cfg->num_working_tasks);
+  DOCA_LOG_INFO("Starting dpu with threads: %u, num of working tasks: %u",
+                num_threads, cfg->num_working_tasks);
   struct dma_resources *resources_array =
       (struct dma_resources *)calloc(num_threads, sizeof(struct dma_resources));
 
@@ -58,7 +60,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
 
     resources_array[t].state =
         (struct dma_state *)calloc(1, sizeof(struct dma_state));
-    resources_array[t].state->num_ctxs = 16;
+    resources_array[t].state->num_ctxs = 1;
     resources_array[t].thread_idx = t;
     resources_array[t].state->buffer_size = cfg->payload;
     resources_array[t].num_buf_pairs = cfg->ops / num_threads;
@@ -76,8 +78,8 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
     EXIT_ON_FAIL(
         create_dma_dpu_resources(cfg->local_pcie_addr, &resources_array[t]));
     EXIT_ON_FAIL(doca_mmap_create_from_export(
-        NULL, exported_desc, exported_desc_len, resources_array[t].state->dev[0],
-        &resources_array[t].remote_mmap));
+        NULL, exported_desc, exported_desc_len,
+        resources_array[t].state->dev[0], &resources_array[t].remote_mmap));
     EXIT_ON_FAIL(allocate_doca_bufs(
         resources_array[t].state, resources_array[t].remote_mmap, remote_addr,
         resources_array[t].num_buf_pairs, resources_array[t].src_bufs,
@@ -88,7 +90,8 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
   }
 
   pthread_t *threads = (pthread_t *)calloc(num_threads, sizeof(pthread_t));
-  clock_gettime(CLOCK_REALTIME, &start);
+  GET_TIME(&start);
+  printf("Start running... \n");
   for (uint32_t t = 0; t < num_threads; t++) {
     pthread_create(&threads[t], NULL, dma_copy_dpu_thread,
                    (void *)&resources_array[t]);
@@ -102,9 +105,17 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
       DOCA_LOG_ERR("Thead execution failed");
     }
   }
-  clock_gettime(CLOCK_REALTIME, &end);
+  printf("Running finished... \n");
+  GET_TIME(&end);
   timespec_sub(&end, start);
-  write_statistics_to_file(cfg, &end, "result.json");
+
+  struct timespec total_latency = {0};
+  for (uint32_t t = 0; t < num_threads; t++) {
+    timespec_add(&total_latency, resources_array[t].total_time);
+  }
+  write_statistics_to_file(cfg, &end,
+                           timespec_to_us(total_latency) / (double)cfg->ops,
+                           "result.json");
 
   free(threads);
   for (uint32_t t = 0; t < num_threads; t++) {
@@ -125,7 +136,8 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
 void *dma_copy_dpu_thread(void *arg) {
   doca_error_t result = DOCA_SUCCESS;
   struct dma_resources *resources = (struct dma_resources *)arg;
-  result = submit_dma_tasks(resources->num_tasks, resources->tasks);
+  result = submit_dma_tasks(resources->num_tasks, resources->tasks,
+                            resources->timer);
   if (result != DOCA_SUCCESS) {
     DOCA_LOG_ERR("Failed to submit dma tasks in thread %u",
                  resources->thread_idx);
