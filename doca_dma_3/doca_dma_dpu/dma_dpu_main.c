@@ -109,13 +109,15 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
   GET_TIME(&end);
   timespec_sub(&end, start);
 
+  double latency = 0.F;
+#ifdef LATENCY_BENCHMARK
   struct timespec total_latency = {0};
   for (uint32_t t = 0; t < num_threads; t++) {
     timespec_add(&total_latency, resources_array[t].total_time);
   }
-  write_statistics_to_file(cfg, &end,
-                           timespec_to_us(total_latency) / (double)cfg->ops,
-                           "result.json");
+  latency = timespec_to_us(total_latency) / (double)cfg->ops;
+#endif
+  write_statistics_to_file(cfg, &end, latency, "result.json");
 
   free(threads);
   for (uint32_t t = 0; t < num_threads; t++) {

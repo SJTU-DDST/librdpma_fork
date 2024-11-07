@@ -226,9 +226,11 @@ doca_error_t submit_dma_tasks(uint32_t num_tasks,
     user_data.ptr = &timer[task_id];
     doca_task_set_user_data(task, user_data);
     EXIT_ON_FAIL(doca_task_submit(task));
+#ifdef LATENCY_BENCHMARK
     struct timespec start = {0};
     GET_TIME(&start);
     timer[task_id] = start;
+#endif
   }
   return DOCA_SUCCESS;
 }
@@ -337,11 +339,12 @@ doca_error_t dma_task_resubmit(struct dma_resources *resources,
     doca_dma_task_memcpy_set_dst(dma_task,
                                  resources->dst_bufs[resources->buf_pair_idx]);
     resources->buf_pair_idx++;
-
+#ifdef LATENCY_BENCHMARK
     struct timespec new_start = {0};
     GET_TIME(&new_start);
     struct timespec *old_start = (struct timespec *)task_user_data.ptr;
     *old_start = new_start;
+#endif
     status = doca_task_submit(task);
     if (status != DOCA_SUCCESS) {
       DOCA_LOG_ERR("Failed to submit task with status %s",
@@ -358,13 +361,14 @@ doca_error_t dma_task_resubmit(struct dma_resources *resources,
 static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
                                           union doca_data task_user_data,
                                           union doca_data ctx_user_data) {
+  struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
+  resources->state->num_completed_tasks++;
+#ifdef LATENCY_BENCHMARK
   struct timespec end = {0};
   GET_TIME(&end);
-  struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
   struct timespec *start = (struct timespec *)task_user_data.ptr;
-  resources->state->num_completed_tasks++;
   timespec_add(&resources->total_time, get_duration(*start, end));
-
+#endif
   (void)free_dma_memcpy_task_buffers(dma_task);
   (void)dma_task_resubmit(resources, dma_task, task_user_data);
 }
@@ -404,8 +408,8 @@ doca_error_t create_dma_dpu_resources(const char *pcie_addr,
     EXIT_ON_FAIL(doca_ctx_set_user_data(resources->ctx[i], ctx_user_data));
     doca_ctx_start(resources->ctx[i]);
   }
-  resources->timer = (struct timespec *)malloc(resources->num_tasks *
-                                               sizeof(struct timespec));
+  resources->timer =
+      (struct timespec *)malloc(resources->num_tasks * sizeof(struct timespec));
   return DOCA_SUCCESS;
 }
 
