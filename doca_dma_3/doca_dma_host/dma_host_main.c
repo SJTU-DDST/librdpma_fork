@@ -35,7 +35,6 @@ doca_error_t dma_copy_host(struct dma_cfg *cfg) {
                 num_threads, cfg->num_working_tasks);
   struct dma_state *state =
       (struct dma_state *)calloc(num_threads, sizeof(struct dma_state));
-  state->num_ctxs = 1;
 
   char export_desc_file_name[32];
   char buffer_info_file_name[32];
@@ -44,6 +43,7 @@ doca_error_t dma_copy_host(struct dma_cfg *cfg) {
     sprintf(export_desc_file_name, "export_desc_%d.txt", t);
     sprintf(buffer_info_file_name, "buffer_info_%d.txt", t);
     state[t].buffer_size = cfg->payload;
+    state[t].num_ctxs = 1;
     EXIT_ON_FAIL(allocate_buffer(&state[t]));
     EXIT_ON_FAIL(create_dma_host_state(cfg->local_pcie_addr, &state[t]));
     EXIT_ON_FAIL(export_mmap_to_files(
@@ -65,6 +65,8 @@ void wait_for_dpu() {
   int server_fd, client_fd;
   struct sockaddr_in address;
   server_fd = socket(AF_INET, SOCK_STREAM, 0);
+  int opt = 1;
+  setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port = htons(8080);
