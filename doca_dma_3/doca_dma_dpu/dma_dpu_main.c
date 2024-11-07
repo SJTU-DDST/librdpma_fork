@@ -60,7 +60,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
 
     resources_array[t].state =
         (struct dma_state *)calloc(1, sizeof(struct dma_state));
-    resources_array[t].state->num_ctxs = 1;
+    resources_array[t].state->num_ctxs = 16;
     resources_array[t].thread_idx = t;
     resources_array[t].state->buffer_size = cfg->payload;
     resources_array[t].num_buf_pairs = cfg->ops / num_threads;

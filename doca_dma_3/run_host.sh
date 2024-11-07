@@ -2,7 +2,7 @@
 
 ninja -C build
 
-./build/doca_dma_host/doca_dma_copy_host -p b5:00.0 -f 4096 -t 16 -l 70 &
+./build/doca_dma_host/doca_dma_copy_host -p b5:00.0 -f 512 -t 16 -l 70 &
 
 sleep 1
 

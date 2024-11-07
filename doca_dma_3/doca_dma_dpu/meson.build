@@ -35,10 +35,15 @@ inc_dirs += include_directories('..')
 inc_dirs += include_directories('../..')
 inc_dirs += include_directories('/opt/mellanox/doca/include')
 
+flags = [
+  '-Wno-missing-braces',
+  # '-DLATENCY_BENCHMARK',
+]
+
 executable(
   'doca_' + NAME,
   sample_srcs,
-  c_args: '-Wno-missing-braces',
+  c_args: flags,
   dependencies: sample_dependencies,
   include_directories: inc_dirs,
   install: false,
