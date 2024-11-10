@@ -69,6 +69,19 @@ static doca_error_t num_working_tasks_callback(void *param, void *config) {
   return DOCA_SUCCESS;
 }
 
+static doca_error_t num_ctx_callback(void *param, void *config) {
+  struct dma_cfg *cfg = (struct dma_cfg *)config;
+  int *num_ctx = (int *)param;
+  if (*num_ctx > MAX_CTX || *num_ctx < 1) {
+    DOCA_LOG_INFO(
+        "Entered number of ctx is not within the range of 1 to %d",
+        MAX_CTX);
+    return DOCA_ERROR_INVALID_VALUE;
+  }
+  cfg->num_ctx = *num_ctx;
+  return DOCA_SUCCESS;
+}
+
 static doca_error_t num_threads_callback(void *param, void *config) {
   struct dma_cfg *cfg = (struct dma_cfg *)config;
   int *num_threads = (int *)param;
@@ -84,7 +97,7 @@ static doca_error_t num_threads_callback(void *param, void *config) {
 
 doca_error_t register_dma_params(bool isdpu) {
   struct doca_argp_param *pci_address_param, *num_ops_param,
-      *num_working_tasks_param, *payload_param, *num_threads_param;
+      *num_working_tasks_param, *payload_param, *num_threads_param, *num_ctx_param;
 
   /* Create and register PCI address param */
   EXIT_ON_FAIL(doca_argp_param_create(&pci_address_param));
@@ -140,6 +153,17 @@ doca_error_t register_dma_params(bool isdpu) {
     doca_argp_param_set_type(num_working_tasks_param, DOCA_ARGP_TYPE_INT);
     doca_argp_param_set_mandatory(num_working_tasks_param);
     EXIT_ON_FAIL(doca_argp_register_param(num_working_tasks_param));
+
+    /* Create and register number of ctx tasks param */
+    EXIT_ON_FAIL(doca_argp_param_create(&num_ctx_param));
+    doca_argp_param_set_short_name(num_ctx_param, "c");
+    doca_argp_param_set_long_name(num_ctx_param, "ctx");
+    doca_argp_param_set_description(num_ctx_param,
+                                    "Number of contexts");
+    doca_argp_param_set_callback(num_ctx_param,
+                                 num_ctx_callback);
+    doca_argp_param_set_type(num_ctx_param, DOCA_ARGP_TYPE_INT);
+    EXIT_ON_FAIL(doca_argp_register_param(num_ctx_param));
   }
   return DOCA_SUCCESS;
 }
@@ -167,12 +191,12 @@ doca_error_t allocate_doca_bufs(struct dma_state *state,
                                 struct doca_buf **dst_bufs) {
   DOCA_LOG_INFO("Allocating doca bufs");
   for (uint32_t i = 0; i < num_buf_pairs; i++) {
-    EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_data(
-        state->buf_inv, remote_mmap, (void *)remote_addr, state->buffer_size,
-        &src_bufs[i]));
     EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_addr(
+        state->buf_inv, remote_mmap, (void *)remote_addr, state->buffer_size,
+        &dst_bufs[i]));
+    EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_data(
         state->buf_inv, state->local_mmap, (void *)state->buffer,
-        state->buffer_size, &dst_bufs[i]));
+        state->buffer_size, &src_bufs[i]));
   }
   return DOCA_SUCCESS;
 }

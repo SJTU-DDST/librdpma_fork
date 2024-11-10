@@ -9,10 +9,11 @@ SSH_PASS="1111"
 OUTPUT_JSON="result.json"
 BENCHMARK_FILE_NAME="bench"
 _GROUPS=1
-_RUNS=13
-OPS=100000000
-INIT_PAYLOAD=8
+_RUNS=8
+OPS=10000000
+INIT_PAYLOAD=256
 NUM_WORK_TASKS=32
+NUM_CTX=1
 THREADS=16
 
 num=1
@@ -35,7 +36,7 @@ do
 
     for i in $(seq 1 $_RUNS) 
     do
-        echo "Running program on host for payload size: $PAYLOAD B, operations: $OPS, number of working tasks: $NUM_WORK_TASKS"
+        echo "Running program on host for payload: $PAYLOAD B, operations: $OPS, working tasks: $NUM_WORK_TASKS, ctx: $NUM_CTX, threads: $THREADS"
         sshpass -p "$SSH_PASS" ssh ${REMOTE_USER}@${REMOTE_IP} "cd ${REMOTE_DIR} && $REMOTE_PROGRAM -p b5:00.0 -f $PAYLOAD -t $THREADS -l 10" & 
 
         sleep 1
@@ -44,7 +45,7 @@ do
         sshpass -p "$SSH_PASS" scp yiyang@192.168.98.75:/home/yiyang/librdpma_fork/doca_dma_3/\{export_desc_*.txt,buffer_info_*.txt\} .
 
         echo "Running program on dpu"
-        $HOST_PROGRAM -p 03:00.0 -f $PAYLOAD -o $OPS -w $NUM_WORK_TASKS -t $THREADS -l 10 
+        $HOST_PROGRAM -p 03:00.0 -f $PAYLOAD -o $OPS -w $NUM_WORK_TASKS -c $NUM_CTX -t $THREADS -l 10 
 
         cat $OUTPUT_JSON >> $BENCHMARK_FILE
 
@@ -61,7 +62,7 @@ do
         echo "," >> $BENCHMARK_FILE
     fi
 
-    NUM_WORK_TASKS=$((NUM_WORK_TASKS * 2))
+    NUM_CTX=$((NUM_CTX * 2))
 
 done
 

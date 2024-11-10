@@ -16,6 +16,7 @@
 #define MAX_PAYLOAD 2097152
 #define MAX_OPS 1000000000
 #define MAX_WORKING_TASKS 4096
+#define MAX_CTX 1024
 #define MAX_THREADS 128
 
 #define EXIT_ON_FAIL(_expression_)                                             \
@@ -39,6 +40,7 @@ struct dma_cfg {
   uint32_t ops;
   uint32_t num_working_tasks;
   uint32_t num_threads;
+  uint32_t num_ctx;
   size_t payload;
   char local_pcie_addr[16];
 };

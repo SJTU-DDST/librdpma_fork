@@ -39,6 +39,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
   struct timespec start = {0};
   struct timespec end = {0};
   uint32_t num_threads = cfg->num_threads == 0 ? 1 : cfg->num_threads;
+  uint32_t num_ctx = cfg->num_ctx == 0 ? 1 : cfg->num_ctx;
   DOCA_LOG_INFO("Starting dpu with threads: %u, num of working tasks: %u",
                 num_threads, cfg->num_working_tasks);
   struct dma_resources *resources_array =
@@ -60,7 +61,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
 
     resources_array[t].state =
         (struct dma_state *)calloc(1, sizeof(struct dma_state));
-    resources_array[t].state->num_ctxs = 16;
+    resources_array[t].state->num_ctxs = num_ctx;
     resources_array[t].thread_idx = t;
     resources_array[t].state->buffer_size = cfg->payload;
     resources_array[t].num_buf_pairs = cfg->ops / num_threads;
