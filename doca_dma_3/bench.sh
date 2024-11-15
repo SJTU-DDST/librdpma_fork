@@ -8,11 +8,11 @@ REMOTE_PROGRAM="./build/doca_dma_host/doca_dma_copy_host"
 SSH_PASS="1111"
 OUTPUT_JSON="result.json"
 BENCHMARK_FILE_NAME="bench"
-_GROUPS=1
-_RUNS=8
+_GROUPS=6
+_RUNS=7
 OPS=10000000
 INIT_PAYLOAD=256
-NUM_WORK_TASKS=32
+NUM_WORK_TASKS=1
 NUM_CTX=1
 THREADS=16
 
@@ -62,7 +62,7 @@ do
         echo "," >> $BENCHMARK_FILE
     fi
 
-    NUM_CTX=$((NUM_CTX * 2))
+    NUM_WORK_TASKS=$((NUM_WORK_TASKS * 2))
 
 done
 

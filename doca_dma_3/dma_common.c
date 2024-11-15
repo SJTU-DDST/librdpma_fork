@@ -73,9 +73,8 @@ static doca_error_t num_ctx_callback(void *param, void *config) {
   struct dma_cfg *cfg = (struct dma_cfg *)config;
   int *num_ctx = (int *)param;
   if (*num_ctx > MAX_CTX || *num_ctx < 1) {
-    DOCA_LOG_INFO(
-        "Entered number of ctx is not within the range of 1 to %d",
-        MAX_CTX);
+    DOCA_LOG_INFO("Entered number of ctx is not within the range of 1 to %d",
+                  MAX_CTX);
     return DOCA_ERROR_INVALID_VALUE;
   }
   cfg->num_ctx = *num_ctx;
@@ -97,7 +96,8 @@ static doca_error_t num_threads_callback(void *param, void *config) {
 
 doca_error_t register_dma_params(bool isdpu) {
   struct doca_argp_param *pci_address_param, *num_ops_param,
-      *num_working_tasks_param, *payload_param, *num_threads_param, *num_ctx_param;
+      *num_working_tasks_param, *payload_param, *num_threads_param,
+      *num_ctx_param;
 
   /* Create and register PCI address param */
   EXIT_ON_FAIL(doca_argp_param_create(&pci_address_param));
@@ -158,10 +158,8 @@ doca_error_t register_dma_params(bool isdpu) {
     EXIT_ON_FAIL(doca_argp_param_create(&num_ctx_param));
     doca_argp_param_set_short_name(num_ctx_param, "c");
     doca_argp_param_set_long_name(num_ctx_param, "ctx");
-    doca_argp_param_set_description(num_ctx_param,
-                                    "Number of contexts");
-    doca_argp_param_set_callback(num_ctx_param,
-                                 num_ctx_callback);
+    doca_argp_param_set_description(num_ctx_param, "Number of contexts");
+    doca_argp_param_set_callback(num_ctx_param, num_ctx_callback);
     doca_argp_param_set_type(num_ctx_param, DOCA_ARGP_TYPE_INT);
     EXIT_ON_FAIL(doca_argp_register_param(num_ctx_param));
   }
@@ -188,15 +186,26 @@ doca_error_t allocate_doca_bufs(struct dma_state *state,
                                 struct doca_mmap *remote_mmap,
                                 char *remote_addr, uint32_t num_buf_pairs,
                                 struct doca_buf **src_bufs,
-                                struct doca_buf **dst_bufs) {
+                                struct doca_buf **dst_bufs, bool is_write) {
   DOCA_LOG_INFO("Allocating doca bufs");
-  for (uint32_t i = 0; i < num_buf_pairs; i++) {
-    EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_addr(
-        state->buf_inv, remote_mmap, (void *)remote_addr, state->buffer_size,
-        &dst_bufs[i]));
-    EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_data(
-        state->buf_inv, state->local_mmap, (void *)state->buffer,
-        state->buffer_size, &src_bufs[i]));
+  if (is_write) {
+    for (uint32_t i = 0; i < num_buf_pairs; i++) {
+      EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_addr(
+          state->buf_inv, remote_mmap, (void *)remote_addr, state->buffer_size,
+          &dst_bufs[i]));
+      EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_data(
+          state->buf_inv, state->local_mmap, (void *)state->buffer,
+          state->buffer_size, &src_bufs[i]));
+    }
+  } else {
+    for (uint32_t i = 0; i < num_buf_pairs; i++) {
+      EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_data(
+          state->buf_inv, remote_mmap, (void *)remote_addr, state->buffer_size,
+          &src_bufs[i]));
+      EXIT_ON_FAIL(doca_buf_inventory_buf_get_by_addr(
+          state->buf_inv, state->local_mmap, (void *)state->buffer,
+          state->buffer_size, &dst_bufs[i]));
+    }
   }
   return DOCA_SUCCESS;
 }
@@ -226,7 +235,6 @@ doca_error_t allocate_dma_tasks(struct dma_resources *resources,
   for (uint32_t i = 0; i < num_tasks; i++) {
     union doca_data user_data = {0};
     uint64_t ctx_idx = (uint64_t)(i % resources->state->num_ctxs);
-    // user_data.u64 = ctx_idx;
     EXIT_ON_FAIL(doca_dma_task_memcpy_alloc_init(
         resources->dma_ctx[ctx_idx],
         resources->src_bufs[resources->buf_pair_idx],
@@ -440,7 +448,7 @@ doca_error_t create_dma_dpu_resources(const char *pcie_addr,
 doca_error_t create_dma_host_state(const char *pcie_addr,
                                    struct dma_state *state) {
   EXIT_ON_FAIL(open_device(pcie_addr, state));
-  EXIT_ON_FAIL(create_mmap(state, DOCA_ACCESS_FLAG_PCI_READ_ONLY));
+  EXIT_ON_FAIL(create_mmap(state, DOCA_ACCESS_FLAG_PCI_READ_WRITE));
   return DOCA_SUCCESS;
 }
 

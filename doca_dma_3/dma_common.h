@@ -77,6 +77,8 @@ struct dma_resources {
 
   struct timespec *timer;
   struct timespec total_time;
+
+  bool is_write;
 };
 
 doca_error_t init_log_backend();
@@ -92,7 +94,7 @@ doca_error_t allocate_doca_bufs(struct dma_state *state,
                                 struct doca_mmap *remote_mmap,
                                 char *remote_addr, uint32_t num_buf_pairs,
                                 struct doca_buf **src_bufs,
-                                struct doca_buf **dst_bufs);
+                                struct doca_buf **dst_bufs, bool is_write);
 
 doca_error_t
 free_dma_memcpy_task_buffers(struct doca_dma_task_memcpy *dma_task);
