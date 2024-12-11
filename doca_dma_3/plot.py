@@ -4,7 +4,7 @@ import matplotlib.ticker as ticker
 import os
 
 files = os.listdir('.')
-file_name = 'bench_2.json'
+file_name = 'bench_3.json'
 save_dir = 'figures'
 
 with open(file_name, 'r') as f:
@@ -25,14 +25,14 @@ plt.xscale('log')
 plt.xticks([entry['payload'] / 1024.0 for entry in group], labels=[f"{int(size)}" if size == int(size) else f"{size}" for size in [entry['payload'] / 1024.0 for entry in group]])
 plt.xlabel('Payload (KB)')
 plt.ylabel('Bandwidth (Gbps)')
-plt.title('Bandwidth vs Payload (Threads = 16)')
+plt.title('DPU Read (Threads = 16)')
 plt.legend()
 plt.gca().xaxis.set_major_locator(ticker.FixedLocator([entry['payload'] / 1024.0 for entry in group]))
 plt.gca().xaxis.set_minor_locator(ticker.NullLocator())
 plt.grid(visible=True, which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 
-save_path = save_dir + '/' + 'dpu_read_bandwidth_2' + '.png'
+save_path = save_dir + '/' + 'dpu_write_bandwidth_3' + '.png'
 plt.savefig(save_path)
 print('Figure saved to' + save_path)
 

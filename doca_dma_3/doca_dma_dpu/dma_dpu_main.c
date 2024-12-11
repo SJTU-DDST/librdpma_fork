@@ -84,7 +84,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
     EXIT_ON_FAIL(allocate_doca_bufs(
         resources_array[t].state, resources_array[t].remote_mmap, remote_addr,
         resources_array[t].num_buf_pairs, resources_array[t].src_bufs,
-        resources_array[t].dst_bufs, true));
+        resources_array[t].dst_bufs, false));
     EXIT_ON_FAIL(allocate_dma_tasks(&resources_array[t],
                                     resources_array[t].remote_mmap, remote_addr,
                                     resources_array[t].num_tasks));

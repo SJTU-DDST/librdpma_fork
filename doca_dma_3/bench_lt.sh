@@ -13,6 +13,7 @@ _RUNS=7
 OPS=10000000
 INIT_PAYLOAD=256
 NUM_WORK_TASKS=1
+NUM_CTX=1
 THREADS=16
 
 num=1
@@ -44,7 +45,7 @@ do
         sshpass -p "$SSH_PASS" scp yiyang@192.168.98.75:/home/yiyang/librdpma_fork/doca_dma_3/\{export_desc_*.txt,buffer_info_*.txt\} .
 
         echo "Running program on dpu"
-        $HOST_PROGRAM -p 03:00.0 -f $PAYLOAD -o $OPS -w $NUM_WORK_TASKS -t $THREADS -l 10 
+        $HOST_PROGRAM -p 03:00.0 -f $PAYLOAD -o $OPS -w $NUM_WORK_TASKS -c $NUM_CTX -t $THREADS -l 10 
 
         cat $OUTPUT_JSON >> $BENCHMARK_FILE
 
