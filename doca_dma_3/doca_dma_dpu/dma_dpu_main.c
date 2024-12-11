@@ -17,10 +17,10 @@ void *dma_copy_dpu_thread(void *arg);
 void signal_host();
 
 int main(int argc, char **argv) {
-#ifndef DOCA_ARCH_DPU
-  DOCA_LOG_ERR("This program can run only on the DPU");
-  return EXIT_FAILURE;
-#endif
+// #ifndef DOCA_ARCH_DPU
+//   DOCA_LOG_ERR("This program can run only on the DPU");
+//   return EXIT_FAILURE;
+// #endif
   doca_error_t result;
   struct dma_cfg cfg = {0};
   init_log_backend();
@@ -84,7 +84,7 @@ doca_error_t dma_copy_dpu(struct dma_cfg *cfg) {
     EXIT_ON_FAIL(allocate_doca_bufs(
         resources_array[t].state, resources_array[t].remote_mmap, remote_addr,
         resources_array[t].num_buf_pairs, resources_array[t].src_bufs,
-        resources_array[t].dst_bufs, true));
+        resources_array[t].dst_bufs, false));
     EXIT_ON_FAIL(allocate_dma_tasks(&resources_array[t],
                                     resources_array[t].remote_mmap, remote_addr,
                                     resources_array[t].num_tasks));
@@ -160,7 +160,7 @@ void signal_host() {
   sock = socket(AF_INET, SOCK_STREAM, 0);
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(8080);
-  inet_pton(AF_INET, "192.168.98.75", &server_addr.sin_addr);
+  inet_pton(AF_INET, "192.168.98.114", &server_addr.sin_addr);
   connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr));
   close(sock);
 }

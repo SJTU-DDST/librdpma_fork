@@ -24,6 +24,8 @@ sample_dependencies += dependency('doca-dma')
 # Utility DOCA library for executables
 sample_dependencies += dependency('doca-argp')
 
+sample_dependencies += dependency('threads')
+
 sample_srcs = [
   'dma_dpu_main.c',
   '../dma_common.c',

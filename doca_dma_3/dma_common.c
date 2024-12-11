@@ -291,12 +291,14 @@ doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
                  doca_error_get_descr(res));
     return res;
   }
-
+  printf("Requested pci addr: %s \n", pci_addr);
   for (i = 0; i < nb_devs; i++) {
     res = doca_devinfo_is_equal_pci_addr(dev_list[i], pci_addr, &is_addr_equal);
     if (res == DOCA_SUCCESS && is_addr_equal) {
-      if (func != NULL && func(dev_list[i]) != DOCA_SUCCESS)
+      if (func != NULL && func(dev_list[i]) != DOCA_SUCCESS) {
+        printf("ttt\n");
         continue;
+      }
 
       /* if device can be opened */
       res = doca_dev_open(dev_list[i], retval);
@@ -304,9 +306,11 @@ doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
         doca_devinfo_destroy_list(dev_list);
         return res;
       }
+    } else {
+      printf("xxx\n");
     }
   }
-
+  printf("i=%d\n", i);
   DOCA_LOG_WARN("Matching device not found");
   res = DOCA_ERROR_NOT_FOUND;
 
