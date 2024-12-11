@@ -12,10 +12,10 @@ doca_error_t dma_copy_host(struct dma_cfg *cfg);
 void wait_for_dpu();
 
 int main(int argc, char **argv) {
-#ifndef DOCA_ARCH_HOST
-  DOCA_LOG_ERR("This program can run only on the Host");
-  return EXIT_FAILURE;
-#endif
+// #ifndef DOCA_ARCH_HOST
+//   DOCA_LOG_ERR("This program can run only on the Host");
+//   return EXIT_FAILURE;
+// #endif
   doca_error_t result;
   struct dma_cfg cfg = {0};
   init_log_backend();
