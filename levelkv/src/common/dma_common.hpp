@@ -1,8 +1,9 @@
 #pragma once
 
-#include <iostream>
-#include <string>
 #include <future>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #include <doca_buf.h>
 #include <doca_buf_inventory.h>
@@ -28,7 +29,7 @@ struct DmaRequest {
   size_t src_offset_;
   size_t dst_offset_;
   size_t len_;
-  std::promise<bool> promise_;
+  std::shared_ptr<std::promise<bool>> promise_;
 };
 
 doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
