@@ -105,6 +105,7 @@ doca_ctx *create_ctx(doca_dma *dma, doca_pe *pe, char *ctx_user_data_ptr) {
   doca_pe_connect_ctx(pe, ctx);
   doca_ctx_set_user_data(ctx, ctx_user_data);
   doca_ctx_start(ctx);
+  return ctx;
 }
 
 doca_buf *create_buf_by_data(doca_buf_inventory *inv, doca_mmap *mmap,

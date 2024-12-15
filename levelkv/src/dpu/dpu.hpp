@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -12,31 +13,34 @@
 #include <doca_mmap.h>
 #include <doca_pe.h>
 
+#include "dma_client.hpp"
 #include "level_hashing.hpp"
 
 #define CACHE_SIZE 64
 
+using bucket_id_t = int64_t;
+using frame_id_t = int64_t;
+
 class Dpu {
 public:
-  using bucket_id_t = int64_t;
-  using frame_id_t = int64_t;
-
-  Dpu(const std::string &pcie_addr);
+  Dpu(const std::string &pcie_addr, uint64_t level = DEFAULT_START_LEVEL);
 
   ~Dpu();
+  std::future<bool> FlushBucket(bucket_id_t bucket);
+  std::future<frame_id_t> FetchBucket(bucket_id_t bucket);
 
 private:
-  std::string pcie_addr_;
-  doca_dev *dev_;
-  std::vector<doca_mmap *> tl_mmaps_;
-  std::vector<doca_mmap *> bl_mmaps_;
-  std::vector<doca_mmap *> remote_tl_mmaps_;
-  std::vector<doca_mmap *> remote_bl_mmaps_;
-  std::vector<doca_buf_inventory *> invs_;
-  std::vector<doca_pe *> pes_;
-  std::vector<doca_dma *> doca_dmas_;
-  std::vector<doca_ctx *> doca_ctxs_;
+  uint64_t GenNextClientId();
+  std::pair<size_t, size_t> GetClientBucket(bucket_id_t bucket) const;
+
+public:
+  std::vector<std::unique_ptr<DmaClient>> dma_client_;
 
   std::array<LevelBucket, CACHE_SIZE> cache_;
+  size_t cache_size_;
   std::unordered_map<bucket_id_t, frame_id_t> bucket_table_;
+  bucket_id_t bl_start_bucket_id_;
+  bucket_id_t tl_start_bucket_id_;
+  uint64_t level_;
+  uint64_t next_client_id_;
 };

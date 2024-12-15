@@ -15,6 +15,8 @@
 #include <doca_mmap.h>
 #include <doca_pe.h>
 
+#include "dma_common.hpp"
+
 #define RECV_BUF_SIZE (512)
 
 class DmaClient {
@@ -23,7 +25,7 @@ public:
             size_t len);
   ~DmaClient();
   void ImportFromFile();
-  std::future<bool> ScheduleFlush(bool is_write, size_t src_offset,
+  std::future<bool> ScheduleReadWrite(bool is_write, size_t src_offset,
                                   size_t dst_offset, size_t len);
   void Stop();
 

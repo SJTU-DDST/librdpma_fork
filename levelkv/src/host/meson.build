@@ -3,6 +3,7 @@ NAME = 'host'
 dependencies = [
   dependency('doca-common'), 
   dependency('doca-dma'),
+  dependency('threads'),
 ]
 
 srcs = [

@@ -120,16 +120,16 @@ void DmaClient::ImportFromFile() {
                                &remote_mmap_);
 }
 
-std::future<bool> DmaClient::ScheduleFlush(bool is_write, size_t src_offset,
-                                           size_t dst_offset, size_t len) {
-  auto promise = std::make_shared<std::promise<bool>>();
-  DmaRequest request{is_write, src_offset, dst_offset, len, promise};
+std::future<bool> DmaClient::ScheduleReadWrite(bool is_write, size_t src_offset,
+                                               size_t dst_offset, size_t len) {
+  auto promise = std::promise<bool>();
+  DmaRequest request{is_write, src_offset, dst_offset, len, std::move(promise)};
   {
     std::unique_lock<std::mutex> lock(mtx_);
-    queue.push(request);
+    queue.push(std::move(request));
   }
   cv_.notify_one();
-  return promise->get_future();
+  return promise.get_future();
 }
 
 void DmaClient::Stop() {
@@ -147,7 +147,7 @@ void DmaClient::ProcessQueue() {
       cv_.wait(lock, [this] { return !queue.empty() || stop_; });
       if (stop_)
         break;
-      request = queue.front();
+      request = std::move(queue.front());
       queue.pop();
     }
     uint64_t finish = 0u;
@@ -170,9 +170,9 @@ void DmaClient::ProcessQueue() {
     while (!finish)
       doca_pe_progress(pe_);
     if (finish == TASK_FINISH_SUCCESS)
-      request.promise_->set_value(true);
+      request.promise_.set_value(true);
     else
-      request.promise_->set_value(false);
+      request.promise_.set_value(false);
     doca_task_free(doca_dma_task_memcpy_as_task(task));
   }
 }
