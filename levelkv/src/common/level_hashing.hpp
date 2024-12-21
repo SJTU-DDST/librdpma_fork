@@ -2,9 +2,9 @@
 
 #include <array>
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <optional>
-#include <iostream>
 
 #include "type.hpp"
 #include "utils.hpp"
@@ -31,8 +31,7 @@ public:
     token_[slot_number] = 1;
   }
 
-  std::optional<std::pair<const K &, const V &>>
-  GetSlot(size_t slot_number) const {
+  std::optional<std::pair<K, V>> GetSlot(size_t slot_number) const {
     assert(slot_number < AssocNum);
     if (token_[slot_number] == 0)
       return std::nullopt;
@@ -46,9 +45,9 @@ public:
       auto slot = GetSlot(i);
       if (slot) {
         const auto &[k, v] = *slot;
-        std::cout << k.ToString() << "   " << v.ToString() << std::endl;
+        std::cout << "1   " << k << "   " << v << std::endl;
       } else
-        std::cout << std::endl;
+        std::cout << "0   " << std::endl;
     }
   }
 };
