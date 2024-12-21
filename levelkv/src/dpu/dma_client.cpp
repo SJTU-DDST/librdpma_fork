@@ -41,7 +41,7 @@ DmaClient::~DmaClient() {
 
 void DmaClient::ImportFromFile() {
   size_t export_desc_len, remote_addr_len;
-  void *export_desc;
+  char export_desc[RECV_BUF_SIZE];
   void *remote_addr;
   const std::string export_desc_file_path =
       export_desc_file_name_base + std::to_string(dma_client_id_) + ".txt";
@@ -59,7 +59,7 @@ void DmaClient::ImportFromFile() {
     fclose(fp);
     ENSURE(0, "Failed to read exported desc file");
   }
-
+  std::cout << "3\n";
   file_size = ftell(fp);
   if (file_size == -1) {
     fclose(fp);
@@ -76,7 +76,7 @@ void DmaClient::ImportFromFile() {
     ENSURE(0, "Failed to read exported desc file");
   }
 
-  if (fread(export_desc, 1, file_size, fp) != (size_t)file_size) {
+  if (fread((void *)export_desc, 1, file_size, fp) != (size_t)file_size) {
     fclose(fp);
     ENSURE(0, "Failed to read exported desc file");
   }
@@ -116,20 +116,20 @@ void DmaClient::ImportFromFile() {
   fclose(fp);
   remote_addr_ = (char *)remote_addr;
   remote_len_ = remote_addr_len;
-  doca_mmap_create_from_export(nullptr, export_desc, export_desc_len, dev_,
-                               &remote_mmap_);
+  doca_mmap_create_from_export(nullptr, (void *)export_desc, export_desc_len,
+                               dev_, &remote_mmap_);
 }
 
 std::future<bool> DmaClient::ScheduleReadWrite(bool is_write, size_t src_offset,
                                                size_t dst_offset, size_t len) {
-  auto promise = std::promise<bool>();
-  DmaRequest request{is_write, src_offset, dst_offset, len, std::move(promise)};
+  auto promise = std::make_shared<std::promise<bool>>();
+  DmaRequest request{is_write, src_offset, dst_offset, len, promise};
   {
     std::unique_lock<std::mutex> lock(mtx_);
-    queue.push(std::move(request));
+    queue.push(request);
   }
   cv_.notify_one();
-  return promise.get_future();
+  return promise->get_future();
 }
 
 void DmaClient::Stop() {
@@ -147,7 +147,7 @@ void DmaClient::ProcessQueue() {
       cv_.wait(lock, [this] { return !queue.empty() || stop_; });
       if (stop_)
         break;
-      request = std::move(queue.front());
+      request = queue.front();
       queue.pop();
     }
     uint64_t finish = 0u;
@@ -170,9 +170,9 @@ void DmaClient::ProcessQueue() {
     while (!finish)
       doca_pe_progress(pe_);
     if (finish == TASK_FINISH_SUCCESS)
-      request.promise_.set_value(true);
+      request.promise_->set_value(true);
     else
-      request.promise_.set_value(false);
+      request.promise_->set_value(false);
     doca_task_free(doca_dma_task_memcpy_as_task(task));
   }
 }

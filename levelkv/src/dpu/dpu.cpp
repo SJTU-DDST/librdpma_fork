@@ -10,8 +10,8 @@ Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
   cache_size_ = cache_.size() * sizeof(FixedBucket);
   std::cout << "Bucket size: " << sizeof(FixedBucket) << std::endl;
   memset((void *)cache_.data(), 0, cache_size_);
-
   dma_client_.resize(THREADS);
+  std::cout << "2\n";
   for (size_t i = 0; i < THREADS; i++) {
     auto id = GenNextClientId();
     dma_client_[i] = std::make_unique<DmaClient>(
@@ -23,13 +23,11 @@ Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
 Dpu::~Dpu() {}
 
 std::future<frame_id_t> Dpu::FetchBucket(bucket_id_t bucket) {
-  std::promise<frame_id_t> promise;
-  // Assue we do some computations
   frame_id_t frame = 0;
   auto [client, offset] = GetClientBucket(bucket);
   auto future_bool = dma_client_[client]->ScheduleReadWrite(
       false, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
-  return std::async(std::launch::deferred, [&]() {
+  return std::async(std::launch::deferred, [frame, &future_bool]() {
     bool res = future_bool.get();
     return res ? frame : (frame_id_t)-1;
   });

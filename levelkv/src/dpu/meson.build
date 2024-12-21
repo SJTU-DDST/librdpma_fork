@@ -22,7 +22,7 @@ inc_dirs = [
 executable(
   NAME,
   srcs,
-  c_args: '-Wno-missing-braces',
+  c_args: ['-Wno-missing-braces', '-g'],
   dependencies: dependencies,
   include_directories: inc_dirs,
   install: false,
