@@ -26,8 +26,8 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
     ptr += mmap_size;
   }
 
-  level_ht_->buckets_[0][0].SetSlot(0, FixedKey("ddst"), FixedValue("tsdd"));
-  level_ht_->buckets_[0][0].SetSlot(3, FixedKey(1234), FixedValue(-999));
+  level_ht_->buckets_[1][0].SetSlot(0, FixedKey("ddst"), FixedValue("tsdd"));
+  level_ht_->buckets_[1][0].SetSlot(3, FixedKey(1234), FixedValue(-999));
 }
 
 Host::~Host() {}
