@@ -26,6 +26,7 @@ public:
   Dpu(const std::string &pcie_addr, uint64_t level = DEFAULT_START_LEVEL);
 
   ~Dpu();
+  
   std::future<bool> FlushBucket(bucket_id_t bucket);
   std::future<frame_id_t> FetchBucket(bucket_id_t bucket);
 
@@ -36,7 +37,7 @@ private:
 public:
   std::vector<std::unique_ptr<DmaClient>> dma_client_;
 
-  std::array<LevelBucket, CACHE_SIZE> cache_;
+  std::array<FixedBucket, CACHE_SIZE> cache_;
   size_t cache_size_;
   std::unordered_map<bucket_id_t, frame_id_t> bucket_table_;
   bucket_id_t bl_start_bucket_id_;

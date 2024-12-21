@@ -11,7 +11,6 @@ srcs = [
   'host.cpp',
   'dma_server.cpp',
   '../common/dma_common.cpp',
-  '../common/level_hashing.cpp',
 ]
 
 inc_dirs = [

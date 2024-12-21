@@ -11,7 +11,6 @@ srcs = [
   'dpu.cpp',
   'dma_client.cpp',
   '../common/dma_common.cpp',
-  '../common/level_hashing.cpp',
 ]
 
 inc_dirs = [

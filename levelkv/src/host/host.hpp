@@ -20,7 +20,7 @@ public:
 private:
   uint64_t GetNextServerId();
 private:
-  std::unique_ptr<LevelHashTable> level_ht_;
+  std::unique_ptr<FixedHashTable> level_ht_;
   std::vector<std::unique_ptr<DmaServer>> tl_dma_server_;
   std::vector<std::unique_ptr<DmaServer>> bl_dma_server_;
   uint64_t next_server_id_;
