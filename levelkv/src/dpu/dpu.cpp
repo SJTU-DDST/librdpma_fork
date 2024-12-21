@@ -11,7 +11,6 @@ Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
   std::cout << "Bucket size: " << sizeof(FixedBucket) << std::endl;
   memset((void *)cache_.data(), 0, cache_size_);
   dma_client_.resize(THREADS);
-  std::cout << "2\n";
   for (size_t i = 0; i < THREADS; i++) {
     auto id = GenNextClientId();
     dma_client_[i] = std::make_unique<DmaClient>(

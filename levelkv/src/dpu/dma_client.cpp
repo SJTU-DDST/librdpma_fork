@@ -59,7 +59,6 @@ void DmaClient::ImportFromFile() {
     fclose(fp);
     ENSURE(0, "Failed to read exported desc file");
   }
-  std::cout << "3\n";
   file_size = ftell(fp);
   if (file_size == -1) {
     fclose(fp);
