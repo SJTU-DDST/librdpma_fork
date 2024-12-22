@@ -6,13 +6,15 @@
 #include <sstream>
 #include <type_traits>
 
+#include "hash.hpp"
+
 template <size_t N> class GenericType {
   static_assert(N > 0, "GenericType size must be greater than zero.");
 
 public:
   GenericType() = default;
 
-  template <typename T> explicit GenericType(const T &value) {
+  template <typename T> GenericType(const T &value) {
     std::string str = ConvertToString(value);
     if (str.size() > N) {
       throw std::overflow_error("Input size exceeds storage size.");
@@ -24,6 +26,10 @@ public:
   std::string ToString() const {
     size_t len = strnlen(reinterpret_cast<const char *>(data_.data()), N);
     return std::string(data_.data(), data_.data() + len);
+  }
+
+  uint64_t Hash(uint64_t seed) const {
+    return hash((void *)data_.data(), data_.size(), seed);
   }
 
   bool operator==(const GenericType<N> &other) const {

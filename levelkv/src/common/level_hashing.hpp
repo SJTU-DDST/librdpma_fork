@@ -38,6 +38,36 @@ public:
     return std::make_pair(slots_[slot_number].key_, slots_[slot_number].value_);
   }
 
+  bool SearchSlot(const K &key, V *value) const {
+    for (size_t i = 0; i < AssocNum; i++) {
+      if (token_[i] == 1 && slots_[i].key_ == key) {
+        *value = slots_[i].value_;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  bool DeleteSlot(const K &key) {
+    for (size_t i = 0; i < AssocNum; i++) {
+      if (token_[i] == 1 && slots_[i].key_ == key) {
+        token_[i] = 0;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool UpdateSlot(const K &key, const V &value) {
+    for (size_t i = 0; i < AssocNum; i++) {
+      if (token_[i] == 1 && slots_[i].key_ == key) {
+        slots_[i].value_ = value;
+        return true;
+      }
+    }
+    return false;
+  }
+
   void DebugPrint() const {
     std::cout << "------ Bucket ------\n";
     for (size_t i = 0; i < AssocNum; i++) {

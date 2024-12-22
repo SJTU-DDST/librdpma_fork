@@ -3,11 +3,19 @@
 
 #include "dpu.hpp"
 
+void exampleCallBack(std::optional<std::string> s) {
+  if (s) {
+    std::cout << "Found: " << s.value() << std::endl;
+  } else {
+    std::cout << "KV not found\n";
+  }
+}
+
 int main() {
   Dpu dpu("03:00.0");
-  auto f = dpu.FetchBucket(0);
-  std::cout << f.get() << std::endl;
-  dpu.cache_[0].DebugPrint();
+  dpu.Search(5, &exampleCallBack);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  dpu.DebugPrintCache();
   while (true) {
     char c = getchar();
     if (c == 'q' || c == 'Q')

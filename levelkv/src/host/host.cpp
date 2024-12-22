@@ -26,6 +26,18 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
     ptr += mmap_size;
   }
 
+  for (size_t i = 0; i < level_ht_->addr_capacity_; i++) {
+    level_ht_->buckets_[0][i].SetSlot(0, i, i * 10);
+    level_ht_->buckets_[0][i].SetSlot(1, i, i * 100);
+    level_ht_->buckets_[0][i].SetSlot(2, i, i * 1000);
+    level_ht_->buckets_[0][i].SetSlot(3, i, i * 10000);
+  }
+  for (size_t i = 0; i < level_ht_->bl_capacity_; i++) {
+    level_ht_->buckets_[1][i].SetSlot(0, i, i * 10);
+    level_ht_->buckets_[1][i].SetSlot(1, i, i * 100);
+    level_ht_->buckets_[1][i].SetSlot(2, i, i * 1000);
+    level_ht_->buckets_[1][i].SetSlot(3, i, i * 10000);
+  }
   level_ht_->buckets_[1][0].SetSlot(0, FixedKey("ddst"), FixedValue("tsdd"));
   level_ht_->buckets_[1][0].SetSlot(3, FixedKey(1234), FixedValue(-999));
 }
