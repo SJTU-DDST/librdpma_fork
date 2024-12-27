@@ -71,7 +71,7 @@ void Dpu::Delete(const FixedKey &key) {
 
 std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
   auto bucket = bucket_ids_[frame];
-  ENSURE(bucket > 0, "Frame id must >= 0");
+  ENSURE(bucket > 0, "FlushBucket: Frame id must >= 0");
   auto [client, offset] = GetClientBucket(bucket);
   return dma_client_[client]->ScheduleReadWrite(
       true, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
@@ -80,21 +80,24 @@ std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
 std::future<bool> Dpu::FetchBucket(bucket_id_t bucket, frame_id_t *frame) {
   frame_id_t target_frame = -1;
   std::future<bool> f;
-  if (!free_list_.empty()) {
+  bool need_flush = false;
+  if (free_list_.empty()) {
     replacer_->Evict(&target_frame);
     if (dirty_flag_[target_frame]) {
       f = FlushBucket(target_frame);
       dirty_flag_[target_frame] = 0;
+      need_flush = true;
     }
   } else {
     target_frame = free_list_.front();
     free_list_.pop_front();
   }
-  ENSURE(target_frame >= 0, "Frame id must >= 0");
+  ENSURE(target_frame >= 0, "FetchBucket: Frame id must >= 0");
   bucket_ids_[target_frame] = bucket;
   replacer_->RecordAccess(target_frame);
   auto [client, offset] = GetClientBucket(bucket);
-  f.wait();
+  if (need_flush)
+    f.wait();
   *frame = target_frame;
   return dma_client_[client]->ScheduleReadWrite(
       false, offset, target_frame * sizeof(FixedBucket), sizeof(FixedBucket));
@@ -134,54 +137,62 @@ std::pair<size_t, size_t> Dpu::GetClientBucket(bucket_id_t bucket) const {
 }
 
 bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
+  std::cout << "Process Search...\n";
+
   size_t idx1 = request.hash1_ % (addr_capacity_ / 2);
   size_t idx2 = addr_capacity_ / 2 + request.hash2_ % (addr_capacity_ / 2);
   size_t idx3 = request.hash1_ % (addr_capacity_ / 4);
   size_t idx4 = addr_capacity_ / 4 + request.hash2_ % (addr_capacity_ / 4);
-  ENSURE(idx1 >= 0 && idx1 < addr_capacity_ / 2 && idx2 >= 0 &&
-             idx2 < addr_capacity_ / 2 && idx3 >= 0 &&
-             idx3 < addr_capacity_ / 4 && idx4 >= 0 &&
-             idx4 < addr_capacity_ / 4,
-         "Level hashing idx error");
+
+  std::cout << "Four idx: " << idx1 << " " << idx2 << " " << idx3 << " " << idx4
+            << std::endl;
+
   std::array<bucket_id_t, 4> bs = {
       addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
       bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
+
   std::vector<bucket_id_t> fetches;
-  std::vector<frame_id_t> fetched_frames;
+  std::vector<frame_id_t> fetched_frames(bs.size(), -1);
   std::vector<std::future<bool>> futures;
+
   for (auto b : bs) {
     if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
+      std::cout << b << " found in the cache\n";
+      replacer_->RecordAccess(it->second);
       auto found = cache_[it->second].SearchSlot(request.key_, &result);
-      if (found)
+      if (found) {
         return true;
+      }
+    } else {
+      fetches.push_back(b);
+      std::cout << b << " not found in the cache\n";
     }
-    fetches.push_back(b);
   }
-
-  // Cache miss
   for (size_t i = 0; i < fetches.size(); i++) {
-    bucket_table_[fetches[i]] = fetched_frames[i];
     futures.push_back(FetchBucket(fetches[i], &fetched_frames[i]));
   }
+
   bool found = false;
   for (size_t i = 0; i < fetches.size(); i++) {
     futures[i].wait();
-    if (!found)
-      found = cache_[fetched_frames[i]].SearchSlot(request.key_, &result);
+    if (!found) {
+      if (fetched_frames[i] != -1) {
+        bucket_table_[fetches[i]] = fetched_frames[i];
+        found = cache_[fetched_frames[i]].SearchSlot(request.key_, &result);
+      }
+    }
   }
   return found;
 }
 
 bool Dpu::ProcessInsert(const Request &request) {
+  std::cout << "Process Insert...\n";
   size_t idx1 = request.hash1_ % (addr_capacity_ / 2);
   size_t idx2 = addr_capacity_ / 2 + request.hash2_ % (addr_capacity_ / 2);
   size_t idx3 = request.hash1_ % (addr_capacity_ / 4);
   size_t idx4 = addr_capacity_ / 4 + request.hash2_ % (addr_capacity_ / 4);
-  ENSURE(idx1 >= 0 && idx1 < addr_capacity_ / 2 && idx2 >= 0 &&
-             idx2 < addr_capacity_ / 2 && idx3 >= 0 &&
-             idx3 < addr_capacity_ / 4 && idx4 >= 0 &&
-             idx4 < addr_capacity_ / 4,
-         "Level hashing idx error");
+  std::cout << "Four idx: " << idx1 << " " << idx2 << " " << idx3 << " " << idx4
+            << std::endl;
   std::array<bucket_id_t, 4> bs = {
       addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
       bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
@@ -190,29 +201,52 @@ bool Dpu::ProcessInsert(const Request &request) {
   for (size_t i = 0; i < 2; i++) {
     if (bucket_table_.count(bs[i]) == 0)
       futures.push_back(FetchBucket(bs[i], &frames[i]));
+    else
+      replacer_->RecordAccess(bucket_table_[bs[i]]);
   }
   futures[0].wait();
   futures[1].wait();
+  bucket_table_[bs[0]] = frames[0];
+  bucket_table_[bs[1]] = frames[1];
   bool finished = false;
-  if (cache_[frames[0]].Count() > cache_[frames[1]].Count())
-    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_);
-  else
-    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_);
+  if (cache_[frames[0]].Count() > cache_[frames[1]].Count()) {
+    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_,
+                                            dirty_flag_[frames[1]]);
+    if (finished) {
+      std::cout << "Inserted to bucket: " << bs[1] << "   frame: " << frames[1]
+                << std::endl;
+      return true;
+    }
+  } else {
+    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_,
+                                            dirty_flag_[frames[0]]);
+    if (finished) {
+      std::cout << "Inserted to bucket: " << bs[0] << "   frame: " << frames[0]
+                << std::endl;
+      return true;
+    }
+  }
 
-  if (finished)
-    return true;
+  // if (finished)
+  //   return true;
 
   futures.clear();
   for (size_t i = 0; i < 2; i++) {
     if (bucket_table_.count(bs[i + 2]) == 0)
       futures.push_back(FetchBucket(bs[i + 2], &frames[i]));
+    else
+      replacer_->RecordAccess(bucket_table_[bs[i + 2]]);
   }
   futures[0].wait();
   futures[1].wait();
+  bucket_table_[bs[3]] = frames[0];
+  bucket_table_[bs[4]] = frames[1];
   if (cache_[frames[0]].Count() > cache_[frames[1]].Count())
-    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_);
+    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_,
+                                            dirty_flag_[frames[1]]);
   else
-    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_);
+    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_,
+                                            dirty_flag_[frames[0]]);
 
   return finished;
 }

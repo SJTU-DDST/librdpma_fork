@@ -16,7 +16,7 @@ int main() {
   dpu.Insert("wang", "YY");
   dpu.Search("wang", &exampleCallBack);
   std::this_thread::sleep_for(std::chrono::seconds(3));
-  dpu.DebugPrintCache();
+  // dpu.DebugPrintCache();
   while (true) {
     char c = getchar();
     if (c == 'q' || c == 'Q')

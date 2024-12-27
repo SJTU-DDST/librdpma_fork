@@ -58,12 +58,13 @@ public:
     return false;
   }
 
-  bool InsertSlot(const K &key, const V &value) {
+  bool InsertSlot(const K &key, const V &value, bool &dirty_flag) {
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 0) {
         slots_[i].key_ = key;
         slots_[i].value_ = value;
         token_[i] = 1;
+        dirty_flag = true;
         return true;
       }
     }
