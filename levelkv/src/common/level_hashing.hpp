@@ -42,8 +42,8 @@ public:
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 1 && slots_[i].key_ == key) {
         *value = slots_[i].value_;
+        return true;
       }
-      return true;
     }
     return false;
   }
@@ -58,6 +58,18 @@ public:
     return false;
   }
 
+  bool InsertSlot(const K &key, const V &value) {
+    for (size_t i = 0; i < AssocNum; i++) {
+      if (token_[i] == 0) {
+        slots_[i].key_ = key;
+        slots_[i].value_ = value;
+        token_[i] = 1;
+        return true;
+      }
+    }
+    return false;
+  }
+
   bool UpdateSlot(const K &key, const V &value) {
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 1 && slots_[i].key_ == key) {
@@ -66,6 +78,15 @@ public:
       }
     }
     return false;
+  }
+
+  size_t Count() {
+    size_t c = 0;
+    for (size_t i = 0; i < AssocNum; i++) {
+      if (token_[i] == 1)
+        c++;
+    }
+    return c;
   }
 
   void DebugPrint() const {

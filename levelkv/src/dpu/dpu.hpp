@@ -16,22 +16,23 @@
 
 #include "dma_client.hpp"
 #include "level_hashing.hpp"
+#include "replacer.hpp"
+#include "utils.hpp"
 
 #define CACHE_SIZE 64
 
-using bucket_id_t = int64_t;
-using frame_id_t = int64_t;
-
-enum RequestType {
+enum class RequestType {
   SEARCH,
-  UPDATE,
   DELETE,
+  INSERT,
 };
 
 struct Request {
   RequestType request_type_;
-  FixedKey key;
-  FixedValue value;
+  FixedKey key_;
+  FixedValue value_;
+  uint64_t hash1_;
+  uint64_t hash2_;
   std::function<void(std::optional<std::string>)> callback_;
 };
 
@@ -42,14 +43,17 @@ public:
   ~Dpu();
 
   void Search(const FixedKey &key, std::function<void(std::optional<std::string>)> callback);
-  void Update(const FixedKey &key, const FixedValue &value);
   void Delete(const FixedKey &key);
+  void Insert(const FixedKey &key, const FixedValue &value);
   
-  std::future<bool> FlushBucket(bucket_id_t bucket);
-  std::future<frame_id_t> FetchBucket(bucket_id_t bucket);
+  std::future<bool> FlushBucket(frame_id_t frame);
+  std::future<bool> FetchBucket(bucket_id_t bucket, frame_id_t *frame);
   void DebugPrintCache() const;
 
 private:
+  bool ProcessSearch(const Request &request, FixedValue &result);
+  bool ProcessDelete(const Request &request);
+  bool ProcessInsert(const Request &request);
   uint64_t GenNextClientId();
   std::pair<size_t, size_t> GetClientBucket(bucket_id_t bucket) const;
   void Run();
@@ -77,5 +81,8 @@ public:
   size_t addr_capacity_;
   size_t bl_capacity_;
 
-  frame_id_t tmp = 0;
+  std::unique_ptr<Replacer> replacer_;
+  std::list<frame_id_t> free_list_;
+  std::list<frame_id_t> dirty_list_;
+  std::array<bucket_id_t, CACHE_SIZE> bucket_ids_;
 };

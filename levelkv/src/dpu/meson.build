@@ -10,6 +10,7 @@ srcs = [
   'main.cpp',
   'dpu.cpp',
   'dma_client.cpp',
+  'replacer.cpp',
   '../common/dma_common.cpp',
 ]
 

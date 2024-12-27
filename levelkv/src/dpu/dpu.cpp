@@ -4,7 +4,8 @@
 #include "utils.hpp"
 
 Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
-    : stop_(false), level_(level), next_client_id_(0) {
+    : stop_(false), level_(level), next_client_id_(0),
+      replacer_(std::make_unique<Replacer>()) {
   ENSURE(level >= 3, "Starting level should be at least 3");
   addr_capacity_ = 1 << level;
   bl_capacity_ = 1 << (level - 1);
@@ -23,6 +24,10 @@ Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
   GenSeeds();
   dirty_flag_.fill(0);
   worker_ = std::thread(&Dpu::Run, this);
+  bucket_ids_.fill(-1);
+  for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
+    free_list_.push_back(i);
+  }
 }
 
 Dpu::~Dpu() {
@@ -32,7 +37,9 @@ Dpu::~Dpu() {
 
 void Dpu::Search(const FixedKey &key,
                  std::function<void(std::optional<std::string>)> callback) {
-  Request request = {SEARCH, key, "", callback};
+  auto hash1 = key.Hash(f_seed_);
+  auto hash2 = key.Hash(s_seed_);
+  Request request = {RequestType::SEARCH, key, "", hash1, hash2, callback};
   {
     std::unique_lock<std::mutex> lock(request_queue_mtx_);
     request_queue_.push(request);
@@ -40,8 +47,10 @@ void Dpu::Search(const FixedKey &key,
   cv_.notify_one();
 }
 
-void Dpu::Update(const FixedKey &key, const FixedValue &value) {
-  Request request = {UPDATE, key, value, nullptr};
+void Dpu::Insert(const FixedKey &key, const FixedValue &value) {
+  auto hash1 = key.Hash(f_seed_);
+  auto hash2 = key.Hash(s_seed_);
+  Request request = {RequestType::INSERT, key, value, hash1, hash2, nullptr};
   {
     std::unique_lock<std::mutex> lock(request_queue_mtx_);
     request_queue_.push(request);
@@ -50,7 +59,9 @@ void Dpu::Update(const FixedKey &key, const FixedValue &value) {
 }
 
 void Dpu::Delete(const FixedKey &key) {
-  Request request = {DELETE, key, "", nullptr};
+  auto hash1 = key.Hash(f_seed_);
+  auto hash2 = key.Hash(s_seed_);
+  Request request = {RequestType::DELETE, key, "", hash1, hash2, nullptr};
   {
     std::unique_lock<std::mutex> lock(request_queue_mtx_);
     request_queue_.push(request);
@@ -58,16 +69,35 @@ void Dpu::Delete(const FixedKey &key) {
   cv_.notify_one();
 }
 
-std::future<frame_id_t> Dpu::FetchBucket(bucket_id_t bucket) {
-  frame_id_t frame = tmp;
+std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
+  auto bucket = bucket_ids_[frame];
+  ENSURE(bucket > 0, "Frame id must >= 0");
   auto [client, offset] = GetClientBucket(bucket);
-  auto future_bool = dma_client_[client]->ScheduleReadWrite(
-      false, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
-  tmp++;
-  return std::async(std::launch::deferred, [frame, &future_bool]() {
-    bool res = future_bool.get();
-    return res ? frame : (frame_id_t)-1;
-  });
+  return dma_client_[client]->ScheduleReadWrite(
+      true, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
+}
+
+std::future<bool> Dpu::FetchBucket(bucket_id_t bucket, frame_id_t *frame) {
+  frame_id_t target_frame = -1;
+  std::future<bool> f;
+  if (!free_list_.empty()) {
+    replacer_->Evict(&target_frame);
+    if (dirty_flag_[target_frame]) {
+      f = FlushBucket(target_frame);
+      dirty_flag_[target_frame] = 0;
+    }
+  } else {
+    target_frame = free_list_.front();
+    free_list_.pop_front();
+  }
+  ENSURE(target_frame >= 0, "Frame id must >= 0");
+  bucket_ids_[target_frame] = bucket;
+  replacer_->RecordAccess(target_frame);
+  auto [client, offset] = GetClientBucket(bucket);
+  f.wait();
+  *frame = target_frame;
+  return dma_client_[client]->ScheduleReadWrite(
+      false, offset, target_frame * sizeof(FixedBucket), sizeof(FixedBucket));
 }
 
 void Dpu::DebugPrintCache() const {
@@ -103,10 +133,93 @@ std::pair<size_t, size_t> Dpu::GetClientBucket(bucket_id_t bucket) const {
   return std::make_pair(client, offset);
 }
 
+bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
+  size_t idx1 = request.hash1_ % (addr_capacity_ / 2);
+  size_t idx2 = addr_capacity_ / 2 + request.hash2_ % (addr_capacity_ / 2);
+  size_t idx3 = request.hash1_ % (addr_capacity_ / 4);
+  size_t idx4 = addr_capacity_ / 4 + request.hash2_ % (addr_capacity_ / 4);
+  ENSURE(idx1 >= 0 && idx1 < addr_capacity_ / 2 && idx2 >= 0 &&
+             idx2 < addr_capacity_ / 2 && idx3 >= 0 &&
+             idx3 < addr_capacity_ / 4 && idx4 >= 0 &&
+             idx4 < addr_capacity_ / 4,
+         "Level hashing idx error");
+  std::array<bucket_id_t, 4> bs = {
+      addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
+      bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
+  std::vector<bucket_id_t> fetches;
+  std::vector<frame_id_t> fetched_frames;
+  std::vector<std::future<bool>> futures;
+  for (auto b : bs) {
+    if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
+      auto found = cache_[it->second].SearchSlot(request.key_, &result);
+      if (found)
+        return true;
+    }
+    fetches.push_back(b);
+  }
+
+  // Cache miss
+  for (size_t i = 0; i < fetches.size(); i++) {
+    bucket_table_[fetches[i]] = fetched_frames[i];
+    futures.push_back(FetchBucket(fetches[i], &fetched_frames[i]));
+  }
+  bool found = false;
+  for (size_t i = 0; i < fetches.size(); i++) {
+    futures[i].wait();
+    if (!found)
+      found = cache_[fetched_frames[i]].SearchSlot(request.key_, &result);
+  }
+  return found;
+}
+
+bool Dpu::ProcessInsert(const Request &request) {
+  size_t idx1 = request.hash1_ % (addr_capacity_ / 2);
+  size_t idx2 = addr_capacity_ / 2 + request.hash2_ % (addr_capacity_ / 2);
+  size_t idx3 = request.hash1_ % (addr_capacity_ / 4);
+  size_t idx4 = addr_capacity_ / 4 + request.hash2_ % (addr_capacity_ / 4);
+  ENSURE(idx1 >= 0 && idx1 < addr_capacity_ / 2 && idx2 >= 0 &&
+             idx2 < addr_capacity_ / 2 && idx3 >= 0 &&
+             idx3 < addr_capacity_ / 4 && idx4 >= 0 &&
+             idx4 < addr_capacity_ / 4,
+         "Level hashing idx error");
+  std::array<bucket_id_t, 4> bs = {
+      addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
+      bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
+  std::vector<std::future<bool>> futures;
+  std::array<frame_id_t, 2> frames;
+  for (size_t i = 0; i < 2; i++) {
+    if (bucket_table_.count(bs[i]) == 0)
+      futures.push_back(FetchBucket(bs[i], &frames[i]));
+  }
+  futures[0].wait();
+  futures[1].wait();
+  bool finished = false;
+  if (cache_[frames[0]].Count() > cache_[frames[1]].Count())
+    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_);
+  else
+    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_);
+
+  if (finished)
+    return true;
+
+  futures.clear();
+  for (size_t i = 0; i < 2; i++) {
+    if (bucket_table_.count(bs[i + 2]) == 0)
+      futures.push_back(FetchBucket(bs[i + 2], &frames[i]));
+  }
+  futures[0].wait();
+  futures[1].wait();
+  if (cache_[frames[0]].Count() > cache_[frames[1]].Count())
+    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_);
+  else
+    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_);
+
+  return finished;
+}
+
 void Dpu::Run() {
   while (!stop_) {
     FixedValue result_value;
-    bool finished = false;
     Request request;
     {
       std::unique_lock<std::mutex> lock(request_queue_mtx_);
@@ -116,65 +229,21 @@ void Dpu::Run() {
       request = request_queue_.front();
       request_queue_.pop();
     }
-    std::cout << "Request type: " << request.request_type_ << std::endl;
-    auto hash1 = request.key.Hash(f_seed_);
-    auto hash2 = request.key.Hash(s_seed_);
-    size_t idx1 = hash1 % (addr_capacity_ / 2);
-    size_t idx2 = addr_capacity_ / 2 + hash2 % (addr_capacity_ / 2);
-    ENSURE(idx1 >= 0 && idx1 < addr_capacity_ && idx2 >= 0 &&
-               idx2 < addr_capacity_,
-           "Level hashing idx error");
-    std::cout << "Hash to idx: " << idx1 << ", " << idx2 << std::endl;
-    std::array<bucket_id_t, 4> bs = {
-        addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
-        bl_capacity_ - 4 + idx1 / 2, bl_capacity_ - 4 + idx2 / 2};
-    std::cout << "Target buckets: ";
-    for (const auto &b : bs) std::cout << b << " ";
-    std::cout << std::endl;
-    std::vector<std::future<frame_id_t>> futures;
-    for (size_t b = 0; b < 4; b++) {
-      std::cout << "Looking for bucket: " << bs[b] << std::endl;
-      if (auto it = bucket_table_.find(bs[b]); it != bucket_table_.end()) {
-        std::cout << "Bucket " << bs[b] << " is cached at frame: " << it->second << std::endl;
-        if (request.request_type_ == SEARCH) {
-          finished = cache_[it->second].SearchSlot(request.key, &result_value);
-        } else if (request.request_type_ == UPDATE) {
-          finished = cache_[it->second].UpdateSlot(request.key, request.value);
-        } else if (request.request_type_ == DELETE) {
-          finished = cache_[it->second].DeleteSlot(request.key);
-        } else {
-          ENSURE(0, "Unsupported request type!");
-        }
-        if (finished) {
-          if (request.request_type_ == SEARCH)
-            request.callback_(result_value.ToString());
-          else
-            dirty_flag_[it->second] = 1;
-          break;
-        }
-      } else {
-        futures.push_back(FetchBucket(bs[b]));
-      }
+    switch (request.request_type_) {
+    case RequestType::SEARCH: {
+      auto result = ProcessSearch(request, result_value);
+      if (result)
+        request.callback_(result ? std::make_optional(result_value.ToString())
+                                 : std::nullopt);
+      break;
     }
-    for (auto &f : futures) {
-      auto frame = f.get();
-      if (!finished) {
-        if (request.request_type_ == SEARCH) {
-          finished = cache_[frame].SearchSlot(request.key, &result_value);
-        } else if (request.request_type_ == UPDATE) {
-          finished = cache_[frame].UpdateSlot(request.key, request.value);
-        } else if (request.request_type_ == DELETE) {
-          finished = cache_[frame].DeleteSlot(request.key);
-        } else {
-          ENSURE(0, "Unsupported request type!");
-        }
-        if (finished) {
-          if (request.request_type_ == SEARCH)
-            request.callback_(result_value.ToString());
-          else
-            dirty_flag_[frame] = 1;
-        }
-      }
+    case RequestType::INSERT: {
+      ProcessInsert(request);
+      break;
+    }
+    case RequestType::DELETE: {
+      break;
+    }
     }
   }
 }
