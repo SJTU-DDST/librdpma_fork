@@ -119,6 +119,16 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
   });
 }
 
+void Dpu::FlushAll() {
+  std::array<std::future<bool>, CACHE_SIZE> futures;
+  for (size_t i = 0; i < CACHE_SIZE; i++) {
+    futures[i] = FlushBucket(i);
+  }
+  for (auto &f : futures) {
+    f.wait();
+  }
+}
+
 void Dpu::DebugPrintCache() const {
   std::cout << "************************************\n";
   for (size_t i = 0; i < CACHE_SIZE; i++) {

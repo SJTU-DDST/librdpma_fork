@@ -1,8 +1,14 @@
-#include "host.hpp"
+#include <cstring>
+
 #include "dma_common.hpp"
+#include "host.hpp"
 
 Host::Host(const std::string &pcie_addr, uint64_t level)
     : level_ht_(std::make_unique<FixedHashTable>(level)), next_server_id_(0) {
+  memset(level_ht_->buckets_[0], 0,
+         sizeof(FixedBucket) * level_ht_->addr_capacity_);
+  memset(level_ht_->buckets_[1], 0,
+         sizeof(FixedBucket) * level_ht_->bl_capacity_);
   bl_dma_server_.resize(THREADS / 2);
   tl_dma_server_.resize(THREADS / 2);
 
@@ -56,8 +62,11 @@ void Host::DebugPrint() const {
 
 void Host::Run() {
   while (true) {
-    if (getchar() == 'q' || getchar() == 'Q')
+    auto c = getchar();
+    if (c == 'q' || c == 'Q')
       return;
+    else if (c == 'p' || c == 'P')
+      DebugPrint();
   }
 }
 

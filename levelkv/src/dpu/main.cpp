@@ -22,6 +22,7 @@ int main() {
     dpu.Search(i, &exampleCallBack);
   }
   std::this_thread::sleep_for(std::chrono::seconds(3));
+  dpu.FlushAll();
   // dpu.DebugPrintCache();
   while (true) {
     char c = getchar();
