@@ -13,8 +13,10 @@ void exampleCallBack(std::optional<std::string> s) {
 
 int main() {
   Dpu dpu("03:00.0");
-  dpu.Insert("wang", "YY");
-  dpu.Search("wang", &exampleCallBack);
+  for (size_t i = 1; i < 4; i++) {
+    dpu.Insert(i, i * 10);
+    dpu.Search(i, &exampleCallBack);
+  }
   std::this_thread::sleep_for(std::chrono::seconds(3));
   // dpu.DebugPrintCache();
   while (true) {

@@ -19,7 +19,7 @@
 #include "replacer.hpp"
 #include "utils.hpp"
 
-#define CACHE_SIZE 64
+#define CACHE_SIZE 16
 
 enum class RequestType {
   SEARCH,
@@ -47,7 +47,7 @@ public:
   void Insert(const FixedKey &key, const FixedValue &value);
   
   std::future<bool> FlushBucket(frame_id_t frame);
-  std::future<bool> FetchBucket(bucket_id_t bucket, frame_id_t *frame);
+  std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
   void DebugPrintCache() const;
 
 private:
@@ -58,6 +58,7 @@ private:
   std::pair<size_t, size_t> GetClientBucket(bucket_id_t bucket) const;
   void Run();
   void GenSeeds();
+  std::array<bucket_id_t, 4> Get4Buckets(uint64_t hash1, uint64_t hash2);
 
 public:
   std::vector<std::unique_ptr<DmaClient>> dma_client_;

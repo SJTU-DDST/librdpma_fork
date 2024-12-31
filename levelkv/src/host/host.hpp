@@ -13,8 +13,10 @@
 class Host {
 public:
   Host(const std::string &pcie_addr, uint64_t level);
-
+  
   ~Host();
+
+  void DebugPrint() const;
 
   void Run();
 private:

@@ -77,30 +77,43 @@ std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
       true, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
 }
 
-std::future<bool> Dpu::FetchBucket(bucket_id_t bucket, frame_id_t *frame) {
+std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
   frame_id_t target_frame = -1;
-  std::future<bool> f;
   bool need_flush = false;
+  std::future<bool> flush_future;
+
+  // Determine target frame
   if (free_list_.empty()) {
     replacer_->Evict(&target_frame);
     if (dirty_flag_[target_frame]) {
-      f = FlushBucket(target_frame);
-      dirty_flag_[target_frame] = 0;
+      flush_future = FlushBucket(target_frame);
+      dirty_flag_[target_frame] = false;
       need_flush = true;
     }
   } else {
     target_frame = free_list_.front();
     free_list_.pop_front();
   }
-  ENSURE(target_frame >= 0, "FetchBucket: Frame id must >= 0");
+
+  ENSURE(target_frame >= 0 && target_frame < CACHE_SIZE,
+         "FetchBucket: target frame error");
+
   bucket_ids_[target_frame] = bucket;
   replacer_->RecordAccess(target_frame);
+
   auto [client, offset] = GetClientBucket(bucket);
-  if (need_flush)
-    f.wait();
-  *frame = target_frame;
-  return dma_client_[client]->ScheduleReadWrite(
+  if (need_flush) {
+    flush_future.wait();
+  }
+
+  // Schedule DMA read
+  auto dma_future = dma_client_[client]->ScheduleReadWrite(
       false, offset, target_frame * sizeof(FixedBucket), sizeof(FixedBucket));
+  return std::async(std::launch::deferred, [dma_future = std::move(dma_future),
+                                            target_frame]() mutable {
+    bool dma_success = dma_future.get();
+    return std::make_pair(dma_success, target_frame);
+  });
 }
 
 void Dpu::DebugPrintCache() const {
@@ -139,116 +152,120 @@ std::pair<size_t, size_t> Dpu::GetClientBucket(bucket_id_t bucket) const {
 bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
   std::cout << "Process Search...\n";
 
-  size_t idx1 = request.hash1_ % (addr_capacity_ / 2);
-  size_t idx2 = addr_capacity_ / 2 + request.hash2_ % (addr_capacity_ / 2);
-  size_t idx3 = request.hash1_ % (addr_capacity_ / 4);
-  size_t idx4 = addr_capacity_ / 4 + request.hash2_ % (addr_capacity_ / 4);
+  auto bs = Get4Buckets(request.hash1_, request.hash2_);
+  std::cout << "Hash to 4 buckets: ";
+  for (auto bucket : bs) {
+    std::cout << bucket << " ";
+  }
+  std::cout << std::endl;
 
-  std::cout << "Four idx: " << idx1 << " " << idx2 << " " << idx3 << " " << idx4
-            << std::endl;
-
-  std::array<bucket_id_t, 4> bs = {
-      addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
-      bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
-
-  std::vector<bucket_id_t> fetches;
-  std::vector<frame_id_t> fetched_frames(bs.size(), -1);
-  std::vector<std::future<bool>> futures;
+  // Check buckets already in cache
+  std::vector<std::future<std::pair<bool, frame_id_t>>> futures;
+  std::vector<bucket_id_t> to_fetch;
 
   for (auto b : bs) {
     if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
-      std::cout << b << " found in the cache\n";
+      std::cout << "Bucket " << b << " found in cache\n";
       replacer_->RecordAccess(it->second);
-      auto found = cache_[it->second].SearchSlot(request.key_, &result);
-      if (found) {
+      if (cache_[it->second].SearchSlot(request.key_, &result)) {
         return true;
       }
     } else {
-      fetches.push_back(b);
-      std::cout << b << " not found in the cache\n";
+      std::cout << "Bucket " << b << " not in cache, fetching...\n";
+      to_fetch.push_back(b);
     }
-  }
-  for (size_t i = 0; i < fetches.size(); i++) {
-    futures.push_back(FetchBucket(fetches[i], &fetched_frames[i]));
   }
 
-  bool found = false;
-  for (size_t i = 0; i < fetches.size(); i++) {
-    futures[i].wait();
-    if (!found) {
-      if (fetched_frames[i] != -1) {
-        bucket_table_[fetches[i]] = fetched_frames[i];
-        found = cache_[fetched_frames[i]].SearchSlot(request.key_, &result);
+  // Fetch buckets not in cache
+  std::vector<frame_id_t> fetched_frames(to_fetch.size(), -1);
+  for (auto b : to_fetch) {
+    futures.push_back(FetchBucket(b));
+  }
+
+  // Process fetched buckets and search
+  for (size_t i = 0; i < to_fetch.size(); ++i) {
+    auto [success, frame] = futures[i].get();
+    if (success) {
+      bucket_table_[to_fetch[i]] = frame;
+      if (cache_[frame].SearchSlot(request.key_, &result)) {
+        return true;
       }
+    } else {
+      std::cerr << "Failed to fetch bucket: " << bs[to_fetch[i]] << std::endl;
     }
   }
-  return found;
+
+  return false;
 }
 
 bool Dpu::ProcessInsert(const Request &request) {
   std::cout << "Process Insert...\n";
-  size_t idx1 = request.hash1_ % (addr_capacity_ / 2);
-  size_t idx2 = addr_capacity_ / 2 + request.hash2_ % (addr_capacity_ / 2);
-  size_t idx3 = request.hash1_ % (addr_capacity_ / 4);
-  size_t idx4 = addr_capacity_ / 4 + request.hash2_ % (addr_capacity_ / 4);
-  std::cout << "Four idx: " << idx1 << " " << idx2 << " " << idx3 << " " << idx4
-            << std::endl;
-  std::array<bucket_id_t, 4> bs = {
-      addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
-      bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
-  std::vector<std::future<bool>> futures;
-  std::array<frame_id_t, 2> frames;
-  for (size_t i = 0; i < 2; i++) {
-    if (bucket_table_.count(bs[i]) == 0)
-      futures.push_back(FetchBucket(bs[i], &frames[i]));
-    else
-      replacer_->RecordAccess(bucket_table_[bs[i]]);
+
+  auto bs = Get4Buckets(request.hash1_, request.hash2_);
+  std::cout << "Hash to 4 buckets: ";
+  for (auto bucket : bs) {
+    std::cout << bucket << " ";
   }
-  futures[0].wait();
-  futures[1].wait();
-  bucket_table_[bs[0]] = frames[0];
-  bucket_table_[bs[1]] = frames[1];
-  bool finished = false;
-  if (cache_[frames[0]].Count() > cache_[frames[1]].Count()) {
-    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_,
-                                            dirty_flag_[frames[1]]);
-    if (finished) {
-      std::cout << "Inserted to bucket: " << bs[1] << "   frame: " << frames[1]
-                << std::endl;
-      return true;
+  std::cout << std::endl;
+
+  auto tryInsertInto2Buckets = [&](size_t start_idx) -> bool {
+    std::vector<std::pair<size_t, std::future<std::pair<bool, frame_id_t>>>>
+        futures;
+    std::array<frame_id_t, 2> frames;
+
+    for (size_t i = 0; i < 2; ++i) {
+      size_t bucket_idx = start_idx + i;
+      if (bucket_table_.count(bs[bucket_idx]) == 0) {
+        // Bucket not in cache, fetch asynchronously
+        futures.push_back(std::make_pair(i, FetchBucket(bs[bucket_idx])));
+      } else {
+        // Bucket is in cache, record access
+        frames[i] = bucket_table_[bs[bucket_idx]];
+        replacer_->RecordAccess(frames[i]);
+      }
     }
-  } else {
-    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_,
-                                            dirty_flag_[frames[0]]);
-    if (finished) {
-      std::cout << "Inserted to bucket: " << bs[0] << "   frame: " << frames[0]
-                << std::endl;
-      return true;
+
+    // Process futures for fetched buckets
+    for (size_t i = 0; i < futures.size(); ++i) {
+      auto [success, frame] = futures[i].second.get();
+      if (success) {
+        frames[futures[i].first] = frame;
+        bucket_table_[bs[start_idx + i]] = frame;
+      } else {
+        std::cerr << "Failed to fetch bucket: " << bs[start_idx + i]
+                  << std::endl;
+        return false;
+      }
     }
+
+    // Insert into buckets
+    if (cache_[frames[0]].Count() > cache_[frames[1]].Count()) {
+      if (cache_[frames[1]].InsertSlot(request.key_, request.value_,
+                                       dirty_flag_[frames[1]])) {
+        std::cout << "Inserted to bucket: " << bs[start_idx + 1]
+                  << " frame: " << frames[1] << std::endl;
+        return true;
+      }
+    } else {
+      if (cache_[frames[0]].InsertSlot(request.key_, request.value_,
+                                       dirty_flag_[frames[0]])) {
+        std::cout << "Inserted to bucket: " << bs[start_idx]
+                  << " frame: " << frames[0] << std::endl;
+        return true;
+      }
+    }
+    std::cout << "Cannot insert into bucket " << bs[start_idx] << ", "
+              << bs[start_idx + 1] << std::endl;
+    return false;
+  };
+
+  // Try inserting into the first two buckets
+  if (tryInsertInto2Buckets(0)) {
+    return true;
   }
 
-  // if (finished)
-  //   return true;
-
-  futures.clear();
-  for (size_t i = 0; i < 2; i++) {
-    if (bucket_table_.count(bs[i + 2]) == 0)
-      futures.push_back(FetchBucket(bs[i + 2], &frames[i]));
-    else
-      replacer_->RecordAccess(bucket_table_[bs[i + 2]]);
-  }
-  futures[0].wait();
-  futures[1].wait();
-  bucket_table_[bs[3]] = frames[0];
-  bucket_table_[bs[4]] = frames[1];
-  if (cache_[frames[0]].Count() > cache_[frames[1]].Count())
-    finished = cache_[frames[1]].InsertSlot(request.key_, request.value_,
-                                            dirty_flag_[frames[1]]);
-  else
-    finished = cache_[frames[0]].InsertSlot(request.key_, request.value_,
-                                            dirty_flag_[frames[0]]);
-
-  return finished;
+  // Try inserting into the last two buckets
+  return tryInsertInto2Buckets(2);
 }
 
 void Dpu::Run() {
@@ -266,9 +283,8 @@ void Dpu::Run() {
     switch (request.request_type_) {
     case RequestType::SEARCH: {
       auto result = ProcessSearch(request, result_value);
-      if (result)
-        request.callback_(result ? std::make_optional(result_value.ToString())
-                                 : std::nullopt);
+      request.callback_(result ? std::make_optional(result_value.ToString())
+                               : std::nullopt);
       break;
     }
     case RequestType::INSERT: {
@@ -279,6 +295,7 @@ void Dpu::Run() {
       break;
     }
     }
+    DebugPrintCache();
   }
 }
 
@@ -290,4 +307,13 @@ void Dpu::GenSeeds() {
     f_seed_ = f_seed_ << (rand() % 63);
     s_seed_ = s_seed_ << (rand() % 63);
   } while (f_seed_ == s_seed_);
+}
+
+std::array<bucket_id_t, 4> Dpu::Get4Buckets(uint64_t hash1, uint64_t hash2) {
+  size_t idx1 = hash1 % (addr_capacity_ / 2);
+  size_t idx2 = addr_capacity_ / 2 + hash2 % (addr_capacity_ / 2);
+  size_t idx3 = hash1 % (addr_capacity_ / 4);
+  size_t idx4 = addr_capacity_ / 4 + hash2 % (addr_capacity_ / 4);
+  return {addr_capacity_ - 4 + idx1, addr_capacity_ - 4 + idx2,
+          bl_capacity_ - 4 + idx3, bl_capacity_ - 4 + idx4};
 }

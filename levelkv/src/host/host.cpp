@@ -42,6 +42,17 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
 
 Host::~Host() {}
 
+void Host::DebugPrint() const {
+  std::cout << "TL: \n";
+  for (size_t i = 0; i < level_ht_->addr_capacity_; i++) {
+    level_ht_->buckets_[0][i].DebugPrint();
+  }
+  std::cout << "BL: \n";
+  for (size_t i = 0; i < level_ht_->bl_capacity_; i++) {
+    level_ht_->buckets_[1][i].DebugPrint();
+  }
+}
+
 void Host::Run() {
   while (true) {
     if (getchar() == 'q' || getchar() == 'Q')
