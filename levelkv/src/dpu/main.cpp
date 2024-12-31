@@ -2,6 +2,7 @@
 #include <iomanip>
 
 #include "dpu.hpp"
+#include "dma_common.hpp"
 
 void exampleCallBack(std::optional<std::string> s) {
   if (s) {
@@ -12,9 +13,12 @@ void exampleCallBack(std::optional<std::string> s) {
 }
 
 int main() {
+  init_log_backend();
   Dpu dpu("03:00.0");
-  for (size_t i = 1; i < 4; i++) {
+  for (size_t i = 1; i < 10; i++) {
     dpu.Insert(i, i * 10);
+  }
+  for (size_t i = 1; i < 10; i++) {
     dpu.Search(i, &exampleCallBack);
   }
   std::this_thread::sleep_for(std::chrono::seconds(3));

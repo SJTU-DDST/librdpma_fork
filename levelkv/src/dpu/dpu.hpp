@@ -19,7 +19,7 @@
 #include "replacer.hpp"
 #include "utils.hpp"
 
-#define CACHE_SIZE 16
+#define CACHE_SIZE 4
 
 enum class RequestType {
   SEARCH,

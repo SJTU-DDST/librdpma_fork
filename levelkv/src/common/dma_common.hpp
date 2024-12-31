@@ -12,6 +12,7 @@
 #include <doca_dma.h>
 #include <doca_mmap.h>
 #include <doca_pe.h>
+#include <doca_log.h>
 
 #define THREADS 8
 #define TASK_FINISH_SUCCESS 1
@@ -31,6 +32,8 @@ struct DmaRequest {
   size_t len_;
   std::shared_ptr<std::promise<bool>> promise_;
 };
+
+void init_log_backend();
 
 doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
                                        doca_dev **retval);

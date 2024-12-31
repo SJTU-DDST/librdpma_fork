@@ -31,13 +31,6 @@ public:
     token_[slot_number] = 1;
   }
 
-  std::optional<std::pair<K, V>> GetSlot(size_t slot_number) const {
-    assert(slot_number < AssocNum);
-    if (token_[slot_number] == 0)
-      return std::nullopt;
-    return std::make_pair(slots_[slot_number].key_, slots_[slot_number].value_);
-  }
-
   bool SearchSlot(const K &key, V *value) const {
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 1 && slots_[i].key_ == key) {
@@ -90,17 +83,12 @@ public:
     return c;
   }
 
-  void DebugPrint() const {
-    std::cout << "------ Bucket ------\n";
+  void DebugPrint(bucket_id_t bucket = -1) const {
+    std::cout << "------ Bucket " << bucket << " ------\n";
     for (size_t i = 0; i < AssocNum; i++) {
-      std::cout << "Slot " << i << ": ";
-      auto slot = GetSlot(i);
-      if (slot) {
-        const auto &[k, v] = *slot;
-        std::cout << "1   " << k << "   " << v << std::endl;
-      } else
-        std::cout << "0   " << std::endl;
+      std::cout << "Slot " << i << ": " << (token_[i] == 0 ? 0 : 1) << " " << slots_[i].key_ << " " << slots_[i].value_ << "   ";
     }
+    std::cout << std::endl;
   }
 };
 

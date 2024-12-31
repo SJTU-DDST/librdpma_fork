@@ -1,6 +1,13 @@
 #include "dma_common.hpp"
 #include "utils.hpp"
 
+void init_log_backend() {
+  struct doca_log_backend *sdk_log;
+  doca_log_backend_create_standard();
+  doca_log_backend_create_with_file_sdk(stderr, &sdk_log);
+  doca_log_backend_set_sdk_level(sdk_log, DOCA_LOG_LEVEL_WARNING);
+}
+
 static doca_error_t check_dev_dma_capable(doca_devinfo *devinfo) {
   doca_error_t status = doca_dma_cap_task_memcpy_is_supported(devinfo);
   if (status != DOCA_SUCCESS)

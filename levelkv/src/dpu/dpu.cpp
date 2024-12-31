@@ -74,7 +74,7 @@ std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
   ENSURE(bucket > 0, "FlushBucket: Frame id must >= 0");
   auto [client, offset] = GetClientBucket(bucket);
   return dma_client_[client]->ScheduleReadWrite(
-      true, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
+      true, frame * sizeof(FixedBucket), offset, sizeof(FixedBucket));
 }
 
 std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
@@ -85,7 +85,9 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
   // Determine target frame
   if (free_list_.empty()) {
     replacer_->Evict(&target_frame);
+    std::cout << "Evict frame: " << target_frame << std::endl;
     if (dirty_flag_[target_frame]) {
+      std::cout << "Flush frame: " << target_frame << std::endl;
       flush_future = FlushBucket(target_frame);
       dirty_flag_[target_frame] = false;
       need_flush = true;
@@ -98,6 +100,7 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
   ENSURE(target_frame >= 0 && target_frame < CACHE_SIZE,
          "FetchBucket: target frame error");
 
+  bucket_table_.erase(bucket_ids_[target_frame]);
   bucket_ids_[target_frame] = bucket;
   replacer_->RecordAccess(target_frame);
 
@@ -117,11 +120,11 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
 }
 
 void Dpu::DebugPrintCache() const {
+  std::cout << "************************************\n";
   for (size_t i = 0; i < CACHE_SIZE; i++) {
-    std::cout << "Cache frame: " << i << std::endl;
-    cache_[i].DebugPrint();
-    std::cout << std::endl;
+    cache_[i].DebugPrint(bucket_ids_[i]);
   }
+  std::cout << "************************************\n\n";
 }
 
 uint64_t Dpu::GenNextClientId() {
@@ -214,13 +217,13 @@ bool Dpu::ProcessInsert(const Request &request) {
     std::array<frame_id_t, 2> frames;
 
     for (size_t i = 0; i < 2; ++i) {
-      size_t bucket_idx = start_idx + i;
-      if (bucket_table_.count(bs[bucket_idx]) == 0) {
+      auto b = bs[start_idx + i];
+      if (bucket_table_.count(b) == 0) {
         // Bucket not in cache, fetch asynchronously
-        futures.push_back(std::make_pair(i, FetchBucket(bs[bucket_idx])));
+        futures.push_back(std::make_pair(i, FetchBucket(b)));
       } else {
         // Bucket is in cache, record access
-        frames[i] = bucket_table_[bs[bucket_idx]];
+        frames[i] = bucket_table_[b];
         replacer_->RecordAccess(frames[i]);
       }
     }
@@ -230,7 +233,7 @@ bool Dpu::ProcessInsert(const Request &request) {
       auto [success, frame] = futures[i].second.get();
       if (success) {
         frames[futures[i].first] = frame;
-        bucket_table_[bs[start_idx + i]] = frame;
+        bucket_table_[bs[start_idx + futures[i].first]] = frame;
       } else {
         std::cerr << "Failed to fetch bucket: " << bs[start_idx + i]
                   << std::endl;
@@ -289,13 +292,13 @@ void Dpu::Run() {
     }
     case RequestType::INSERT: {
       ProcessInsert(request);
+      DebugPrintCache();
       break;
     }
     case RequestType::DELETE: {
       break;
     }
     }
-    DebugPrintCache();
   }
 }
 
