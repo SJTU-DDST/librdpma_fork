@@ -14,6 +14,7 @@
 #include <doca_mmap.h>
 #include <doca_pe.h>
 
+#include "comch_common.hpp"
 #include "dma_client.hpp"
 #include "level_hashing.hpp"
 #include "replacer.hpp"
@@ -25,6 +26,7 @@ enum class RequestType {
   SEARCH,
   DELETE,
   INSERT,
+  UPDATE,
 };
 
 struct Request {
@@ -45,6 +47,7 @@ public:
   void Search(const FixedKey &key, std::function<void(std::optional<std::string>)> callback);
   void Delete(const FixedKey &key);
   void Insert(const FixedKey &key, const FixedValue &value);
+  void Update(const FixedKey &key, const FixedValue &value);
   
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
@@ -55,6 +58,7 @@ private:
   bool ProcessSearch(const Request &request, FixedValue &result);
   bool ProcessDelete(const Request &request);
   bool ProcessInsert(const Request &request);
+  bool ProcessUpdate(const Request &request);
   uint64_t GenNextClientId();
   std::pair<size_t, size_t> GetClientBucket(bucket_id_t bucket) const;
   void Run();
@@ -73,18 +77,24 @@ public:
   std::array<bool, CACHE_SIZE> dirty_flag_;
   size_t cache_size_;
   std::unordered_map<bucket_id_t, frame_id_t> bucket_table_;
+  std::array<bucket_id_t, CACHE_SIZE> bucket_ids_;
+
+  /* Level hashing parameters */
   bucket_id_t bl_start_bucket_id_;
   bucket_id_t tl_start_bucket_id_;
   uint64_t level_;
-  uint64_t next_client_id_;
 
   uint64_t f_seed_;
   uint64_t s_seed_;
   size_t addr_capacity_;
   size_t bl_capacity_;
 
+  /* Replacer */
   std::unique_ptr<Replacer> replacer_;
   std::list<frame_id_t> free_list_;
-  std::list<frame_id_t> dirty_list_;
-  std::array<bucket_id_t, CACHE_SIZE> bucket_ids_;
+
+  /* Comch */
+  std::unique_ptr<ComchCfg> comch_cfg_;
+
+  uint64_t next_client_id_;
 };

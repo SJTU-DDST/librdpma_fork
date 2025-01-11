@@ -28,6 +28,9 @@ Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
   for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
     free_list_.push_back(i);
   }
+
+  // Initialize comch
+  comch_cfg_ = comch_init("Comch Server", "03:00.0", "b5:00.0", this);
 }
 
 Dpu::~Dpu() {
@@ -58,6 +61,17 @@ void Dpu::Insert(const FixedKey &key, const FixedValue &value) {
   cv_.notify_one();
 }
 
+void Dpu::Update(const FixedKey &key, const FixedValue &value) {
+  auto hash1 = key.Hash(f_seed_);
+  auto hash2 = key.Hash(s_seed_);
+  Request request = {RequestType::UPDATE, key, value, hash1, hash2, nullptr};
+  {
+    std::unique_lock<std::mutex> lock(request_queue_mtx_);
+    request_queue_.push(request);
+  }
+  cv_.notify_one();
+}
+
 void Dpu::Delete(const FixedKey &key) {
   auto hash1 = key.Hash(f_seed_);
   auto hash2 = key.Hash(s_seed_);
@@ -71,7 +85,6 @@ void Dpu::Delete(const FixedKey &key) {
 
 std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
   auto bucket = bucket_ids_[frame];
-  ENSURE(bucket > 0, "FlushBucket: Frame id must >= 0");
   auto [client, offset] = GetClientBucket(bucket);
   return dma_client_[client]->ScheduleReadWrite(
       true, frame * sizeof(FixedBucket), offset, sizeof(FixedBucket));
@@ -121,7 +134,7 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
 
 void Dpu::FlushAll() {
   std::array<std::future<bool>, CACHE_SIZE> futures;
-  for (size_t i = 0; i < CACHE_SIZE; i++) {
+  for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
     futures[i] = FlushBucket(i);
   }
   for (auto &f : futures) {
@@ -204,10 +217,50 @@ bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
         return true;
       }
     } else {
-      std::cerr << "Failed to fetch bucket: " << bs[to_fetch[i]] << std::endl;
+      std::cerr << "Failed to fetch bucket: " << to_fetch[i] << std::endl;
     }
   }
 
+  return false;
+}
+
+bool Dpu::ProcessDelete(const Request &request) {
+  auto bs = Get4Buckets(request.hash1_, request.hash2_);
+
+  // Check buckets already in cache
+  std::vector<std::future<std::pair<bool, frame_id_t>>> futures;
+  std::vector<bucket_id_t> to_fetch;
+
+  for (auto b : bs) {
+    if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
+      replacer_->RecordAccess(it->second);
+      if (cache_[it->second].DeleteSlot(request.key_,
+                                        dirty_flag_[it->second])) {
+        return true;
+      }
+    } else {
+      to_fetch.push_back(b);
+    }
+  }
+
+  // Fetch buckets not in cache
+  std::vector<frame_id_t> fetched_frames(to_fetch.size(), -1);
+  for (auto b : to_fetch) {
+    futures.push_back(FetchBucket(b));
+  }
+
+  // Process fetched buckets and search
+  for (size_t i = 0; i < to_fetch.size(); ++i) {
+    auto [success, frame] = futures[i].get();
+    if (success) {
+      bucket_table_[to_fetch[i]] = frame;
+      if (cache_[frame].DeleteSlot(request.key_, dirty_flag_[frame])) {
+        return true;
+      }
+    } else {
+      std::cerr << "Failed to fetch bucket: " << to_fetch[i] << std::endl;
+    }
+  }
   return false;
 }
 
@@ -281,6 +334,50 @@ bool Dpu::ProcessInsert(const Request &request) {
   return tryInsertInto2Buckets(2);
 }
 
+bool Dpu::ProcessUpdate(const Request &request) {
+  auto bs = Get4Buckets(request.hash1_, request.hash2_);
+
+  // Check buckets already in cache
+  std::vector<std::future<std::pair<bool, frame_id_t>>> futures;
+  std::vector<bucket_id_t> to_fetch;
+
+  for (auto b : bs) {
+    if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
+      std::cout << "Bucket " << b << " found in cache\n";
+      replacer_->RecordAccess(it->second);
+      if (cache_[it->second].UpdateSlot(request.key_, request.value_,
+                                        dirty_flag_[it->second])) {
+        return true;
+      }
+    } else {
+      std::cout << "Bucket " << b << " not in cache, fetching...\n";
+      to_fetch.push_back(b);
+    }
+  }
+
+  // Fetch buckets not in cache
+  std::vector<frame_id_t> fetched_frames(to_fetch.size(), -1);
+  for (auto b : to_fetch) {
+    futures.push_back(FetchBucket(b));
+  }
+
+  // Process fetched buckets and search
+  for (size_t i = 0; i < to_fetch.size(); ++i) {
+    auto [success, frame] = futures[i].get();
+    if (success) {
+      bucket_table_[to_fetch[i]] = frame;
+      if (cache_[frame].UpdateSlot(request.key_, request.value_,
+                                   dirty_flag_[frame])) {
+        return true;
+      }
+    } else {
+      std::cerr << "Failed to fetch bucket: " << to_fetch[i] << std::endl;
+    }
+  }
+
+  return false;
+}
+
 void Dpu::Run() {
   while (!stop_) {
     FixedValue result_value;
@@ -306,6 +403,11 @@ void Dpu::Run() {
       break;
     }
     case RequestType::DELETE: {
+      ProcessDelete(request);
+      break;
+    }
+    case RequestType::UPDATE: {
+
       break;
     }
     }

@@ -44,9 +44,12 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
   //   level_ht_->buckets_[1][i].SetSlot(2, i, i * 1000);
   //   level_ht_->buckets_[1][i].SetSlot(3, i, i * 10000);
   // }
+  comch_cfg_ = comch_init("Comch Client", "b5:00.0", "", this);
 }
 
 Host::~Host() {}
+
+void Host::Rehash() { std::cout << "Rehash is called \n"; }
 
 void Host::DebugPrint() const {
   std::cout << "************************************************\nTL: \n";

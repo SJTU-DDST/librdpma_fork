@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <stdlib.h>
+#include <iostream>
 
 #define ENSURE(expr, message)                                                  \
   if (!(expr)) {                                                               \

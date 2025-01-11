@@ -15,10 +15,10 @@ void exampleCallBack(std::optional<std::string> s) {
 int main() {
   init_log_backend();
   Dpu dpu("03:00.0");
-  for (size_t i = 1; i < 10; i++) {
-    dpu.Insert(i, i * 10);
-  }
-  for (size_t i = 1; i < 10; i++) {
+  // for (size_t i = 1; i < 10; i++) {
+  //   dpu.Insert(i, i * 10);
+  // }
+  for (size_t i = 9; i > 0; i--) {
     dpu.Search(i, &exampleCallBack);
   }
   std::this_thread::sleep_for(std::chrono::seconds(3));

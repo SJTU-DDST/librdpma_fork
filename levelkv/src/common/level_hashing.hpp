@@ -41,10 +41,11 @@ public:
     return false;
   }
 
-  bool DeleteSlot(const K &key) {
+  bool DeleteSlot(const K &key, bool &dirty_flag) {
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 1 && slots_[i].key_ == key) {
         token_[i] = 0;
+        dirty_flag = true;
         return true;
       }
     }
@@ -64,10 +65,13 @@ public:
     return false;
   }
 
-  bool UpdateSlot(const K &key, const V &value) {
+  bool UpdateSlot(const K &key, const V &value, bool &dirty_flag) {
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 1 && slots_[i].key_ == key) {
-        slots_[i].value_ = value;
+        if (slots_[i].value_ != value) {
+          slots_[i].value_ = value;
+          dirty_flag = true;
+        }
         return true;
       }
     }
@@ -86,7 +90,8 @@ public:
   void DebugPrint(bucket_id_t bucket = -1) const {
     std::cout << "------ Bucket " << bucket << " ------\n";
     for (size_t i = 0; i < AssocNum; i++) {
-      std::cout << "Slot " << i << ": " << (token_[i] == 0 ? 0 : 1) << " " << slots_[i].key_ << " " << slots_[i].value_ << "   ";
+      std::cout << "Slot " << i << ": " << (token_[i] == 0 ? 0 : 1) << " "
+                << slots_[i].key_ << " " << slots_[i].value_ << "   ";
     }
     std::cout << std::endl;
   }

@@ -58,9 +58,36 @@ doca_error_t open_doca_device_with_pci(const char *pci_addr, tasks_check func,
       }
     }
   }
-  res = DOCA_ERROR_NOT_FOUND;
   doca_devinfo_destroy_list(dev_list);
-  return res;
+  return DOCA_ERROR_NOT_FOUND;
+}
+
+doca_error_t open_doca_device_rep_with_pci(struct doca_dev *local,
+                                           const char *pci_addr,
+                                           struct doca_dev_rep **retval) {
+  uint32_t nb_rdevs = 0;
+  struct doca_devinfo_rep **rep_dev_list = NULL;
+  uint8_t is_addr_equal = 0;
+  doca_error_t result;
+  size_t i;
+  *retval = NULL;
+
+  result = doca_devinfo_rep_create_list(local, DOCA_DEVINFO_REP_FILTER_NET,
+                                        &rep_dev_list, &nb_rdevs);
+  if (result != DOCA_SUCCESS)
+    return result;
+
+  for (i = 0; i < nb_rdevs; i++) {
+    result = doca_devinfo_rep_is_equal_pci_addr(rep_dev_list[i], pci_addr,
+                                                &is_addr_equal);
+    if (result == DOCA_SUCCESS && is_addr_equal &&
+        doca_dev_rep_open(rep_dev_list[i], retval) == DOCA_SUCCESS) {
+      doca_devinfo_rep_destroy_list(rep_dev_list);
+      return DOCA_SUCCESS;
+    }
+  }
+  doca_devinfo_rep_destroy_list(rep_dev_list);
+  return DOCA_ERROR_NOT_FOUND;
 }
 
 doca_dev *open_device(const std::string &pcie_addr) {
@@ -68,6 +95,13 @@ doca_dev *open_device(const std::string &pcie_addr) {
   open_doca_device_with_pci(pcie_addr.c_str(), check_dev_dma_capable, &dev);
   ENSURE(dev, "Failed to open doca dev with pci");
   return dev;
+}
+
+doca_dev_rep *open_device_rep(const std::string &pcie_rep_addr, doca_dev *local) {
+  doca_dev_rep *dev_rep;
+  open_doca_device_rep_with_pci(local, pcie_rep_addr.c_str(), &dev_rep);
+  ENSURE(dev_rep, "Failed to open doca dev rep with pci");
+  return dev_rep;
 }
 
 doca_mmap *create_mmap(void *addr, size_t len, doca_dev *dev) {
@@ -131,8 +165,8 @@ doca_buf *create_buf_by_addr(doca_buf_inventory *inv, doca_mmap *mmap,
   return buf;
 }
 
-doca_dma_task_memcpy *create_dma_task(doca_dma *dma, doca_buf *src, doca_buf *dst,
-                           uint64_t *finish) {
+doca_dma_task_memcpy *create_dma_task(doca_dma *dma, doca_buf *src,
+                                      doca_buf *dst, uint64_t *finish) {
   doca_dma_task_memcpy *task;
   doca_data task_user_data;
   task_user_data.ptr = (void *)finish;
