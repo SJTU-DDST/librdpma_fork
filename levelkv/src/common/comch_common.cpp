@@ -53,6 +53,20 @@ static void server_disconnection_cb(
   comch_cfg->active_connection_ = NULL;
 }
 
+static void comch_send_completion(struct doca_comch_task_send *task,
+                                  union doca_data task_user_data,
+                                  union doca_data ctx_user_data) {
+  doca_task_free(doca_comch_task_send_as_task(task));
+}
+
+static void comch_send_completion_err(struct doca_comch_task_send *task,
+                                      union doca_data task_user_data,
+                                      union doca_data ctx_user_data) {
+
+  doca_task_free(doca_comch_task_send_as_task(task));
+  ENSURE(0, "Comch task failed");
+}
+
 std::unique_ptr<ComchCfg> comch_init(const std::string &name,
                                      const std::string &pcie_addr,
                                      const std::string &pcie_rep_addr,
@@ -69,6 +83,8 @@ std::unique_ptr<ComchCfg> comch_init(const std::string &name,
   doca_comch_server_create(cfg->dev_, cfg->dev_rep_, "Comch Server",
                            &cfg->server_);
   cfg->ctx_ = doca_comch_server_as_ctx(cfg->server_);
+  doca_comch_server_task_send_set_conf(cfg->server_, comch_send_completion,
+                                       comch_send_completion_err, 1024);
   doca_comch_server_event_msg_recv_register(cfg->server_,
                                             comch_server_recv_callback);
   doca_comch_server_event_connection_status_changed_register(
@@ -77,6 +93,8 @@ std::unique_ptr<ComchCfg> comch_init(const std::string &name,
   cfg->is_server_ = false;
   doca_comch_client_create(cfg->dev_, "Comch Client", &cfg->client_);
   cfg->ctx_ = doca_comch_client_as_ctx(cfg->client_);
+  doca_comch_client_task_send_set_conf(cfg->client_, comch_send_completion,
+                                       comch_send_completion_err, 1024);
   doca_comch_client_event_msg_recv_register(cfg->client_,
                                             comch_client_recv_callback);
 #endif

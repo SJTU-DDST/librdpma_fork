@@ -1,8 +1,9 @@
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
-#include "dpu.hpp"
+#include "comch_common.hpp"
 #include "dma_common.hpp"
+#include "dpu.hpp"
 
 void exampleCallBack(std::optional<std::string> s) {
   if (s) {
@@ -14,16 +15,13 @@ void exampleCallBack(std::optional<std::string> s) {
 
 int main() {
   init_log_backend();
-  Dpu dpu("03:00.0");
-  // for (size_t i = 1; i < 10; i++) {
-  //   dpu.Insert(i, i * 10);
+  // Dpu dpu("03:00.0");
+  // for (size_t i = 9; i > 0; i--) {
+  //   dpu.Search(i, &exampleCallBack);
   // }
-  for (size_t i = 9; i > 0; i--) {
-    dpu.Search(i, &exampleCallBack);
-  }
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-  dpu.FlushAll();
-  // dpu.DebugPrintCache();
+  // std::this_thread::sleep_for(std::chrono::seconds(3));
+  // dpu.FlushAll();
+  auto cfg = comch_init("Server", "03:00.0", "b5:00.0", nullptr);
   while (true) {
     char c = getchar();
     if (c == 'q' || c == 'Q')
