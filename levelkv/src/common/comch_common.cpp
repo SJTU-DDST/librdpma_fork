@@ -75,23 +75,30 @@ std::unique_ptr<ComchCfg> comch_init(const std::string &name,
   cfg->user_data_ = user_data;
   doca_data comch_user_data;
   comch_user_data.ptr = (void *)cfg.get();
-  cfg->dev_ = open_device(pcie_addr);
   cfg->pe_ = create_pe();
+  cfg->dev_ = open_device(pcie_addr);
+  doca_comch_cap_get_max_msg_size(doca_dev_as_devinfo(cfg->dev_),
+                                  &cfg->max_buf_size_);
+  std::cout << "Max buffer size: " << cfg->max_buf_size_ << std::endl;
 #ifdef DOCA_ARCH_DPU
   cfg->is_server_ = true;
   cfg->dev_rep_ = open_device_rep(pcie_rep_addr, cfg->dev_);
-  doca_comch_server_create(cfg->dev_, cfg->dev_rep_, "Comch Server",
+  doca_comch_server_create(cfg->dev_, cfg->dev_rep_, name.c_str(),
                            &cfg->server_);
-  cfg->ctx_ = doca_comch_server_as_ctx(cfg->server_);
   doca_comch_server_task_send_set_conf(cfg->server_, comch_send_completion,
                                        comch_send_completion_err, 1024);
   doca_comch_server_event_msg_recv_register(cfg->server_,
                                             comch_server_recv_callback);
   doca_comch_server_event_connection_status_changed_register(
       cfg->server_, server_connection_cb, server_disconnection_cb);
+  cfg->ctx_ = doca_comch_server_as_ctx(cfg->server_);
 #else
+  auto result =
+      doca_comch_cap_client_is_supported(doca_dev_as_devinfo(cfg->dev_));
+  ENSURE(result == DOCA_SUCCESS, "Client dev does not support comch");
   cfg->is_server_ = false;
-  doca_comch_client_create(cfg->dev_, "Comch Client", &cfg->client_);
+  doca_comch_client_create(cfg->dev_, name.c_str(), &cfg->client_);
+  doca_comch_client_set_max_msg_size(cfg->client_, cfg->max_buf_size_);
   cfg->ctx_ = doca_comch_client_as_ctx(cfg->client_);
   doca_comch_client_task_send_set_conf(cfg->client_, comch_send_completion,
                                        comch_send_completion_err, 1024);
@@ -102,6 +109,7 @@ std::unique_ptr<ComchCfg> comch_init(const std::string &name,
   doca_ctx_set_user_data(cfg->ctx_, comch_user_data);
   cfg->active_connection_ = nullptr;
   doca_ctx_start(cfg->ctx_);
+  std::cout << "1\n";
 
 #ifdef DOCA_ARCH_DPU
   while (cfg->active_connection_ == nullptr) {
