@@ -14,6 +14,7 @@ comch_server_recv_callback(doca_comch_event_msg_recv *event,
                            uint8_t *recv_buffer, uint32_t msg_len,
                            doca_comch_connection *comch_connection) {
   std::cout << "Server recv callback called... \n";
+  std::cout.write((char *)recv_buffer, msg_len);
 }
 
 static void
@@ -21,6 +22,7 @@ comch_client_recv_callback(doca_comch_event_msg_recv *event,
                            uint8_t *recv_buffer, uint32_t msg_len,
                            doca_comch_connection *comch_connection) {
   std::cout << "Client recv callback called... \n";
+  std::cout.write((char *)recv_buffer, msg_len);
 }
 
 static void
@@ -35,7 +37,7 @@ server_connection_cb(struct doca_comch_event_connection_status_changed *event,
   doca_ctx_get_user_data(doca_comch_server_as_ctx(server), &ctx_user_data);
   comch_cfg = reinterpret_cast<ComchCfg *>(ctx_user_data.ptr);
   ENSURE(comch_cfg, "Failed to get configuration from server context");
-  ENSURE(comch_cfg->active_connection_ != nullptr,
+  ENSURE(comch_cfg->active_connection_ == nullptr,
          "A connection already exists on the server");
   doca_comch_connection_set_user_data(comch_connection, ctx_user_data);
   comch_cfg->active_connection_ = comch_connection;
@@ -200,4 +202,22 @@ std::unique_ptr<ComchCfg> comch_init(const char *name, const char *pci_addr,
                                         comch_user_data);
   }
   return cfg;
+}
+
+doca_error_t comch_send(doca_comch_connection *connection, const void *msg,
+                        uint32_t len) {
+  doca_data comch_user_data = doca_comch_connection_get_user_data(connection);
+  ComchCfg *comch_cfg = reinterpret_cast<ComchCfg *>(comch_user_data.ptr);
+  ENSURE(comch_cfg, "Failed to get comch cfg");
+  ENSURE(len <= comch_cfg->max_buf_size_,
+         "Message length exceeds comch maximum length");
+  doca_comch_task_send *task;
+  if (comch_cfg->is_server_)
+    doca_comch_server_task_send_alloc_init(comch_cfg->server_, connection, msg,
+                                           len, &task);
+  else
+    doca_comch_client_task_send_alloc_init(comch_cfg->client_, connection, msg,
+                                           len, &task);
+  doca_task_submit(doca_comch_task_send_as_task(task));
+  return DOCA_SUCCESS;
 }

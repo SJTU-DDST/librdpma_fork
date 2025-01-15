@@ -99,8 +99,8 @@ doca_dev *open_device(const std::string &pcie_addr) {
 
 doca_dev_rep *open_device_rep(const std::string &pcie_rep_addr, doca_dev *local) {
   doca_dev_rep *dev_rep;
-  open_doca_device_rep_with_pci(local, pcie_rep_addr.c_str(), &dev_rep);
-  ENSURE(dev_rep, "Failed to open doca dev rep with pci");
+  doca_error_t result = open_doca_device_rep_with_pci(local, pcie_rep_addr.c_str(), &dev_rep);
+  ENSURE(dev_rep && result == DOCA_SUCCESS, "Failed to open doca dev rep with pci");
   return dev_rep;
 }
 

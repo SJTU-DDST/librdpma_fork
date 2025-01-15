@@ -22,6 +22,8 @@ int main() {
   // std::this_thread::sleep_for(std::chrono::seconds(3));
   // dpu.FlushAll();
   auto cfg = comch_init("Server", "03:00.0", "b5:00.0", nullptr);
+  std::string msg = "Hello this is the comch testing message!";
+  comch_send(cfg->active_connection_, msg.c_str(), msg.length());
   while (true) {
     char c = getchar();
     if (c == 'q' || c == 'Q')

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <memory>
 
 #include <doca_comch.h>
 #include <doca_ctx.h>
@@ -74,3 +75,6 @@ struct ComchCfg {
 
 std::unique_ptr<ComchCfg> comch_init(const char *name, const char *pci_addr,
                                      const char *rep_pci_addr, void *user_data);
+
+doca_error_t comch_send(doca_comch_connection *connection, const void *msg,
+                        uint32_t len);
