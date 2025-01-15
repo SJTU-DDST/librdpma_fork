@@ -72,7 +72,5 @@ struct ComchCfg {
 //   doca_ctx *ctx_;
 // };
 
-std::unique_ptr<ComchCfg> comch_init(const std::string &name,
-                                     const std::string &pcie_addr,
-                                     const std::string &pcie_rep_addr,
-                                     void *user_data);
+std::unique_ptr<ComchCfg> comch_init(const char *name, const char *pci_addr,
+                                     const char *rep_pci_addr, void *user_data);
