@@ -7,7 +7,8 @@ int main() {
   // host.DebugPrint();
   // host.Run();
   init_log_backend();
-  auto cfg = comch_init("Client", "b5:00.0", "", nullptr);
+  int i = 1;
+  auto cfg = comch_init("Client", "b5:00.0", "03:00.0", &i);
   
   return 0;
 }

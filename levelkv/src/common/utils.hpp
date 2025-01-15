@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#define SLEEP_IN_NANOS (10 * 1000)
+
 #define ENSURE(expr, message)                                                  \
   if (!(expr)) {                                                               \
     std::cerr << "ERROR: " << (message) << std::endl;                          \

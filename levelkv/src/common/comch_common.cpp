@@ -129,9 +129,14 @@ std::unique_ptr<ComchCfg> comch_init(const char *name, const char *pci_addr,
                                      const char *rep_pci_addr,
                                      void *user_data) {
   auto cfg = std::make_unique<ComchCfg>();
+  struct timespec ts = {
+      .tv_nsec = SLEEP_IN_NANOS,
+  };
   union doca_data comch_user_data = {0};
 #ifdef DOCA_ARCH_DPU
   cfg->is_server_ = 1;
+#else
+  cfg->is_server_ = 0;
 #endif
 
   cfg->user_data_ = user_data;
@@ -161,8 +166,10 @@ std::unique_ptr<ComchCfg> comch_init(const char *name, const char *pci_addr,
     cfg->active_connection_ = NULL;
     result = doca_ctx_start(cfg->ctx_);
     std::cout << "Server waiting on a client to connect\n";
-    while (cfg->active_connection_ == NULL)
+    while (cfg->active_connection_ == NULL) {
       (void)doca_pe_progress(cfg->pe_);
+      nanosleep(&ts, &ts);
+    }
     std::cout << "Server connection established\n";
   } else {
     doca_error_t result =
@@ -184,6 +191,7 @@ std::unique_ptr<ComchCfg> comch_init(const char *name, const char *pci_addr,
     (void)doca_ctx_get_state(cfg->ctx_, &state);
     while (state != DOCA_CTX_STATE_RUNNING) {
       (void)doca_pe_progress(cfg->pe_);
+      nanosleep(&ts, &ts);
       (void)doca_ctx_get_state(cfg->ctx_, &state);
     }
     (void)doca_comch_client_get_connection(cfg->client_,
