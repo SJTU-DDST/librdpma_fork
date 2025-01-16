@@ -3,12 +3,13 @@
 #include "host.hpp"
 
 int main() {
-  // Host host("b5:00.0", 3);
+  init_log_backend();
+  Host host("b5:00.0", 3);
   // host.DebugPrint();
   // host.Run();
-  init_log_backend();
-  auto cfg = comch_init("Server", "b5:00.0", "", nullptr);
+  // auto cfg = comch_init("Server", "b5:00.0", "", nullptr);
   while (true) {
+    // doca_pe_progress(cfg->pe_);
   }
   return 0;
 }

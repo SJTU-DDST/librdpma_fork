@@ -29,4 +29,6 @@ private:
   std::vector<std::unique_ptr<DmaServer>> bl_dma_server_;
   std::unique_ptr<ComchCfg> comch_cfg_;
   uint64_t next_server_id_;
+
+  std::unique_ptr<Comch> host_comch_;
 };

@@ -3,9 +3,14 @@
 #include "hash.hpp"
 #include "utils.hpp"
 
-Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
+Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
+         uint64_t level)
     : stop_(false), level_(level), next_client_id_(0),
-      replacer_(std::make_unique<Replacer>()) {
+      replacer_(std::make_unique<Replacer>()),
+      dpu_comch_(std::make_unique<Comch>(
+          true, "Comch", pcie_addr, pcie_rep_addr, comch_server_recv_callback,
+          comch_send_completion, comch_send_completion_err,
+          server_connection_cb, server_disconnection_cb, this)) {
   ENSURE(level >= 3, "Starting level should be at least 3");
   addr_capacity_ = 1 << level;
   bl_capacity_ = 1 << (level - 1);
@@ -28,9 +33,6 @@ Dpu::Dpu(const std::string &pcie_addr, uint64_t level)
   for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
     free_list_.push_back(i);
   }
-
-  // Initialize comch
-  comch_cfg_ = comch_init("Comch Server", "03:00.0", "b5:00.0", this);
 }
 
 Dpu::~Dpu() {

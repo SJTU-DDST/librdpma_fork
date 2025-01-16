@@ -1,11 +1,11 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <functional>
 
 #include <doca_buf_inventory.h>
 #include <doca_ctx.h>
@@ -40,15 +40,17 @@ struct Request {
 
 class Dpu {
 public:
-  Dpu(const std::string &pcie_addr, uint64_t level = DEFAULT_START_LEVEL);
+  Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
+      uint64_t level = DEFAULT_START_LEVEL);
 
   ~Dpu();
 
-  void Search(const FixedKey &key, std::function<void(std::optional<std::string>)> callback);
+  void Search(const FixedKey &key,
+              std::function<void(std::optional<std::string>)> callback);
   void Delete(const FixedKey &key);
   void Insert(const FixedKey &key, const FixedValue &value);
   void Update(const FixedKey &key, const FixedValue &value);
-  
+
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
   void FlushAll();
@@ -94,7 +96,7 @@ public:
   std::list<frame_id_t> free_list_;
 
   /* Comch */
-  std::unique_ptr<ComchCfg> comch_cfg_;
+  std::unique_ptr<Comch> dpu_comch_;
 
   uint64_t next_client_id_;
 };
