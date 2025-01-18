@@ -12,6 +12,7 @@
 void comch_server_recv_callback(doca_comch_event_msg_recv *event,
                                 uint8_t *recv_buffer, uint32_t msg_len,
                                 doca_comch_connection *comch_connection) {
+  print_time();
   std::cout << "Server recv callback called... \n";
   std::cout.write((char *)recv_buffer, msg_len);
   std::cout << std::endl;
@@ -20,6 +21,7 @@ void comch_server_recv_callback(doca_comch_event_msg_recv *event,
 void comch_client_recv_callback(doca_comch_event_msg_recv *event,
                                 uint8_t *recv_buffer, uint32_t msg_len,
                                 doca_comch_connection *comch_connection) {
+  print_time();
   std::cout << "Client recv callback called... \n";
   std::cout.write((char *)recv_buffer, msg_len);
   std::cout << std::endl;
@@ -87,6 +89,7 @@ void server_disconnection_cb(
 void comch_send_completion(struct doca_comch_task_send *task,
                            union doca_data task_user_data,
                            union doca_data ctx_user_data) {
+  print_time();
   doca_task_free(doca_comch_task_send_as_task(task));
 }
 
@@ -345,6 +348,7 @@ void Comch::Send(const void *msg, uint32_t len) {
   else
     doca_comch_client_task_send_alloc_init(comch->client_, connection_, msg,
                                            len, &task);
+  print_time();
   doca_task_submit(doca_comch_task_send_as_task(task));
 }
 
