@@ -331,3 +331,21 @@ Comch::Comch(
 }
 
 Comch::~Comch() {}
+
+void Comch::Send(const void *msg, uint32_t len) {
+  doca_data comch_user_data = doca_comch_connection_get_user_data(connection_);
+  Comch *comch = reinterpret_cast<Comch *>(comch_user_data.ptr);
+  ENSURE(comch, "Failed to get comch cfg");
+  ENSURE(len <= comch->max_buf_size_,
+         "Message length exceeds comch maximum length");
+  doca_comch_task_send *task;
+  if (comch->is_server_)
+    doca_comch_server_task_send_alloc_init(comch->server_, connection_, msg,
+                                           len, &task);
+  else
+    doca_comch_client_task_send_alloc_init(comch->client_, connection_, msg,
+                                           len, &task);
+  doca_task_submit(doca_comch_task_send_as_task(task));
+}
+
+void Comch::Progress() { doca_pe_progress(pe_); }

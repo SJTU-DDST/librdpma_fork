@@ -71,6 +71,10 @@ public:
         void *user_data);
   ~Comch();
 
+  void Send(const void *msg, uint32_t len);
+
+  void Progress();
+
 public:
   bool is_server_;
   uint32_t max_buf_size_;

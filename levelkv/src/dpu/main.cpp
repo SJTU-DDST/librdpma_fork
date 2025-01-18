@@ -15,7 +15,13 @@ void exampleCallBack(std::optional<std::string> s) {
 
 int main() {
   init_log_backend();
-  Dpu dpu("03:00.0", "b5:00.0");
+  // Dpu dpu("03:00.0", "b5:00.0");
+  Comch dpu_comch(true, "Comch", "03:00.0", "b5:00.0",
+                  comch_server_recv_callback, comch_send_completion,
+                  comch_send_completion_err, server_connection_cb,
+                  server_disconnection_cb, nullptr);
+  char msg[16] = "Hello from dpu.";
+  dpu_comch.Send(msg, strlen(msg));
   // for (size_t i = 9; i > 0; i--) {
   //   dpu.Search(i, &exampleCallBack);
   // }
