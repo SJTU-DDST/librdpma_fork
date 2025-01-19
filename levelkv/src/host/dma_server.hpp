@@ -5,11 +5,15 @@
 #include <doca_dev.h>
 #include <doca_mmap.h>
 
+#include "comch_common.hpp"
+
 class DmaServer{
 public:
   DmaServer(uint64_t dma_server_id, const std::string &pcie_addr, char *addr, size_t len);
 
   ~DmaServer();
+
+  ComchMsg ExportMmap();
 
   void ExportMmapToFile();
 private:

@@ -119,6 +119,14 @@ void DmaClient::ImportFromFile() {
                                dev_, &remote_mmap_);
 }
 
+void DmaClient::Import(const ComchMsgExportMmap &msg) {
+  remote_addr_ = reinterpret_cast<char *>(msg.host_addr_);
+  doca_mmap_create_from_export(
+      nullptr, reinterpret_cast<const void *>(msg.exported_mmap_),
+      msg.exported_desc_len_, dev_, &remote_mmap_);
+  ENSURE(remote_mmap_, "Remote mmap is null after import");
+}
+
 std::future<bool> DmaClient::ScheduleReadWrite(bool is_write, size_t src_offset,
                                                size_t dst_offset, size_t len) {
   auto promise = std::make_shared<std::promise<bool>>();

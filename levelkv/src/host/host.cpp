@@ -7,7 +7,8 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
     : level_ht_(std::make_unique<FixedHashTable>(level)), next_server_id_(0),
       host_comch_(std::make_unique<Comch>(
           false, "Comch", pcie_addr, "", comch_client_recv_callback,
-          comch_send_completion, comch_send_completion_err, nullptr, nullptr, this)) {
+          comch_send_completion, comch_send_completion_err, nullptr, nullptr,
+          this)) {
   memset(level_ht_->buckets_[0], 0,
          sizeof(FixedBucket) * level_ht_->addr_capacity_);
   memset(level_ht_->buckets_[1], 0,
@@ -34,7 +35,8 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
     tl_dma_server_[i]->ExportMmapToFile();
     ptr += mmap_size;
   }
-
+  ExportMmapsComch(bl_dma_server_);
+  ExportMmapsComch(tl_dma_server_);
   // for (size_t i = 0; i < level_ht_->addr_capacity_; i++) {
   //   level_ht_->buckets_[0][i].SetSlot(0, i, i * 10);
   //   level_ht_->buckets_[0][i].SetSlot(1, i, i * 100);
@@ -79,4 +81,12 @@ uint64_t Host::GetNextServerId() {
   auto ret = next_server_id_;
   next_server_id_++;
   return ret;
+}
+
+void Host::ExportMmapsComch(
+    const std::vector<std::unique_ptr<DmaServer>> &dma_servers) {
+  for (const auto &s : dma_servers) {
+    auto msg = s->ExportMmap();
+    host_comch_->Send(&msg, sizeof(msg));
+  }
 }

@@ -3,14 +3,54 @@
 #include "hash.hpp"
 #include "utils.hpp"
 
+static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
+                                    uint8_t *recv_buffer, uint32_t msg_len,
+                                    doca_comch_connection *comch_connection) {
+  print_time();
+  std::cout << "Dpu recv callback called... \n";
+  std::cout.write((char *)recv_buffer, msg_len);
+  std::cout << std::endl;
+
+  auto ctx_user_data = doca_comch_connection_get_user_data(comch_connection);
+  Comch *comch = reinterpret_cast<Comch *>(ctx_user_data.ptr);
+  ENSURE(comch->is_server_, "Comch->is_server_ is not 1 on dpu");
+  auto comch_user_data = comch->user_data_;
+  Dpu *dpu = reinterpret_cast<Dpu *>(comch_user_data);
+  ComchMsg *msg = reinterpret_cast<ComchMsg *>(recv_buffer);
+  switch (msg->msg_type_) {
+  case ComchMsgType::COMCH_MSG_EXPORT_DESCRIPTOR: {
+    ENSURE(dpu->mmap_to_recv_ > 0,
+           "New remote mmap received on dpu after its mmap_to_recv_ is zero");
+    if (dpu->in_init_) {
+      auto i = THREADS - dpu->mmap_to_recv_;
+      dpu->dma_client_[i]->Import(msg->exp_msg_);
+      dpu->mmap_to_recv_--;
+      std::cout << "Dpu successfully imported a remote mmap\n";
+      if (dpu->mmap_to_recv_ == 0)
+        dpu->in_init_ = false;
+    } else if (dpu->in_rehash_) {
+
+    } else {
+      ENSURE(0, "Dpu received export desc msg not during initialization and "
+                "rehashing");
+    }
+    break;
+  }
+
+  default:
+    break;
+  }
+}
+
 Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
          uint64_t level)
     : stop_(false), level_(level), next_client_id_(0),
       replacer_(std::make_unique<Replacer>()),
       dpu_comch_(std::make_unique<Comch>(
-          true, "Comch", pcie_addr, pcie_rep_addr, comch_server_recv_callback,
+          true, "Comch", pcie_addr, pcie_rep_addr, comch_dpu_recv_callback,
           comch_send_completion, comch_send_completion_err,
-          server_connection_cb, server_disconnection_cb, this)) {
+          server_connection_cb, server_disconnection_cb, this)),
+      in_init_(true), in_rehash_(false) {
   ENSURE(level >= 3, "Starting level should be at least 3");
   addr_capacity_ = 1 << level;
   bl_capacity_ = 1 << (level - 1);
@@ -24,7 +64,6 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
     auto id = GenNextClientId();
     dma_client_[i] = std::make_unique<DmaClient>(
         id, pcie_addr, (char *)cache_.data(), cache_size_);
-    dma_client_[i]->ImportFromFile();
   }
   GenSeeds();
   dirty_flag_.fill(0);
@@ -33,6 +72,12 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
   for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
     free_list_.push_back(i);
   }
+  mmap_to_recv_ = THREADS;
+  std::cout << "Dpu waiting for initial remote mmaps...\n";
+  while (mmap_to_recv_ > 0) {
+    dpu_comch_->Progress();
+  }
+  std::cout << "Dpu initialization finished!\n";
 }
 
 Dpu::~Dpu() {

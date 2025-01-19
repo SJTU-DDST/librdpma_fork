@@ -89,7 +89,6 @@ void server_disconnection_cb(
 void comch_send_completion(struct doca_comch_task_send *task,
                            union doca_data task_user_data,
                            union doca_data ctx_user_data) {
-  print_time();
   doca_task_free(doca_comch_task_send_as_task(task));
 }
 
@@ -281,6 +280,7 @@ Comch::Comch(
   pe_ = create_pe();
   dev_ = open_device(pcie_addr);
   doca_comch_cap_get_max_msg_size(doca_dev_as_devinfo(dev_), &max_buf_size_);
+  std::cout << max_buf_size_ << std::endl;
 
   if (is_server_) {
     doca_error_t result =

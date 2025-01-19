@@ -10,6 +10,8 @@
 #include <doca_dev.h>
 #include <doca_pe.h>
 
+#define MAX_EXPORTED_DESC_LEN 512
+
 enum class ComchMsgType {
   COMCH_MSG_EXPORT_DESCRIPTOR,
   COMCH_MSG_CONTROL,
@@ -22,7 +24,7 @@ enum class ControlSignal {
 struct ComchMsgExportMmap {
   uint64_t host_addr_;
   size_t exported_desc_len_;
-  uint8_t exported_mmap_[];
+  uint8_t exported_mmap_[MAX_EXPORTED_DESC_LEN];
 };
 
 struct ComchMsgControl {

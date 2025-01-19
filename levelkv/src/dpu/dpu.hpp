@@ -66,6 +66,7 @@ private:
   void Run();
   void GenSeeds();
   std::array<bucket_id_t, 4> Get4Buckets(uint64_t hash1, uint64_t hash2);
+  void ReHash();
 
 public:
   std::vector<std::unique_ptr<DmaClient>> dma_client_;
@@ -97,6 +98,9 @@ public:
 
   /* Comch */
   std::unique_ptr<Comch> dpu_comch_;
+  size_t mmap_to_recv_;
+  bool in_init_;
+  bool in_rehash_;
 
   uint64_t next_client_id_;
 };
