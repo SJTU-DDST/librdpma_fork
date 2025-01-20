@@ -6,10 +6,10 @@
 static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
                                     uint8_t *recv_buffer, uint32_t msg_len,
                                     doca_comch_connection *comch_connection) {
-  print_time();
+  // print_time();
   std::cout << "Dpu recv callback called... \n";
-  std::cout.write((char *)recv_buffer, msg_len);
-  std::cout << std::endl;
+  // std::cout.write((char *)recv_buffer, msg_len);
+  // std::cout << std::endl;
 
   auto ctx_user_data = doca_comch_connection_get_user_data(comch_connection);
   Comch *comch = reinterpret_cast<Comch *>(ctx_user_data.ptr);

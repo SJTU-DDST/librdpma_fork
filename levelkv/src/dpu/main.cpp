@@ -24,9 +24,12 @@ int main() {
   // char msg[1024];
   // memset(msg, 'K', 1023);
   // dpu_comch.Send(msg, 1023);
-  // for (size_t i = 9; i > 0; i--) {
-  //   dpu.Search(i, &exampleCallBack);
-  // }
+  for (size_t i = 1; i < 10; i++) {
+    dpu.Insert(i, i * 10);
+  }
+  for (size_t i = 9; i > 0; i--) {
+    dpu.Search(i, &exampleCallBack);
+  }
   // std::this_thread::sleep_for(std::chrono::seconds(3));
   // dpu.FlushAll();
   // auto cfg = comch_init("Server", "03:00.0", "b5:00.0", nullptr);

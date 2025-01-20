@@ -12,19 +12,19 @@
 void comch_server_recv_callback(doca_comch_event_msg_recv *event,
                                 uint8_t *recv_buffer, uint32_t msg_len,
                                 doca_comch_connection *comch_connection) {
-  print_time();
+  // print_time();
   std::cout << "Server recv callback called... \n";
-  std::cout.write((char *)recv_buffer, msg_len);
-  std::cout << std::endl;
+  // std::cout.write((char *)recv_buffer, msg_len);
+  // std::cout << std::endl;
 }
 
 void comch_client_recv_callback(doca_comch_event_msg_recv *event,
                                 uint8_t *recv_buffer, uint32_t msg_len,
                                 doca_comch_connection *comch_connection) {
-  print_time();
+  // print_time();
   std::cout << "Client recv callback called... \n";
-  std::cout.write((char *)recv_buffer, msg_len);
-  std::cout << std::endl;
+  // std::cout.write((char *)recv_buffer, msg_len);
+  // std::cout << std::endl;
 }
 
 // static void
