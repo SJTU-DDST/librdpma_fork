@@ -133,6 +133,13 @@ public:
     } while (f_seed_ == s_seed_);
   }
 
+  void ExpandParameters() {
+    addr_capacity_ *= 2;
+    bl_capacity_ *= 2;
+    total_capacity_ = addr_capacity_ + bl_capacity_;
+    level_++;
+  }
+
   std::array<BucketType *, 2> buckets_;
   std::array<uint64_t, 2> num_level_items_;
   uint64_t addr_capacity_;

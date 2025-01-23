@@ -34,6 +34,6 @@ private:
   uint64_t next_server_id_;
 
   std::unique_ptr<Comch> host_comch_;
-
+public:
   bool in_rehash_;
 };

@@ -21,6 +21,12 @@ static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
   case ComchMsgType::COMCH_MSG_CONTROL: {
     if (msg->ctl_msg_.control_signal_ == ControlSignal::EXPAND) {
       host->Expand();
+    } else if (msg->ctl_msg_.control_signal_ == ControlSignal::EXPAND_FINISH) {
+      host->in_rehash_ = false;
+      ComchMsg back;
+      back.msg_type_ = ComchMsgType::COMCH_MSG_CONTROL;
+      back.ctl_msg_.control_signal_ = ControlSignal::EXPAND_FINISH;
+      comch->Send((void *)&back, sizeof(back));
     }
     break;
   }
@@ -72,29 +78,16 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
   }
   ExportMmapsComch(bl_dma_server_);
   ExportMmapsComch(tl_dma_server_);
-  // for (size_t i = 0; i < level_ht_->addr_capacity_; i++) {
-  //   level_ht_->buckets_[0][i].SetSlot(0, i, i * 10);
-  //   level_ht_->buckets_[0][i].SetSlot(1, i, i * 100);
-  //   level_ht_->buckets_[0][i].SetSlot(2, i, i * 1000);
-  //   level_ht_->buckets_[0][i].SetSlot(3, i, i * 10000);
-  // }
-  // for (size_t i = 0; i < level_ht_->bl_capacity_; i++) {
-  //   level_ht_->buckets_[1][i].SetSlot(0, i, i * 10);
-  //   level_ht_->buckets_[1][i].SetSlot(1, i, i * 100);
-  //   level_ht_->buckets_[1][i].SetSlot(2, i, i * 1000);
-  //   level_ht_->buckets_[1][i].SetSlot(3, i, i * 10000);
-  // }
-  std::cout << level_ht_->f_seed_ << std::endl;
-  std::cout << level_ht_->s_seed_ << std::endl;
 }
 
 Host::~Host() {}
 
 void Host::Expand() {
-  // in_rehash_ = true;
+  in_rehash_ = true;
   size_t new_size = level_ht_->addr_capacity_ * 2 * sizeof(FixedBucket);
   size_t new_size_per_server = new_size / (THREADS / 2);
   char *new_mem = (char *)alignedmalloc(new_size);
+  memset(new_mem, 0, sizeof(new_mem));
   char *ptr = new_mem;
   std::vector<std::unique_ptr<DmaServer>> new_dma_servers(THREADS / 2);
   for (size_t i = 0; i < THREADS / 2; i++) {
@@ -105,6 +98,17 @@ void Host::Expand() {
   for (const auto &ns : new_dma_servers) {
     ns->ExportMmap();
   }
+  while (in_rehash_) {
+    host_comch_->Progress();
+  }
+  std::cout << "Host exit rehashing stage\n";
+  // Exchange dma servers
+  bl_dma_server_ = std::move(tl_dma_server_);
+  tl_dma_server_ = std::move(new_dma_servers);
+  level_ht_->ExpandParameters();
+  free(level_ht_->buckets_[1]);
+  level_ht_->buckets_[1] = level_ht_->buckets_[0];
+  level_ht_->buckets_[0] = (FixedBucket *)new_mem;
 }
 
 void Host::DebugPrint() const {

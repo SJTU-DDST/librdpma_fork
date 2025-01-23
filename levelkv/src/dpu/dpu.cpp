@@ -45,6 +45,15 @@ static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
     dpu->seed_recved_ = true;
     break;
   }
+  case ComchMsgType::COMCH_MSG_CONTROL: {
+    if (msg->ctl_msg_.control_signal_ == ControlSignal::EXPAND_FINISH) {
+      ENSURE(
+          dpu->in_rehash_,
+          "Dpu should be in rehashing stage while receiving expand finish msg");
+      dpu->in_rehash_ = false;
+    }
+    break;
+  }
 
   default:
     ENSURE(0, "Dpu received unsupported comch msg type");
@@ -65,6 +74,8 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
   bl_capacity_ = 1 << (level - 1);
   bl_start_bucket_id_ = (1 << (level - 1)) - 4;
   tl_start_bucket_id_ = (1 << level) - 4;
+  next_start_bucket_id_ = (1 << (level + 1)) - 4;
+  new_bucket_constructed_.assign(addr_capacity_ * 2, false);
   cache_size_ = cache_.size() * sizeof(FixedBucket);
   memset((void *)cache_.data(), 0, cache_size_);
   dma_client_.resize(THREADS);
@@ -145,6 +156,13 @@ std::future<bool> Dpu::FlushBucket(frame_id_t frame) {
 }
 
 std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
+  // if (bucket >= tl_start_bucket_id_ + addr_capacity_) {
+  //   ENSURE(in_rehash_, "Dpu trying to fetch bucket that does not belong to
+  //   the "
+  //                      "hashtable while not in rehashing");
+  //   ENSURE(dma_client_.size() == THREADS + THREADS / 2,
+  //          "The number of dma clients is incorrect during rehashing");
+  // }
   frame_id_t target_frame = -1;
   bool need_flush = false;
   std::future<bool> flush_future;
@@ -184,6 +202,39 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
     bool dma_success = dma_future.get();
     return std::make_pair(dma_success, target_frame);
   });
+}
+
+std::vector<frame_id_t> Dpu::FetchNBuckets(std::vector<bucket_id_t> buckets) {
+  std::vector<frame_id_t> frames(buckets.size());
+  std::vector<std::pair<size_t, std::future<std::pair<bool, frame_id_t>>>>
+      futures;
+  for (size_t i = 0; i < buckets.size(); i++) {
+    auto bucket = buckets[i];
+    if (bucket >= next_start_bucket_id_ &&
+        new_bucket_constructed_[bucket - next_start_bucket_id_] == false) {
+      ENSURE(in_rehash_, "Dpu trying to fetch bucket that does not belong to "
+                         "the hashtable while not in rehashing");
+      ENSURE(dma_client_.size() == THREADS + THREADS / 2,
+             "The number of dma clients is incorrect during rehashing");
+      std::cout << "Initializing new bucket " << bucket << " on cache...\n";
+      frames[i] = NewBucket(bucket);
+      bucket_table_[bucket] = frames[i];
+      new_bucket_constructed_[bucket - next_start_bucket_id_] = true;
+    } else if (auto it = bucket_table_.find(bucket);
+               it != bucket_table_.end()) {
+      frames[i] = it->second;
+      replacer_->RecordAccess(it->second);
+    } else {
+      futures.push_back(std::make_pair(i, FetchBucket(bucket)));
+    }
+  }
+  for (auto &f : futures) {
+    auto [success, frame] = f.second.get();
+    ENSURE(success, "Bucket fetching failed");
+    frames[f.first] = frame;
+    bucket_table_[buckets[f.first]] = frame;
+  }
+  return frames;
 }
 
 frame_id_t Dpu::NewBucket(bucket_id_t bucket) {
@@ -248,17 +299,23 @@ uint64_t Dpu::GenNextClientId() {
 std::pair<size_t, size_t> Dpu::GetClientBucket(bucket_id_t bucket) const {
   size_t client = 0;
   size_t offset = 0;
-  if (bucket <= (1 << level_) - 4) {
+  if (bucket < tl_start_bucket_id_) {
     // Bucket is in bottom level
     size_t k = bucket - bl_start_bucket_id_;
-    size_t g = (tl_start_bucket_id_ - bl_start_bucket_id_) / (THREADS / 2);
+    size_t g = bl_capacity_ / (THREADS / 2);
     client = k / g;
     offset = (k % g) * sizeof(FixedBucket);
-  } else {
+  } else if (bucket < tl_start_bucket_id_ + addr_capacity_) {
     // Bucket is in top level
     size_t k = bucket - tl_start_bucket_id_;
-    size_t g = (tl_start_bucket_id_ - bl_start_bucket_id_) / (THREADS / 2) * 2;
+    size_t g = addr_capacity_ / (THREADS / 2) * 2;
     client = k / g + THREADS / 2;
+    offset = (k % g) * sizeof(FixedBucket);
+  } else {
+    // In expanding stage
+    size_t k = bucket - (tl_start_bucket_id_ + addr_capacity_);
+    size_t g = addr_capacity_ * 2 / (THREADS / 2);
+    client = k / g + THREADS;
     offset = (k % g) * sizeof(FixedBucket);
   }
   return std::make_pair(client, offset);
@@ -545,40 +602,68 @@ void Dpu::Expand() {
     dpu_comch_->Progress();
   }
   std::cout << "Dpu expand received new mmap\n";
+
+  auto splitBucket = [this](frame_id_t frame) {
+    auto bucket = cache_[frame];
+    for (size_t slot = 0; slot < ASSOC_NUM; slot++) {
+      if (bucket.token_[slot] == 1) {
+        auto nbs = GetExpandBucketIds(bucket.slots_[slot].key_);
+        auto fetched_frames = FetchNBuckets({nbs.first, nbs.second});
+        if (cache_[fetched_frames[0]].Count() >
+            cache_[fetched_frames[1]].Count()) {
+          ENSURE(cache_[fetched_frames[1]].InsertSlot(
+                     bucket.slots_[slot].key_, bucket.slots_[slot].value_,
+                     dirty_flag_[fetched_frames[1]]),
+                 "Failed to insert during expanding");
+        } else {
+          ENSURE(cache_[fetched_frames[0]].InsertSlot(
+                     bucket.slots_[slot].key_, bucket.slots_[slot].value_,
+                     dirty_flag_[fetched_frames[0]]),
+                 "Failed to insert during expanding");
+        }
+      }
+    }
+  };
+
   std::vector<std::future<std::pair<bool, frame_id_t>>> uncached_buckets_fetch;
   for (size_t b = bl_start_bucket_id_; b < tl_start_bucket_id_; b++) {
     if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
-      auto nbs = GetExpandBucketIds(b);
-      std::array<frame_id_t, 4> nfs;
-      for (size_t n = 0; n < 4; n++) {
-        nfs[n] = NewBucket(nbs[n]);
-      }
+      splitBucket(it->second);
     } else {
       uncached_buckets_fetch.emplace_back(FetchBucket(b));
     }
-
-    for (size_t slot = 0; slot < ASSOC_NUM; slot++) {
-    }
   }
+  for (auto &f : uncached_buckets_fetch) {
+    auto [success, frame] = f.get();
+    ENSURE(success, "Bucket fetching failed in Dpu::Expand");
+    splitBucket(frame);
+  }
+  ComchMsg finish_msg;
+  finish_msg.msg_type_ = ComchMsgType::COMCH_MSG_CONTROL;
+  finish_msg.ctl_msg_.control_signal_ = ControlSignal::EXPAND_FINISH;
+  dpu_comch_->Send((void *)&finish_msg, sizeof(finish_msg));
+
+  addr_capacity_ *= 2;
+  bl_capacity_ *= 2;
+  level_++;
+  bl_start_bucket_id_ = tl_start_bucket_id_;
+  tl_start_bucket_id_ = next_start_bucket_id_;
+  next_start_bucket_id_ = tl_start_bucket_id_ + addr_capacity_;
+  for (size_t i = 0; i < THREADS / 2; i++)
+    dma_client_.erase(dma_client_.begin());
+  while (in_rehash_) {
+    dpu_comch_->Progress();
+  }
+  std::cout << "Dpu exit rehashing stage\n";
 }
 
-std::array<bucket_id_t, 4> Dpu::GetExpandBucketIds(bucket_id_t bucket) {
-  ENSURE(bucket >= bl_start_bucket_id_ && bucket < tl_start_bucket_id_,
-         "Only bl buckets need to be expanded");
-  std::array<bucket_id_t, 4> ret;
-  bucket_id_t start;
-  if (bucket < bl_start_bucket_id_ + bl_capacity_ / 2) {
-    start =
-        tl_start_bucket_id_ + addr_capacity_ + (bucket - bl_start_bucket_id_);
-  } else {
-    start = tl_start_bucket_id_ + addr_capacity_ * 2 +
-            (bucket - bl_capacity_ / 2 - bl_start_bucket_id_);
-  }
-  for (size_t i = 0; i < 4; i++) {
-    ret[i] = start;
-    start += bl_capacity_ / 2;
-  }
-  return ret;
+std::pair<bucket_id_t, bucket_id_t>
+Dpu::GetExpandBucketIds(const FixedKey &key) {
+  uint64_t hash1 = key.Hash(f_seed_);
+  uint64_t hash2 = key.Hash(s_seed_);
+  return std::make_pair(
+      tl_start_bucket_id_ + addr_capacity_ + hash1 % addr_capacity_,
+      tl_start_bucket_id_ + addr_capacity_ * 2 + hash2 % addr_capacity_);
 }
 
 float Dpu::GetCurrentLoadFactor() {

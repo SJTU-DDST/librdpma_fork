@@ -27,8 +27,8 @@ int main() {
   for (size_t i = 1; i < 10; i++) {
     dpu.Insert(i, i * 10);
   }
-  std::cout << dpu.f_seed_ << std::endl;
-  std::cout << dpu.s_seed_ << std::endl;
+
+  dpu.Expand();
   // for (size_t i = 9; i > 0; i--) {
   //   dpu.Search(i, &exampleCallBack);
   // }

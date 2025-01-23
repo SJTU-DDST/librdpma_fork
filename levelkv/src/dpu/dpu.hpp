@@ -53,9 +53,11 @@ public:
 
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
+  std::vector<frame_id_t> FetchNBuckets(std::vector<bucket_id_t> buckets);
   frame_id_t NewBucket(bucket_id_t bucket);
   void FlushAll();
   void DebugPrintCache() const;
+  void Expand();
 
 private:
   bool ProcessSearch(const Request &request, FixedValue &result);
@@ -67,9 +69,8 @@ private:
   void Run();
   void GenSeeds();
   std::array<bucket_id_t, 4> Get4Buckets(uint64_t hash1, uint64_t hash2);
-  void Expand();
   float GetCurrentLoadFactor();
-  std::array<bucket_id_t, 4> GetExpandBucketIds(bucket_id_t bucket);
+  std::pair<bucket_id_t, bucket_id_t> GetExpandBucketIds(const FixedKey &key);
 
 public:
   std::vector<std::unique_ptr<DmaClient>> dma_client_;
@@ -88,6 +89,7 @@ public:
   /* Level hashing parameters */
   bucket_id_t bl_start_bucket_id_;
   bucket_id_t tl_start_bucket_id_;
+  bucket_id_t next_start_bucket_id_;
   uint64_t level_;
 
   uint64_t f_seed_;
@@ -106,6 +108,7 @@ public:
   bool seed_recved_;
   bool in_init_;
   bool in_rehash_;
+  std::vector<bool> new_bucket_constructed_;
 
   uint64_t next_client_id_;
 
