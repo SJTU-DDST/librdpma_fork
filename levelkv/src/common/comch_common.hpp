@@ -14,6 +14,7 @@
 
 enum class ComchMsgType {
   COMCH_MSG_EXPORT_DESCRIPTOR,
+  COMCH_MSG_EXPORT_SEEDS,
   COMCH_MSG_CONTROL,
 };
 
@@ -31,11 +32,17 @@ struct ComchMsgControl {
   ControlSignal control_signal_;
 };
 
+struct ComchMsgExportSeeds {
+  uint64_t f_seed_;
+  uint64_t s_seed_;
+};
+
 struct ComchMsg {
   ComchMsgType msg_type_;
   union {
     ComchMsgExportMmap exp_msg_;
     ComchMsgControl ctl_msg_;
+    ComchMsgExportSeeds seed_msg_;
   };
 };
 

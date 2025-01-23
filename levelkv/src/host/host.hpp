@@ -17,7 +17,7 @@ public:
   Host(const std::string &pcie_addr, uint64_t level);
 
   ~Host();
-  void Rehash();
+  void Expand();
   void DebugPrint() const;
 
   void Run();
@@ -34,4 +34,6 @@ private:
   uint64_t next_server_id_;
 
   std::unique_ptr<Comch> host_comch_;
+
+  bool in_rehash_;
 };

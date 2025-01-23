@@ -53,6 +53,7 @@ public:
 
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
+  frame_id_t NewBucket(bucket_id_t bucket);
   void FlushAll();
   void DebugPrintCache() const;
 
@@ -66,7 +67,9 @@ private:
   void Run();
   void GenSeeds();
   std::array<bucket_id_t, 4> Get4Buckets(uint64_t hash1, uint64_t hash2);
-  void ReHash();
+  void Expand();
+  float GetCurrentLoadFactor();
+  std::array<bucket_id_t, 4> GetExpandBucketIds(bucket_id_t bucket);
 
 public:
   std::vector<std::unique_ptr<DmaClient>> dma_client_;
@@ -91,6 +94,7 @@ public:
   uint64_t s_seed_;
   size_t addr_capacity_;
   size_t bl_capacity_;
+  float max_load_factor_;
 
   /* Replacer */
   std::unique_ptr<Replacer> replacer_;
@@ -99,8 +103,12 @@ public:
   /* Comch */
   std::unique_ptr<Comch> dpu_comch_;
   size_t mmap_to_recv_;
+  bool seed_recved_;
   bool in_init_;
   bool in_rehash_;
 
   uint64_t next_client_id_;
+
+public:
+  size_t size_;
 };

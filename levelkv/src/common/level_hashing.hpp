@@ -78,7 +78,7 @@ public:
     return false;
   }
 
-  size_t Count() {
+  size_t Count() const {
     size_t c = 0;
     for (size_t i = 0; i < AssocNum; i++) {
       if (token_[i] == 1)

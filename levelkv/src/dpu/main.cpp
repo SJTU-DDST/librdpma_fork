@@ -16,7 +16,7 @@ void exampleCallBack(std::optional<std::string> s) {
 int main() {
   init_log_backend();
   Dpu dpu("03:00.0", "b5:00.0");
-  
+
   // Comch dpu_comch(true, "Comch", "03:00.0", "b5:00.0",
   //                 comch_server_recv_callback, comch_send_completion,
   //                 comch_send_completion_err, server_connection_cb,
@@ -27,9 +27,11 @@ int main() {
   for (size_t i = 1; i < 10; i++) {
     dpu.Insert(i, i * 10);
   }
-  for (size_t i = 9; i > 0; i--) {
-    dpu.Search(i, &exampleCallBack);
-  }
+  std::cout << dpu.f_seed_ << std::endl;
+  std::cout << dpu.s_seed_ << std::endl;
+  // for (size_t i = 9; i > 0; i--) {
+  //   dpu.Search(i, &exampleCallBack);
+  // }
   // std::this_thread::sleep_for(std::chrono::seconds(3));
   // dpu.FlushAll();
   // auto cfg = comch_init("Server", "03:00.0", "b5:00.0", nullptr);
@@ -38,7 +40,9 @@ int main() {
   while (true) {
     // dpu_comch.Progress();
     char c = getchar();
-    if (c == 'q' || c == 'Q')
+    if (c == 'p' || c == 'P') {
+      // std::cout << dpu.ii << std::endl;
+    } else if (c == 'q' || c == 'Q')
       break;
   }
   return 0;
