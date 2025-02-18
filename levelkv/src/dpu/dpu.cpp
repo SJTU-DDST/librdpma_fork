@@ -101,6 +101,7 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
 
 Dpu::~Dpu() {
   stop_ = true;
+  cv_.notify_all();
   worker_.join();
 }
 
@@ -569,8 +570,6 @@ void Dpu::Run() {
       auto result = ProcessSearch(request, result_value);
       if (!result)
         request.callback_(std::nullopt);
-      // request.callback_(result ? std::make_optional(result_value.ToString())
-      //                          : std::nullopt);
       break;
     }
     case RequestType::INSERT: {

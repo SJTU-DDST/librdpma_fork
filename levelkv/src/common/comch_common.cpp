@@ -83,7 +83,7 @@ void server_disconnection_cb(
   doca_data ctx_user_data = {0};
   doca_ctx_get_user_data(doca_comch_server_as_ctx(server), &ctx_user_data);
   Comch *comch = reinterpret_cast<Comch *>(ctx_user_data.ptr);
-  comch->connection_ = NULL;
+  comch->connection_ = nullptr;
 }
 
 void comch_send_completion(struct doca_comch_task_send *task,
@@ -337,8 +337,9 @@ Comch::~Comch() {
   doca_ctx_states ctx_state;
   if (is_server_) {
     /* Wait until the client has closed the connection to end gracefully */
-    while (connection_ != nullptr)
+    while (connection_ != nullptr) {
       Progress();
+    }
   }
 
   doca_ctx_stop(ctx_);
