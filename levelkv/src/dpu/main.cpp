@@ -35,16 +35,6 @@ int main() {
   //   dpu.Search(i, &exampleCallBack);
   // }
   dpu.FlushAll();
-  // auto cfg = comch_init("Server", "03:00.0", "b5:00.0", nullptr);
-  // std::string msg = "Hello this is the comch testing message!";
-  // comch_send(cfg->active_connection_, msg.c_str(), msg.length());
-  while (true) {
-    // dpu_comch.Progress();
-    char c = getchar();
-    if (c == 'p' || c == 'P') {
-      // std::cout << dpu.ii << std::endl;
-    } else if (c == 'q' || c == 'Q')
-      break;
-  }
+  std::cout << "dpu exit\n" << std::endl;
   return 0;
 }

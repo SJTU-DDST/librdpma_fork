@@ -1,4 +1,5 @@
 #include <cstring>
+#include <thread>
 
 #include "dma_common.hpp"
 #include "host.hpp"
@@ -122,8 +123,10 @@ void Host::DebugPrint() const {
 }
 
 void Host::Run() {
-  while (true) {
+  auto start = std::chrono::steady_clock::now();
+  while (std::chrono::steady_clock::now() - start < std::chrono::seconds(4)) {
     host_comch_->Progress();
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
 }
 

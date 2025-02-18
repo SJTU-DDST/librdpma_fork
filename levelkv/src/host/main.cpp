@@ -14,5 +14,6 @@ int main() {
     // host_comch.Progress();
     // doca_pe_progress(cfg->pe_);
   // }
+  std::cout << "host exit\n" << std::endl;
   return 0;
 }

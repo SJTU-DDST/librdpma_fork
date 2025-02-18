@@ -333,7 +333,30 @@ Comch::Comch(
   }
 }
 
-Comch::~Comch() {}
+Comch::~Comch() {
+  doca_ctx_states ctx_state;
+  if (is_server_) {
+    /* Wait until the client has closed the connection to end gracefully */
+    while (connection_ != nullptr)
+      Progress();
+  }
+
+  doca_ctx_stop(ctx_);
+  doca_ctx_get_state(ctx_, &ctx_state);
+  while (ctx_state != DOCA_CTX_STATE_IDLE) {
+    Progress();
+    (void)doca_ctx_get_state(ctx_, &ctx_state);
+  }
+
+  if (is_server_) {
+    doca_comch_server_destroy(server_);
+    doca_dev_rep_close(dev_rep_);
+  } else {
+    doca_comch_client_destroy(client_);
+  }
+  doca_dev_close(dev_);
+  doca_pe_destroy(pe_);
+}
 
 void Comch::Send(const void *msg, uint32_t len) {
   doca_data comch_user_data = doca_comch_connection_get_user_data(connection_);
