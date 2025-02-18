@@ -54,6 +54,7 @@ public:
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
   std::vector<frame_id_t> FetchNBuckets(std::vector<bucket_id_t> buckets);
+  std::future<bool> CopyBucket(bucket_id_t bucket, frame_id_t frame);
   frame_id_t NewBucket(bucket_id_t bucket);
   void FlushAll();
   void DebugPrintCache() const;

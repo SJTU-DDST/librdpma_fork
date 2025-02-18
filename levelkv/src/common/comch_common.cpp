@@ -348,7 +348,6 @@ void Comch::Send(const void *msg, uint32_t len) {
   else
     doca_comch_client_task_send_alloc_init(comch->client_, connection_, msg,
                                            len, &task);
-  print_time();
   doca_task_submit(doca_comch_task_send_as_task(task));
 }
 

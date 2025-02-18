@@ -6,10 +6,7 @@
 static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
                                      uint8_t *recv_buffer, uint32_t msg_len,
                                      doca_comch_connection *comch_connection) {
-  // print_time();
   std::cout << "Host recv callback called... \n";
-  // std::cout.write((char *)recv_buffer, msg_len);
-  // std::cout << std::endl;
 
   auto ctx_user_data = doca_comch_connection_get_user_data(comch_connection);
   Comch *comch = reinterpret_cast<Comch *>(ctx_user_data.ptr);
@@ -39,7 +36,7 @@ static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
 Host::Host(const std::string &pcie_addr, uint64_t level)
     : level_ht_(std::make_unique<FixedHashTable>(level)), next_server_id_(0),
       host_comch_(std::make_unique<Comch>(
-          false, "Comch", pcie_addr, "", comch_client_recv_callback,
+          false, "Comch", pcie_addr, "", comch_host_recv_callback,
           comch_send_completion, comch_send_completion_err, nullptr, nullptr,
           this)),
       in_rehash_(false) {
@@ -87,16 +84,17 @@ void Host::Expand() {
   size_t new_size = level_ht_->addr_capacity_ * 2 * sizeof(FixedBucket);
   size_t new_size_per_server = new_size / (THREADS / 2);
   char *new_mem = (char *)alignedmalloc(new_size);
-  memset(new_mem, 0, sizeof(new_mem));
+  memset(new_mem, 0, new_size);
   char *ptr = new_mem;
   std::vector<std::unique_ptr<DmaServer>> new_dma_servers(THREADS / 2);
   for (size_t i = 0; i < THREADS / 2; i++) {
-    new_dma_servers.emplace_back(std::make_unique<DmaServer>(
-        GetNextServerId(), "b5:00.0", ptr, new_size_per_server));
+    new_dma_servers[i] = std::make_unique<DmaServer>(
+        GetNextServerId(), "b5:00.0", ptr, new_size_per_server);
     ptr += new_size_per_server;
   }
   for (const auto &ns : new_dma_servers) {
-    ns->ExportMmap();
+    auto new_mmap_msg = ns->ExportMmap();
+    host_comch_->Send((void *)&new_mmap_msg, sizeof(new_mmap_msg));
   }
   while (in_rehash_) {
     host_comch_->Progress();
@@ -125,11 +123,7 @@ void Host::DebugPrint() const {
 
 void Host::Run() {
   while (true) {
-    auto c = getchar();
-    if (c == 'q' || c == 'Q')
-      return;
-    else if (c == 'p' || c == 'P')
-      DebugPrint();
+    host_comch_->Progress();
   }
 }
 

@@ -95,6 +95,7 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
   while (mmap_to_recv_ > 0 || seed_recved_ == false) {
     dpu_comch_->Progress();
   }
+  in_init_ = false;
   std::cout << "Dpu initialization completed!\n";
 }
 
@@ -237,6 +238,12 @@ std::vector<frame_id_t> Dpu::FetchNBuckets(std::vector<bucket_id_t> buckets) {
   return frames;
 }
 
+std::future<bool> Dpu::CopyBucket(bucket_id_t bucket, frame_id_t frame) {
+  auto [client, offset] = GetClientBucket(bucket);
+  return dma_client_[client]->ScheduleReadWrite(
+      false, offset, frame * sizeof(FixedBucket), sizeof(FixedBucket));
+}
+
 frame_id_t Dpu::NewBucket(bucket_id_t bucket) {
   frame_id_t target_frame = -1;
   bool need_flush = false;
@@ -268,6 +275,7 @@ frame_id_t Dpu::NewBucket(bucket_id_t bucket) {
   if (need_flush) {
     flush_future.wait();
   }
+  memset((void *)&cache_[target_frame], 0, sizeof(FixedBucket));
 
   return target_frame;
 }
@@ -308,17 +316,33 @@ std::pair<size_t, size_t> Dpu::GetClientBucket(bucket_id_t bucket) const {
   } else if (bucket < tl_start_bucket_id_ + addr_capacity_) {
     // Bucket is in top level
     size_t k = bucket - tl_start_bucket_id_;
-    size_t g = addr_capacity_ / (THREADS / 2) * 2;
+    size_t g = addr_capacity_ / (THREADS / 2);
     client = k / g + THREADS / 2;
     offset = (k % g) * sizeof(FixedBucket);
   } else {
     // In expanding stage
-    size_t k = bucket - (tl_start_bucket_id_ + addr_capacity_);
+    size_t k = bucket - next_start_bucket_id_;
     size_t g = addr_capacity_ * 2 / (THREADS / 2);
     client = k / g + THREADS;
     offset = (k % g) * sizeof(FixedBucket);
+    std::cout << "In ntl\n";
   }
   return std::make_pair(client, offset);
+  // size_t client = 0;
+  // size_t offset = 0;
+  // if (bucket < (1 << level_) - 4) {
+  //   // Bucket is in bottom level
+  //   size_t k = bucket - bl_start_bucket_id_;
+  //   size_t g = (tl_start_bucket_id_ - bl_start_bucket_id_) / (THREADS / 2);
+  //   client = k / g;
+  //   offset = (k % g) * sizeof(FixedBucket);
+  // } else {
+  //   // Bucket is in top level
+  //   size_t k = bucket - tl_start_bucket_id_;
+  //   size_t g = (tl_start_bucket_id_ - bl_start_bucket_id_) / (THREADS / 2) *
+  //   2; client = k / g + THREADS / 2; offset = (k % g) * sizeof(FixedBucket);
+  // }
+  // return std::make_pair(client, offset);
 }
 
 bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
@@ -588,6 +612,7 @@ std::array<bucket_id_t, 4> Dpu::Get4Buckets(uint64_t hash1, uint64_t hash2) {
 
 void Dpu::Expand() {
   std::cout << "Dpu begin to expand\n";
+  FlushAll();
   in_rehash_ = true;
   mmap_to_recv_ = THREADS / 2;
   ComchMsg msg;
@@ -609,6 +634,8 @@ void Dpu::Expand() {
       if (bucket.token_[slot] == 1) {
         auto nbs = GetExpandBucketIds(bucket.slots_[slot].key_);
         auto fetched_frames = FetchNBuckets({nbs.first, nbs.second});
+        std::cout << cache_[fetched_frames[0]].Count() << " "
+                  << cache_[fetched_frames[1]].Count() << std::endl;
         if (cache_[fetched_frames[0]].Count() >
             cache_[fetched_frames[1]].Count()) {
           ENSURE(cache_[fetched_frames[1]].InsertSlot(
@@ -625,19 +652,37 @@ void Dpu::Expand() {
     }
   };
 
-  std::vector<std::future<std::pair<bool, frame_id_t>>> uncached_buckets_fetch;
+  // std::vector<std::future<std::pair<bool, frame_id_t>>>
+  // uncached_buckets_fetch;
   for (size_t b = bl_start_bucket_id_; b < tl_start_bucket_id_; b++) {
     if (auto it = bucket_table_.find(b); it != bucket_table_.end()) {
       splitBucket(it->second);
     } else {
-      uncached_buckets_fetch.emplace_back(FetchBucket(b));
+      // uncached_buckets_fetch.emplace_back(FetchBucket(b));
+      auto f = FetchBucket(b);
+      auto [_, frame] = f.get();
+      bucket_table_[b] = frame;
+      splitBucket(frame);
     }
   }
-  for (auto &f : uncached_buckets_fetch) {
-    auto [success, frame] = f.get();
-    ENSURE(success, "Bucket fetching failed in Dpu::Expand");
-    splitBucket(frame);
-  }
+  // for (auto &f : uncached_buckets_fetch) {
+  //   auto [success, frame] = f.get();
+  //   ENSURE(success, "Bucket fetching failed in Dpu::Expand");
+  //   splitBucket(frame);
+  // }
+
+  // size_t group_size = CACHE_SIZE / 2;
+  // size_t cur_bl_idx = 0;
+  // while (cur_bl_idx < bl_capacity_) {
+  //   std::vector<std::future<bool>> futures;
+  //   for (size_t i = 0; i < group_size; i++) {
+  //     futures.emplace_back(CopyBucket(bl_start_bucket_id_ + cur_bl_idx, i));
+  //   }
+  //   for (auto &f : futures)
+  //     ENSURE(f.get(), "Failed to copy bucket");
+
+  // }
+
   ComchMsg finish_msg;
   finish_msg.msg_type_ = ComchMsgType::COMCH_MSG_CONTROL;
   finish_msg.ctl_msg_.control_signal_ = ControlSignal::EXPAND_FINISH;

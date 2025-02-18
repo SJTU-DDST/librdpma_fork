@@ -24,16 +24,17 @@ int main() {
   // char msg[1024];
   // memset(msg, 'K', 1023);
   // dpu_comch.Send(msg, 1023);
-  for (size_t i = 1; i < 10; i++) {
+  for (size_t i = 1; i < 1000; i++) {
     dpu.Insert(i, i * 10);
   }
 
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   dpu.Expand();
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   // for (size_t i = 9; i > 0; i--) {
   //   dpu.Search(i, &exampleCallBack);
   // }
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-  // dpu.FlushAll();
+  dpu.FlushAll();
   // auto cfg = comch_init("Server", "03:00.0", "b5:00.0", nullptr);
   // std::string msg = "Hello this is the comch testing message!";
   // comch_send(cfg->active_connection_, msg.c_str(), msg.length());
