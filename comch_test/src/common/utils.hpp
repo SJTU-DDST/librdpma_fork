@@ -6,21 +6,37 @@
 #include <iostream>
 #include <stdlib.h>
 
+#define TOTAL_ROUNDS 1000000
+#define WARMUP_ROUNDS 50000
+
+static int rounds = TOTAL_ROUNDS;
+static size_t payload = 8;
+static std::chrono::microseconds start_time;
+static std::chrono::microseconds end_time;
+
 inline void print_time() {
-  // Get the current time
+  // Get current time
   auto now = std::chrono::system_clock::now();
-  auto duration = now.time_since_epoch();
 
-  // Break down the duration into seconds and milliseconds
-  auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
-  auto milliseconds =
-      std::chrono::duration_cast<std::chrono::milliseconds>(duration - seconds);
+  // Convert to time_t (for human-readable formatting)
+  std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+  std::tm *localTime = std::localtime(&now_c);
 
-  // Convert to time_t to get the human-readable time
-  std::time_t current_time = std::chrono::system_clock::to_time_t(now);
-  std::tm *time_info = std::localtime(&current_time);
+  // Get microseconds separately
+  auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                    now.time_since_epoch()) %
+                1000000;
 
-  // Print the time in the format H:M:S.MS
-  std::cout << std::put_time(time_info, "%H:%M:%S") << '.' << std::setfill('0')
-            << std::setw(3) << milliseconds.count() << " ms" << '\n';
+  // Print formatted time with microsecond precision
+  std::cout << "Current time: "
+            << std::put_time(localTime,
+                             "%Y-%m-%d %H:%M:%S") // Print YYYY-MM-DD HH:MM:SS
+            << "." << std::setw(6) << std::setfill('0')
+            << now_us.count() // Print microseconds
+            << std::endl;
+}
+
+inline std::chrono::microseconds get_time_us() {
+  return std::chrono::duration_cast<std::chrono::microseconds>(
+      std::chrono::system_clock::now().time_since_epoch());
 }

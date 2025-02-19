@@ -31,8 +31,6 @@ void comch_send_completion(struct doca_comch_task_send *task,
                            union doca_data task_user_data,
                            union doca_data ctx_user_data) {
   doca_task_free(doca_comch_task_send_as_task(task));
-  print_time();
-  std::cout << "Send completed.\n";
 }
 
 void comch_send_completion_err(struct doca_comch_task_send *task,
