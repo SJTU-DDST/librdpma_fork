@@ -5,11 +5,12 @@
 #include <iomanip>
 #include <iostream>
 #include <stdlib.h>
+#include <ostream>
+#include <fstream>
 
 #define TOTAL_ROUNDS 1000000
-#define WARMUP_ROUNDS 50000
-
-const size_t payload = 8;
+#define WARMUP_ROUNDS 100000
+#define PAYLOAD 8
 
 inline void print_time() {
   // Get current time
