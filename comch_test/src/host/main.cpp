@@ -11,7 +11,7 @@ static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
 }
 
 int main() {
-  Comch host_comch(true, "Comch", "03:00.0", "b5:00.0", comch_host_recv_callback,
+  Comch host_comch(false, "Comch", "b5:00.0", "", comch_host_recv_callback,
                   comch_send_completion, comch_send_completion_err,
                   nullptr, nullptr, nullptr);
   while (true) {
