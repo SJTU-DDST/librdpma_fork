@@ -10,7 +10,7 @@
 
 #define TOTAL_ROUNDS 1000000
 #define WARMUP_ROUNDS 100000
-#define PAYLOAD 8
+#define PAYLOAD 1
 
 inline void print_time() {
   // Get current time
