@@ -9,10 +9,7 @@
 #define TOTAL_ROUNDS 1000000
 #define WARMUP_ROUNDS 50000
 
-int rounds = TOTAL_ROUNDS;
-size_t payload = 8;
-std::chrono::microseconds start_time;
-std::chrono::microseconds end_time;
+const size_t payload = 8;
 
 inline void print_time() {
   // Get current time

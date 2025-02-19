@@ -3,6 +3,10 @@
 #include <chrono>
 #include <thread>
 
+std::chrono::microseconds start_time;
+std::chrono::microseconds end_time;
+int rounds = TOTAL_ROUNDS;
+
 static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
                                     uint8_t *recv_buffer, uint32_t msg_len,
                                     doca_comch_connection *comch_connection) {
