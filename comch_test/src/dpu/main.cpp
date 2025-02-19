@@ -17,7 +17,7 @@ static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
     rounds--;
   } else {
     end_time = get_time_us();
-    std::cout << (end_time - start_time).count() / double(TOTAL_ROUNDS / WARMUP_ROUNDS) << std::endl;
+    std::cout << (end_time - start_time).count() << std::endl;
   }
 }
 
