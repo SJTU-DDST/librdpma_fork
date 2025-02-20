@@ -18,8 +18,6 @@ static doca_error_t check_dev_dma_capable(doca_devinfo *devinfo) {
 static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
                                           union doca_data task_user_data,
                                           union doca_data ctx_user_data) {
-
-  std::cout << "task completed\n";
   uint64_t *finish = (uint64_t *)task_user_data.ptr;
   *finish = TASK_FINISH_SUCCESS;
   free_dma_task_buf(dma_task);

@@ -6,11 +6,6 @@
 static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
                                     uint8_t *recv_buffer, uint32_t msg_len,
                                     doca_comch_connection *comch_connection) {
-  // print_time();
-  std::cout << "Dpu recv callback called... \n";
-  // std::cout.write((char *)recv_buffer, msg_len);
-  // std::cout << std::endl;
-
   auto ctx_user_data = doca_comch_connection_get_user_data(comch_connection);
   Comch *comch = reinterpret_cast<Comch *>(ctx_user_data.ptr);
   ENSURE(comch->is_server_, "Comch->is_server_ is not 1 on dpu");
@@ -85,7 +80,7 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
         id, pcie_addr, (char *)cache_.data(), cache_size_);
   }
   GenSeeds();
-  dirty_flag_.fill(0);
+  dirty_flag_.fill(false);
   worker_ = std::thread(&Dpu::Run, this);
   bucket_ids_.fill(-1);
   for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
@@ -139,6 +134,24 @@ void Dpu::Update(const FixedKey &key, const FixedValue &value) {
   cv_.notify_one();
 }
 
+void Dpu::Start() {
+  Request request = {RequestType::START, "", "", 0, 0, nullptr};
+  {
+    std::unique_lock<std::mutex> lock(request_queue_mtx_);
+    request_queue_.push(request);
+  }
+  cv_.notify_one();
+}
+
+void Dpu::End() {
+  Request request = {RequestType::END, "", "", 0, 0, nullptr};
+  {
+    std::unique_lock<std::mutex> lock(request_queue_mtx_);
+    request_queue_.push(request);
+  }
+  cv_.notify_one();
+}
+
 void Dpu::Delete(const FixedKey &key) {
   auto hash1 = key.Hash(f_seed_);
   auto hash2 = key.Hash(s_seed_);
@@ -182,6 +195,7 @@ std::future<std::pair<bool, frame_id_t>> Dpu::FetchBucket(bucket_id_t bucket) {
   } else {
     target_frame = free_list_.front();
     free_list_.pop_front();
+    dirty_flag_[target_frame] = false;
   }
 
   ENSURE(target_frame >= 0 && target_frame < CACHE_SIZE,
@@ -218,7 +232,6 @@ std::vector<frame_id_t> Dpu::FetchNBuckets(std::vector<bucket_id_t> buckets) {
                          "the hashtable while not in rehashing");
       ENSURE(dma_client_.size() == THREADS + THREADS / 2,
              "The number of dma clients is incorrect during rehashing");
-      std::cout << "Initializing new bucket " << bucket << " on cache...\n";
       frames[i] = NewBucket(bucket);
       bucket_table_[bucket] = frames[i];
       new_bucket_constructed_[bucket - next_start_bucket_id_] = true;
@@ -263,6 +276,7 @@ frame_id_t Dpu::NewBucket(bucket_id_t bucket) {
   } else {
     target_frame = free_list_.front();
     free_list_.pop_front();
+    dirty_flag_[target_frame] = false;
   }
 
   ENSURE(target_frame >= 0 && target_frame < CACHE_SIZE,
@@ -271,8 +285,6 @@ frame_id_t Dpu::NewBucket(bucket_id_t bucket) {
   bucket_table_.erase(bucket_ids_[target_frame]);
   bucket_ids_[target_frame] = bucket;
   replacer_->RecordAccess(target_frame);
-
-  auto [client, offset] = GetClientBucket(bucket);
   if (need_flush) {
     flush_future.wait();
   }
@@ -285,6 +297,7 @@ void Dpu::FlushAll() {
   std::array<std::future<bool>, CACHE_SIZE> futures;
   for (frame_id_t i = 0; i < CACHE_SIZE; i++) {
     futures[i] = FlushBucket(i);
+    dirty_flag_[i] = false;
   }
   for (auto &f : futures) {
     f.wait();
@@ -326,24 +339,8 @@ std::pair<size_t, size_t> Dpu::GetClientBucket(bucket_id_t bucket) const {
     size_t g = addr_capacity_ * 2 / (THREADS / 2);
     client = k / g + THREADS;
     offset = (k % g) * sizeof(FixedBucket);
-    std::cout << "In ntl\n";
   }
   return std::make_pair(client, offset);
-  // size_t client = 0;
-  // size_t offset = 0;
-  // if (bucket < (1 << level_) - 4) {
-  //   // Bucket is in bottom level
-  //   size_t k = bucket - bl_start_bucket_id_;
-  //   size_t g = (tl_start_bucket_id_ - bl_start_bucket_id_) / (THREADS / 2);
-  //   client = k / g;
-  //   offset = (k % g) * sizeof(FixedBucket);
-  // } else {
-  //   // Bucket is in top level
-  //   size_t k = bucket - tl_start_bucket_id_;
-  //   size_t g = (tl_start_bucket_id_ - bl_start_bucket_id_) / (THREADS / 2) *
-  //   2; client = k / g + THREADS / 2; offset = (k % g) * sizeof(FixedBucket);
-  // }
-  // return std::make_pair(client, offset);
 }
 
 bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
@@ -365,6 +362,7 @@ bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
       // std::cout << "Bucket " << b << " found in cache\n";
       replacer_->RecordAccess(it->second);
       if (cache_[it->second].SearchSlot(request.key_, &result)) {
+        request.callback_(std::make_optional(result.ToString()));
         return true;
       }
     } else {
@@ -394,7 +392,7 @@ bool Dpu::ProcessSearch(const Request &request, FixedValue &result) {
     }
   }
 
-  return false;
+  return searched;
 }
 
 bool Dpu::ProcessDelete(const Request &request) {
@@ -439,8 +437,8 @@ bool Dpu::ProcessDelete(const Request &request) {
 
 bool Dpu::ProcessInsert(const Request &request) {
   // std::cout << "Process Insert...\n";
-  // if (GetCurrentLoadFactor() >= 0.7)
-  //   Expand();
+  if (GetCurrentLoadFactor() >= 0.85)
+    Expand();
 
   auto bs = Get4Buckets(request.hash1_, request.hash2_);
   // std::cout << "Hash to 4 buckets: ";
@@ -506,7 +504,61 @@ bool Dpu::ProcessInsert(const Request &request) {
   }
 
   // Try inserting into the last two buckets
-  return tryInsertInto2Buckets(2);
+  if (tryInsertInto2Buckets(2)) {
+    return true;
+  }
+
+  // Move one entry
+  bool moved = false;
+  frame_id_t src_frame = -1;
+  frame_id_t dst_frame = -1;
+  for (size_t i = 0; i < 4; i++) {
+    bucket_id_t src_bucket = bs[i];
+    if (bucket_table_.count(src_bucket))
+      src_frame = bucket_table_[src_bucket];
+    else {
+      auto [_, src_frame_] = FetchBucket(src_bucket).get();
+      src_frame = src_frame_;
+      bucket_table_[src_bucket] = src_frame;
+    }
+    ENSURE(cache_[src_frame].Count() == ASSOC_NUM,
+           "When start moving entries, the bucket must be full");
+    for (size_t slot = 0; slot < ASSOC_NUM; slot++) {
+      auto dst_nbs =
+          Get4Buckets(cache_[src_frame].slots_[slot].key_.Hash(f_seed_),
+                      cache_[src_frame].slots_[slot].key_.Hash(s_seed_));
+      for (size_t j = 0; j < 2; j++) {
+        bucket_id_t dst_nb = dst_nbs[j];
+        if (dst_nb != src_bucket) {
+          if (auto it = bucket_table_.find(dst_nb); it != bucket_table_.end()) {
+            dst_frame = it->second;
+          } else {
+            auto [_, dst_frame_] = FetchBucket(dst_nb).get();
+            dst_frame = dst_frame_;
+            bucket_table_[dst_nb] = dst_frame;
+          }
+          if (cache_[dst_frame].InsertSlot(
+                  cache_[src_frame].slots_[slot].key_,
+                  cache_[src_frame].slots_[slot].value_,
+                  dirty_flag_[dst_frame])) {
+            moved = true;
+            cache_[src_frame].token_[slot] = 0;
+            break;
+          }
+        }
+      }
+      if (moved)
+        break;
+    }
+    if (moved) {
+      ENSURE(cache_[src_frame].InsertSlot(request.key_, request.value_,
+                                          dirty_flag_[src_frame]),
+             "Still can't move even after moveing");
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool Dpu::ProcessUpdate(const Request &request) {
@@ -566,6 +618,21 @@ void Dpu::Run() {
       request_queue_.pop();
     }
     switch (request.request_type_) {
+    case RequestType::START: {
+      timer.start();
+      break;
+    }
+    case RequestType::END: {
+      timer.stop();
+      timer.print_duration();
+      // Signal host to stop
+      ComchMsg msg;
+      msg.msg_type_ = ComchMsgType::COMCH_MSG_CONTROL;
+      msg.ctl_msg_.control_signal_ = ControlSignal::EXIT;
+      dpu_comch_->Send((void *)&msg, sizeof(msg));
+      stop_ = true;
+      break;;
+    }
     case RequestType::SEARCH: {
       auto result = ProcessSearch(request, result_value);
       if (!result)
@@ -576,6 +643,7 @@ void Dpu::Run() {
       auto result = ProcessInsert(request);
       if (result)
         size_++;
+      std::cout << size_ << ", " << GetCurrentLoadFactor() << std::endl;
       break;
     }
     case RequestType::DELETE: {
@@ -611,7 +679,8 @@ std::array<bucket_id_t, 4> Dpu::Get4Buckets(uint64_t hash1, uint64_t hash2) {
 
 void Dpu::Expand() {
   std::cout << "Dpu begin to expand\n";
-  FlushAll();
+  new_bucket_constructed_.assign(addr_capacity_ * 2, false);
+  // FlushAll();
   in_rehash_ = true;
   mmap_to_recv_ = THREADS / 2;
   ComchMsg msg;
@@ -619,22 +688,20 @@ void Dpu::Expand() {
   msg.ctl_msg_.control_signal_ = ControlSignal::EXPAND;
   dpu_comch_->Send((void *)&msg, sizeof(msg));
   for (size_t i = 0; i < THREADS / 2; i++) {
-    dma_client_.emplace_back(std::make_unique<DmaClient>(
-        GenNextClientId(), "03:00.0", (char *)cache_.data(), cache_size_));
+    auto new_client = std::make_unique<DmaClient>(
+        GenNextClientId(), "03:00.0", (char *)cache_.data(), cache_size_);
+    dma_client_.emplace_back(std::move(new_client));
   }
   while (mmap_to_recv_) {
     dpu_comch_->Progress();
   }
-  std::cout << "Dpu expand received new mmap\n";
-
+  std::cout << "received mmap\n";
   auto splitBucket = [this](frame_id_t frame) {
     auto bucket = cache_[frame];
     for (size_t slot = 0; slot < ASSOC_NUM; slot++) {
       if (bucket.token_[slot] == 1) {
         auto nbs = GetExpandBucketIds(bucket.slots_[slot].key_);
         auto fetched_frames = FetchNBuckets({nbs.first, nbs.second});
-        std::cout << cache_[fetched_frames[0]].Count() << " "
-                  << cache_[fetched_frames[1]].Count() << std::endl;
         if (cache_[fetched_frames[0]].Count() >
             cache_[fetched_frames[1]].Count()) {
           ENSURE(cache_[fetched_frames[1]].InsertSlot(
@@ -649,6 +716,7 @@ void Dpu::Expand() {
         }
       }
     }
+    dirty_flag_[frame] = false;
   };
 
   // std::vector<std::future<std::pair<bool, frame_id_t>>>
@@ -711,5 +779,5 @@ Dpu::GetExpandBucketIds(const FixedKey &key) {
 }
 
 float Dpu::GetCurrentLoadFactor() {
-  return (float)ASSOC_NUM * (bl_capacity_ + addr_capacity_);
+  return double(size_) / double(ASSOC_NUM * (bl_capacity_ + addr_capacity_));
 }

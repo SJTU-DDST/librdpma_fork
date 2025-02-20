@@ -21,6 +21,7 @@ enum class ComchMsgType {
 enum class ControlSignal {
   EXPAND,
   EXPAND_FINISH,
+  EXIT,
 };
 
 struct ComchMsgExportMmap {

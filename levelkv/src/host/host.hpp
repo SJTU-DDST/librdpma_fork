@@ -36,4 +36,5 @@ private:
   std::unique_ptr<Comch> host_comch_;
 public:
   bool in_rehash_;
+  bool stop_;
 };

@@ -7,8 +7,6 @@
 static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
                                      uint8_t *recv_buffer, uint32_t msg_len,
                                      doca_comch_connection *comch_connection) {
-  std::cout << "Host recv callback called... \n";
-
   auto ctx_user_data = doca_comch_connection_get_user_data(comch_connection);
   Comch *comch = reinterpret_cast<Comch *>(ctx_user_data.ptr);
   ENSURE(comch->is_server_ == false, "Comch->is_server_ is not 0 on host");
@@ -25,6 +23,8 @@ static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
       back.msg_type_ = ComchMsgType::COMCH_MSG_CONTROL;
       back.ctl_msg_.control_signal_ = ControlSignal::EXPAND_FINISH;
       comch->Send((void *)&back, sizeof(back));
+    } else if (msg->ctl_msg_.control_signal_ == ControlSignal::EXIT) {
+      host->stop_ = true;
     }
     break;
   }
@@ -40,7 +40,7 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
           false, "Comch", pcie_addr, "", comch_host_recv_callback,
           comch_send_completion, comch_send_completion_err, nullptr, nullptr,
           this)),
-      in_rehash_(false) {
+      in_rehash_(false), stop_(false) {
   // Send seed
   ComchMsg seed_msg;
   seed_msg.msg_type_ = ComchMsgType::COMCH_MSG_EXPORT_SEEDS;
@@ -123,10 +123,9 @@ void Host::DebugPrint() const {
 }
 
 void Host::Run() {
-  auto start = std::chrono::steady_clock::now();
-  while (std::chrono::steady_clock::now() - start < std::chrono::seconds(4)) {
+  while (!stop_) {
     host_comch_->Progress();
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
 }
 

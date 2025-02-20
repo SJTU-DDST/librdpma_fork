@@ -41,3 +41,24 @@ inline void print_time() {
   std::cout << std::put_time(time_info, "%H:%M:%S") << '.' << std::setfill('0')
             << std::setw(3) << milliseconds.count() << " ms" << '\n';
 }
+
+class Timer {
+public:
+  inline Timer() = default;
+
+  inline void start() {
+    start_time_ = std::chrono::high_resolution_clock::now();
+  }
+
+  inline void stop() { end_time_ = std::chrono::high_resolution_clock::now(); }
+
+  inline void print_duration() const {
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        end_time_ - start_time_);
+    std::cout << "Elapsed time: " << duration.count() << " ns" << std::endl;
+  }
+
+private:
+  std::chrono::high_resolution_clock::time_point start_time_;
+  std::chrono::high_resolution_clock::time_point end_time_;
+};

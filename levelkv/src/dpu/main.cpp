@@ -24,17 +24,25 @@ int main() {
   // char msg[1024];
   // memset(msg, 'K', 1023);
   // dpu_comch.Send(msg, 1023);
-  for (size_t i = 1; i < 1000; i++) {
-    dpu.Insert(i, i * 10);
+  dpu.Start();
+  for (size_t i = 1; i <= 10000; i++) {
+    dpu.Insert(i, i);
   }
-
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  dpu.Expand();
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  for (size_t i = 1; i <= 10000; i++) {
+    dpu.Search(i, exampleCallBack);
+  }
+  dpu.End();
+  // dpu.Search(1, exampleCallBack);
+  // std::this_thread::sleep_for(std::chrono::seconds(1));
+  // dpu.Expand();
+  // std::this_thread::sleep_for(std::chrono::seconds(1));
   // for (size_t i = 9; i > 0; i--) {
   //   dpu.Search(i, &exampleCallBack);
   // }
-  dpu.FlushAll();
+  // dpu.FlushAll();
+  while (!dpu.stop_) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
   std::cout << "dpu exit\n" << std::endl;
   return 0;
 }

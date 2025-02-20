@@ -20,13 +20,15 @@
 #include "replacer.hpp"
 #include "utils.hpp"
 
-#define CACHE_SIZE 4
+#define CACHE_SIZE 64
 
 enum class RequestType {
   SEARCH,
   DELETE,
   INSERT,
   UPDATE,
+  START,
+  END,
 };
 
 struct Request {
@@ -50,6 +52,8 @@ public:
   void Delete(const FixedKey &key);
   void Insert(const FixedKey &key, const FixedValue &value);
   void Update(const FixedKey &key, const FixedValue &value);
+  void Start();
+  void End();
 
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
@@ -112,7 +116,11 @@ public:
   std::vector<bool> new_bucket_constructed_;
 
   uint64_t next_client_id_;
-
+  
 public:
+  // Number of kvs stored in the db
   size_t size_;
+
+  // Benchmarking
+  Timer timer;
 };
