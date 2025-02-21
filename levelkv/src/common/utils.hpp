@@ -8,11 +8,12 @@
 
 #define SLEEP_IN_NANOS (10 * 1000)
 
-#define ENSURE(expr, message)                                                  \
-  if (!(expr)) {                                                               \
-    std::cerr << "ERROR: " << (message) << std::endl;                          \
-    std::terminate();                                                          \
-  }
+#define ENSURE(expr, message) ((void)0)
+// #define ENSURE(expr, message)                                                  \
+//   if (!(expr)) {                                                               \
+//     std::cerr << "ERROR: " << (message) << std::endl;                          \
+//     std::terminate();                                                          \
+//   }
 
 using frame_id_t = int64_t;
 using bucket_id_t = int64_t;
@@ -53,9 +54,9 @@ public:
   inline void stop() { end_time_ = std::chrono::high_resolution_clock::now(); }
 
   inline void print_duration() const {
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         end_time_ - start_time_);
-    std::cout << "Elapsed time: " << duration.count() << " ns" << std::endl;
+    std::cout << "Elapsed time: " << duration.count() << " ms" << std::endl;
   }
 
 private:

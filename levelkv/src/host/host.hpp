@@ -10,7 +10,6 @@
 #include "comch_common.hpp"
 #include "dma_server.hpp"
 #include "level_hashing.hpp"
-// #include "comch_client.hpp"
 
 class Host {
 public:

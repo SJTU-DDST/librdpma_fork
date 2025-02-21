@@ -481,20 +481,20 @@ bool Dpu::ProcessInsert(const Request &request) {
     if (cache_[frames[0]].Count() > cache_[frames[1]].Count()) {
       if (cache_[frames[1]].InsertSlot(request.key_, request.value_,
                                        dirty_flag_[frames[1]])) {
-        std::cout << "Inserted to bucket: " << bs[start_idx + 1]
-                  << " frame: " << frames[1] << std::endl;
+        // std::cout << "Inserted to bucket: " << bs[start_idx + 1]
+        //           << " frame: " << frames[1] << std::endl;
         return true;
       }
     } else {
       if (cache_[frames[0]].InsertSlot(request.key_, request.value_,
                                        dirty_flag_[frames[0]])) {
-        std::cout << "Inserted to bucket: " << bs[start_idx]
-                  << " frame: " << frames[0] << std::endl;
+        // std::cout << "Inserted to bucket: " << bs[start_idx]
+        //           << " frame: " << frames[0] << std::endl;
         return true;
       }
     }
-    std::cout << "Cannot insert into bucket " << bs[start_idx] << ", "
-              << bs[start_idx + 1] << std::endl;
+    // std::cout << "Cannot insert into bucket " << bs[start_idx] << ", "
+    //           << bs[start_idx + 1] << std::endl;
     return false;
   };
 
@@ -643,7 +643,7 @@ void Dpu::Run() {
       auto result = ProcessInsert(request);
       if (result)
         size_++;
-      std::cout << size_ << ", " << GetCurrentLoadFactor() << std::endl;
+      // std::cout << size_ << ", " << GetCurrentLoadFactor() << std::endl;
       break;
     }
     case RequestType::DELETE: {
@@ -678,7 +678,7 @@ std::array<bucket_id_t, 4> Dpu::Get4Buckets(uint64_t hash1, uint64_t hash2) {
 }
 
 void Dpu::Expand() {
-  std::cout << "Dpu begin to expand\n";
+  // std::cout << "Dpu begin to expand\n";
   new_bucket_constructed_.assign(addr_capacity_ * 2, false);
   // FlushAll();
   in_rehash_ = true;
@@ -695,7 +695,7 @@ void Dpu::Expand() {
   while (mmap_to_recv_) {
     dpu_comch_->Progress();
   }
-  std::cout << "received mmap\n";
+  // std::cout << "received mmap\n";
   auto splitBucket = [this](frame_id_t frame) {
     auto bucket = cache_[frame];
     for (size_t slot = 0; slot < ASSOC_NUM; slot++) {
@@ -766,7 +766,7 @@ void Dpu::Expand() {
   while (in_rehash_) {
     dpu_comch_->Progress();
   }
-  std::cout << "Dpu exit rehashing stage\n";
+  // std::cout << "Dpu exit rehashing stage\n";
 }
 
 std::pair<bucket_id_t, bucket_id_t>

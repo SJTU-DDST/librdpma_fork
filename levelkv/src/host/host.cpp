@@ -71,7 +71,6 @@ Host::Host(const std::string &pcie_addr, uint64_t level)
     auto id = GetNextServerId();
     tl_dma_server_[i] =
         std::make_unique<DmaServer>(id, pcie_addr, ptr, mmap_size);
-    tl_dma_server_[i]->ExportMmapToFile();
     ptr += mmap_size;
   }
   ExportMmapsComch(bl_dma_server_);

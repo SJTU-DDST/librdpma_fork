@@ -8,11 +8,11 @@ project(
     check: true,
   ).stdout().strip(),
   license: 'Proprietary',
-  default_options: ['buildtype=debug', 'cpp_std=c++17'],
+  default_options: ['buildtype=release', 'cpp_std=c++17', 'optimization=2'],
   meson_version: '>= 0.61.2',
 )
 
-add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', language: ['cpp', 'c'])
+add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', '-O2', language: ['cpp', 'c'])
 
 
 subdir('src/host')

@@ -10,7 +10,7 @@
 #include "utils.hpp"
 
 #define ASSOC_NUM (4) // The number of slots in a bucket
-#define DEFAULT_START_LEVEL (3)
+#define DEFAULT_START_LEVEL (11)
 
 template <typename K, typename V> struct Entry {
   K key_;

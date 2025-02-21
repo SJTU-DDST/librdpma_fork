@@ -6,15 +6,15 @@
 #include "dpu.hpp"
 
 void exampleCallBack(std::optional<std::string> s) {
-  if (s) {
-    std::cout << "Found: " << s.value() << std::endl;
-  } else {
-    std::cout << "KV not found\n";
-  }
+  // if (s) {
+  //   std::cout << "Found: " << s.value() << std::endl;
+  // } else {
+  //   std::cout << "KV not found\n";
+  // }
 }
 
 int main() {
-  init_log_backend();
+  // init_log_backend();
   Dpu dpu("03:00.0", "b5:00.0");
 
   // Comch dpu_comch(true, "Comch", "03:00.0", "b5:00.0",

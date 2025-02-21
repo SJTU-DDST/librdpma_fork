@@ -4,7 +4,7 @@
 
 int main() {
   init_log_backend();
-  Host host("b5:00.0", 3);
+  Host host("b5:00.0", DEFAULT_START_LEVEL);
   // Comch host_comch(true, "Comch", "b5:00.0", "", comch_client_recv_callback,
   //                 comch_send_completion, comch_send_completion_err, nullptr,
   //                 nullptr, nullptr);
