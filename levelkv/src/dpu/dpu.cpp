@@ -63,7 +63,7 @@ Dpu::Dpu(const std::string &pcie_addr, const std::string &pcie_rep_addr,
           true, "Comch", pcie_addr, pcie_rep_addr, comch_dpu_recv_callback,
           comch_send_completion, comch_send_completion_err,
           server_connection_cb, server_disconnection_cb, this)),
-      seed_recved_(false), in_init_(true), in_rehash_(false), size_(0) {
+      seed_recved_(false), in_init_(true), in_rehash_(false), size_(0), running_(false) {
   ENSURE(level >= 3, "Starting level should be at least 3");
   addr_capacity_ = 1 << level;
   bl_capacity_ = 1 << (level - 1);
@@ -150,6 +150,10 @@ void Dpu::End() {
     request_queue_.push(request);
   }
   cv_.notify_one();
+}
+
+void Dpu::RunBegin() {
+  running_ = true;
 }
 
 void Dpu::Delete(const FixedKey &key) {
@@ -437,7 +441,7 @@ bool Dpu::ProcessDelete(const Request &request) {
 
 bool Dpu::ProcessInsert(const Request &request) {
   // std::cout << "Process Insert...\n";
-  if (GetCurrentLoadFactor() >= 0.85)
+  if (GetCurrentLoadFactor() >= 0.95)
     Expand();
 
   auto bs = Get4Buckets(request.hash1_, request.hash2_);
@@ -606,14 +610,17 @@ bool Dpu::ProcessUpdate(const Request &request) {
 }
 
 void Dpu::Run() {
+  while (!running_) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
   while (!stop_) {
     FixedValue result_value;
     Request request;
     {
-      std::unique_lock<std::mutex> lock(request_queue_mtx_);
-      cv_.wait(lock, [this] { return !request_queue_.empty() || stop_; });
-      if (stop_)
-        break;
+      // std::unique_lock<std::mutex> lock(request_queue_mtx_);
+      // cv_.wait(lock, [this] { return !request_queue_.empty() || stop_; });
+      // if (stop_)
+      //   break;
       request = request_queue_.front();
       request_queue_.pop();
     }
@@ -625,13 +632,17 @@ void Dpu::Run() {
     case RequestType::END: {
       timer.stop();
       timer.print_duration();
+      std::cout << "Total size: " << ASSOC_NUM * (bl_capacity_ + addr_capacity_)
+                << ", Total kv: " << size_ << std::endl;
+      std::cout << "Load factor: " << GetCurrentLoadFactor() << std::endl;
       // Signal host to stop
       ComchMsg msg;
       msg.msg_type_ = ComchMsgType::COMCH_MSG_CONTROL;
       msg.ctl_msg_.control_signal_ = ControlSignal::EXIT;
       dpu_comch_->Send((void *)&msg, sizeof(msg));
       stop_ = true;
-      break;;
+      break;
+      ;
     }
     case RequestType::SEARCH: {
       auto result = ProcessSearch(request, result_value);

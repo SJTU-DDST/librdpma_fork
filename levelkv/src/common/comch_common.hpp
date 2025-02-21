@@ -10,12 +10,16 @@
 #include <doca_dev.h>
 #include <doca_pe.h>
 
+#include "level_hashing.h"
+
 #define MAX_EXPORTED_DESC_LEN 512
 
 enum class ComchMsgType {
   COMCH_MSG_EXPORT_DESCRIPTOR,
   COMCH_MSG_EXPORT_SEEDS,
   COMCH_MSG_CONTROL,
+  COMCH_MSG_OPERATION,
+  COMCH_MSG_OPERATION_RESULT,
 };
 
 enum class ControlSignal {
@@ -39,13 +43,33 @@ struct ComchMsgExportSeeds {
   uint64_t s_seed_;
 };
 
+enum class OprationType {
+  SEARCH,
+  INSERT,
+};
+
+struct ComchMsgOperation {
+  OprationType op_type_;
+  uint8_t key_[KEY_LEN];
+  uint8_t value_[VALUE_LEN];
+};
+
+struct ComchMsgOperationResult {
+  bool success;
+  uint8_t search_result_[VALUE_LEN];
+};
+
 struct ComchMsg {
   ComchMsgType msg_type_;
   union {
     ComchMsgExportMmap exp_msg_;
     ComchMsgControl ctl_msg_;
     ComchMsgExportSeeds seed_msg_;
+    ComchMsgOperation op_msg_;
+    ComchMsgOperationResult op_result_msg_;
   };
+
+  ComchMsg() = default;
 };
 
 enum class ComchState {

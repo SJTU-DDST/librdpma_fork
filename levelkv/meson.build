@@ -12,7 +12,7 @@ project(
   meson_version: '>= 0.61.2',
 )
 
-add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', '-O2', language: ['cpp', 'c'])
+add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', '-O2', '-lm', language: ['cpp', 'c'])
 
 
 subdir('src/host')

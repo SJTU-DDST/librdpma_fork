@@ -11,13 +11,17 @@ srcs = [
   'main.cpp',
   'host.cpp',
   'dma_server.cpp',
+  'levelhashing_host.cpp',
   '../common/dma_common.cpp',
   '../common/comch_common.cpp',
+  '../levelhashing/hash.c',
+  '../levelhashing/level_hashing.c'
 ]
 
 inc_dirs = [
   include_directories('..'),
   include_directories('../common'),
+  include_directories('../levelhashing'),
   include_directories('/opt/mellanox/doca/include'),
 ]
 

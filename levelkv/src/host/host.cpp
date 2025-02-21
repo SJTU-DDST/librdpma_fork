@@ -3,6 +3,7 @@
 
 #include "dma_common.hpp"
 #include "host.hpp"
+#include "level_hashing.h"
 
 static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
                                      uint8_t *recv_buffer, uint32_t msg_len,

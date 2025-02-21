@@ -20,7 +20,7 @@
 #include "replacer.hpp"
 #include "utils.hpp"
 
-#define CACHE_SIZE 64
+#define CACHE_SIZE 128
 
 enum class RequestType {
   SEARCH,
@@ -54,6 +54,7 @@ public:
   void Update(const FixedKey &key, const FixedValue &value);
   void Start();
   void End();
+  void RunBegin();
 
   std::future<bool> FlushBucket(frame_id_t frame);
   std::future<std::pair<bool, frame_id_t>> FetchBucket(bucket_id_t bucket);
@@ -123,4 +124,5 @@ public:
 
   // Benchmarking
   Timer timer;
+  bool running_;
 };
