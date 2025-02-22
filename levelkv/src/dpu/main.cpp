@@ -31,10 +31,10 @@ int main() {
   //   std::this_thread::sleep_for(std::chrono::milliseconds(50));
   // }
   LevelHashingDpu dpu("03:00.0", "b5:00.0");
-  for (size_t i = 0; i < 100; i++) {
+  for (size_t i = 0; i < 200; i++) {
     dpu.Insert(i, i * 10);
   }
-  for (size_t i = 0; i < 100; i++) {
+  for (size_t i = 0; i < 200; i++) {
     dpu.Search(i, exampleCallBack);
   }
 

@@ -9,7 +9,7 @@
 
 class LevelHashingHost {
 public:
-  LevelHashingHost(const std::string &pcie_addr, uint64_t level);
+  LevelHashingHost(const std::string &pcie_addr);
 
   ~LevelHashingHost();
 

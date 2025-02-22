@@ -1,5 +1,7 @@
 #include "levelhashing_dpu.hpp"
 
+int i = 0;
+
 static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
                                     uint8_t *recv_buffer, uint32_t msg_len,
                                     doca_comch_connection *comch_connection) {
@@ -15,7 +17,10 @@ static void comch_dpu_recv_callback(doca_comch_event_msg_recv *event,
       memcpy(dpu->searched_value_, msg->op_result_msg_.search_result_,
              VALUE_LEN);
       dpu->success_ = true;
+    } else {
+      dpu->success_ = false;
     }
+    dpu->waiting_ = false;
     break;
   }
 
@@ -67,4 +72,6 @@ void LevelHashingDpu::Insert(const FixedKey &key, const FixedValue &value) {
   while (waiting_) {
     dpu_comch_->Progress();
   }
+  std::cout << "insertion " << ++i << " " << success_ << std::endl;
+  success_ = false;
 }

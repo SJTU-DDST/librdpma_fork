@@ -61,7 +61,7 @@ static void comch_host_recv_callback(doca_comch_event_msg_recv *event,
   // }
 }
 
-LevelHashingHost::LevelHashingHost(const std::string &pcie_addr, uint64_t level)
+LevelHashingHost::LevelHashingHost(const std::string &pcie_addr)
     : host_comch_(std::make_unique<Comch>(
           false, "Comch", pcie_addr, "", comch_host_recv_callback,
           comch_send_completion, comch_send_completion_err, nullptr, nullptr,
