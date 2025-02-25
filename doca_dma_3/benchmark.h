@@ -26,6 +26,6 @@ double average(const double *duration_vec, int len);
 
 void write_statistics_to_file(const struct dma_cfg *cfg,
                               const struct timespec *total_time,
-                              const char *filename);
+                              double latency_in_us, const char *filename);
 
 #endif // BENCHMARK_H_

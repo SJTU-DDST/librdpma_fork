@@ -3,6 +3,7 @@
 
 #include <doca_argp.h>
 
+#include "benchmark.h"
 #include "dma_common.h"
 
 DOCA_LOG_REGISTER(DMA::COMMON);
@@ -215,10 +216,16 @@ doca_error_t submit_dma_tasks(uint32_t num_tasks,
   uint32_t task_id = 0;
 
   DOCA_LOG_INFO("Submitting tasks");
-
-  for (task_id = 0; task_id < num_tasks; task_id++)
-    EXIT_ON_FAIL(
-        doca_task_submit(doca_dma_task_memcpy_as_task(tasks[task_id])));
+  for (task_id = 0; task_id < num_tasks; task_id++) {
+    struct timespec *task_start_time =
+        (struct timespec *)malloc(sizeof(struct timespec));
+    clock_gettime(CLOCK_REALTIME, task_start_time);
+    union doca_data task_user_data;
+    task_user_data.ptr = task_start_time;
+    struct doca_task *task = doca_dma_task_memcpy_as_task(tasks[task_id]);
+    doca_task_set_user_data(task, task_user_data);
+    doca_task_submit(task);
+  }
   return DOCA_SUCCESS;
 }
 
@@ -306,14 +313,12 @@ doca_error_t create_dma_state(const char *pcie_addr, struct dma_state *state) {
 }
 
 doca_error_t dma_task_resubmit(struct dma_resources *resources,
-                               struct doca_dma_task_memcpy *dma_task) {
+                               struct doca_dma_task_memcpy *dma_task,
+                               struct timespec *time) {
   doca_error_t status = DOCA_SUCCESS;
   struct doca_task *task = doca_dma_task_memcpy_as_task(dma_task);
 
   if (resources->buf_pair_idx < resources->num_buf_pairs) {
-    union doca_data user_data = {0};
-    user_data.u64 = resources->buf_pair_idx;
-    doca_task_set_user_data(task, user_data);
 
     doca_dma_task_memcpy_set_src(dma_task,
                                  resources->src_bufs[resources->buf_pair_idx]);
@@ -321,6 +326,9 @@ doca_error_t dma_task_resubmit(struct dma_resources *resources,
                                  resources->dst_bufs[resources->buf_pair_idx]);
     resources->buf_pair_idx++;
 
+#ifdef LATENCY_TEST
+    clock_gettime(CLOCK_REALTIME, time);
+#endif
     status = doca_task_submit(task);
     if (status != DOCA_SUCCESS) {
       DOCA_LOG_ERR("Failed to submit task with status %s",
@@ -329,8 +337,13 @@ doca_error_t dma_task_resubmit(struct dma_resources *resources,
       (void)dma_task_free(dma_task);
       resources->state->num_completed_tasks++;
     }
-  } else
+  } else {
+    free(time);
+#ifdef LATENCY_TEST
     doca_task_free(task);
+#endif
+  }
+
   return status;
 }
 
@@ -338,12 +351,19 @@ static void dma_memcpy_completed_callback(struct doca_dma_task_memcpy *dma_task,
                                           union doca_data task_user_data,
                                           union doca_data ctx_user_data) {
   struct dma_resources *resources = (struct dma_resources *)ctx_user_data.ptr;
-  uint32_t task_idx = (uint32_t)task_user_data.u64;
-  DOCA_LOG_INFO("Task %u completed", task_idx);
+  struct timespec *task_start_time = NULL;
+#ifdef LATENCY_TEST
+  task_start_time = (struct timespec *)task_user_data.ptr;
+  struct timespec task_end_time;
+  clock_gettime(CLOCK_REALTIME, &task_end_time);
+  timespec_sub(&task_end_time, *task_start_time);
+  timespec_add(&resources->total_latency, task_end_time);
+#endif
+  // DOCA_LOG_INFO("Task %u completed", task_idx);
   resources->state->num_completed_tasks++;
 
   (void)free_dma_memcpy_task_buffers(dma_task);
-  (void)dma_task_resubmit(resources, dma_task);
+  (void)dma_task_resubmit(resources, dma_task, task_start_time);
 }
 
 static void dma_memcpy_error_callback(struct doca_dma_task_memcpy *dma_task,
@@ -357,7 +377,8 @@ static void dma_memcpy_error_callback(struct doca_dma_task_memcpy *dma_task,
   DOCA_LOG_ERR("Task failed with status %s",
                doca_error_get_descr(doca_task_get_status(task)));
   (void)free_dma_memcpy_task_buffers(dma_task);
-  dma_task_resubmit(resources, dma_task);
+  // dma_task_resubmit(resources, dma_task);
+  exit(-1);
 }
 
 doca_error_t create_dma_dpu_resources(const char *pcie_addr,

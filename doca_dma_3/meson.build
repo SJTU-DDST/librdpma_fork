@@ -8,11 +8,11 @@ project(
     check: true,
   ).stdout().strip(),
   license: 'Proprietary',
-  default_options: ['buildtype=debug'],
+  default_options: ['buildtype=release'],
   meson_version: '>= 0.61.2',
 )
 
-add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', language: ['c', 'cpp'])
+add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', '-O2', language: ['c', 'cpp'])
 
 subdir('doca_dma_dpu')
 subdir('doca_dma_host')

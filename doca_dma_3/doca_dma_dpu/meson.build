@@ -38,7 +38,7 @@ inc_dirs += include_directories('/opt/mellanox/doca/include')
 executable(
   'doca_' + NAME,
   sample_srcs,
-  c_args: '-Wno-missing-braces',
+  c_args: ['-Wno-missing-braces', '-O2', '-DLATENCY_TEST'],
   dependencies: sample_dependencies,
   include_directories: inc_dirs,
   install: false,

@@ -8,12 +8,12 @@ REMOTE_PROGRAM="./build/doca_dma_host/doca_dma_copy_host"
 SSH_PASS="1111"
 OUTPUT_JSON="result.json"
 BENCHMARK_FILE_NAME="bench"
-_GROUPS=7
-_RUNS=15
+_GROUPS=1
+_RUNS=10
 OPS=1000000
-INIT_PAYLOAD=8
-NUM_WORK_TASKS=1
-THREADS=16
+INIT_PAYLOAD=64
+NUM_WORK_TASKS=8
+THREADS=8
 
 num=1
 
@@ -48,6 +48,8 @@ for j in $(seq 1 $_GROUPS)
 do
 
     PAYLOAD=$INIT_PAYLOAD
+    # NUM_WORK_TASKS=$INIT_NUM_WORK_TASKS
+    # THREADS=$INIT_THREADS
 
     echo -n "[" >> $BENCHMARK_FILE
 
@@ -74,6 +76,8 @@ do
         fi
 
         PAYLOAD=$((PAYLOAD * 2))
+        # THREADS=$((THREADS * 2))
+        # NUM_WORK_TASKS=$((NUM_WORK_TASKS * 2))
     done
 
     echo "]" >> $BENCHMARK_FILE
@@ -82,7 +86,8 @@ do
         echo "," >> $BENCHMARK_FILE
     fi
 
-    NUM_WORK_TASKS=$((NUM_WORK_TASKS * 2))
+    # THREADS=$((THREADS * 2))
+    NUM_WORK_TASKS=$((NUM_WORK_TASKS * 4))
 
 done
 
