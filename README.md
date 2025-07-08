@@ -12,26 +12,30 @@ Building the tools of librdpma is straightforward since it will automatically in
 - `sudo cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=1`
 - `cd build && sudo make -j`
 
-> 不知道为啥，50上得sudo才能编译，有点怪
-
+- Set huge pages `sudo sysctl -w vm.nr_hugepages=16384`
 
 ### Running benchmarks
 
-#### 20230606
-因为现在主要只需要单边，因此只考虑 nvm_server 和 nvm_client两个文件即可，server的参数和代码基本上不需要动，client的代码对应 nvm/benchs/one_sided/client.cc， numa的绑定也写死在这个文件里了
+
 ```shell
 sudo ./scripts/nvm_server --host=localhost --port=8964 -use_nvm=false -touch_mem=true --nvm_sz=8 --nvm_file=/dev/dax12.0
 ```
 
-client 的一个示例参数：
+A running example of the client：
 
 ```shell
-./scripts/nvm_client -addr="192.168.98.50:8964" --force_use_numa_node=false --use_numa_node=0 --threads=36 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=true -two_qp=false
+./scripts/nvm_client -addr="localhost:8964" --force_use_numa_node=false --use_numa_node=0 --threads=28 --coros=1 --id=0 --use_nic_idx=0 --use_read=true --payload=256 --add_sync=false --address_space=8 --random=true -read_write=false -two_qp=false
 ```
 
-解释：
+Parameter Explaination：
 
-* force_use_numa_node 和 use_numa_node: 当前者为true时，仅使用编号为后者的numa node，如果core不够，则exit(1)
+* Numa Setting:
+    * numa_type = 3: y = x 
+    * force_use_numa_node = 1, use_numa_node = 0: 0-17, 36-53
+    * force_use_numa_node = 1, use_numa_node = 1: 18-35, 53-71
+    * force_use_numa_node = 0, numa_type = 1, use_numa_node = 0: y= 2 * x 
+    * force_use_numa_node = 0, numa_type = 1, use_numa_node = 1: y= 2 * x + 1  
+    * force_use_numa_node = 0, numa_type = 1, use_numa_node = 2: y= x
 * threads, coros: 线程数和协程数
 * id: 编号，设为0即可
 * use_nix_idx: 使用的RDMA 网卡编号

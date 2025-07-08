@@ -117,7 +117,7 @@ int BindToCore(int t_id) {
   } else {
     if (FLAGS_numa_type == 1)
     {
-      if (FLAGS_use_nic_idx == 0)
+      if (FLAGS_use_numa_node == 0)
       {
         if (x >= per_socket_cores) {
           // there is no other cores in the first socket
@@ -126,14 +126,17 @@ int BindToCore(int t_id) {
           y = 2 * x;
         }     
       }
-      else{
+      else if (FLAGS_use_numa_node == 1) {
         if (x >= per_socket_cores) {
           // there is no other cores in the first socket
           y = 2 * (x - per_socket_cores);
         } else {
           y = 2 * x + 1;
         }  
-      }      
+      }
+      else {
+        y = x;
+      }   
     }
     else
     {

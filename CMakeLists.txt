@@ -43,22 +43,22 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLEVELDB_PLATFORM_POSIX -pthread -DOS_LINUX -mrtm -pthread -O2 -g ${MACRO_FLAGS} -msse3 -mavx -mavx512f")
 endif()
 
-add_executable(nvm_aclient ./nvm/benchs/one_sided/aclient.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+# add_executable(nvm_aclient ./nvm/benchs/one_sided/aclient.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 add_executable(nvm_client ./nvm/benchs/one_sided/client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 add_executable(nvm_server ./nvm/benchs/one_sided/server.cc)
-add_executable(nvm_userver ./nvm/benchs/one_sided/userver.cc)
+# add_executable(nvm_userver ./nvm/benchs/one_sided/userver.cc)
 
 # two-sided benchmarks relies on some X86 only features. disable them to make sure there is no complication errors on DPU.
-if (NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
-  add_executable(nvm_tserver ./nvm/benchs/two_sided/server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-  add_executable(nvm_tclient ./nvm/benchs/two_sided/client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+# if (NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+#   add_executable(nvm_tserver ./nvm/benchs/two_sided/server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+#   add_executable(nvm_tclient ./nvm/benchs/two_sided/client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 
-  add_executable(nvm_rtserver ./nvm/benchs/two_sided/rc_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-  add_executable(nvm_rtclient ./nvm/benchs/two_sided/rc_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+#   add_executable(nvm_rtserver ./nvm/benchs/two_sided/rc_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+#   add_executable(nvm_rtclient ./nvm/benchs/two_sided/rc_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
 
-  add_executable(nvm_rrtserver ./nvm/benchs/two_sided/ring_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-  add_executable(nvm_rrtclient ./nvm/benchs/two_sided/ring_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
-endif()
+#   add_executable(nvm_rrtserver ./nvm/benchs/two_sided/ring_server.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+#   add_executable(nvm_rrtclient ./nvm/benchs/two_sided/ring_client.cc ./third_party/r2/src/sshed.cc ./third_party/r2/src/logging.cc)
+# endif()
 
 
 
@@ -73,12 +73,14 @@ if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
        nvm_client nvm_server 
        nvm_aclient nvm_userver)
 else()
+  # set(apps 
+  #      nvm_client nvm_server 
+  #      nvm_aclient 
+  #      nvm_tserver nvm_tclient 
+  #      nvm_rtserver nvm_rtclient 
+  #      nvm_rrtserver nvm_rrtclient nvm_userver)
   set(apps 
-       nvm_client nvm_server 
-       nvm_aclient 
-       nvm_tserver nvm_tclient 
-       nvm_rtserver nvm_rtclient 
-       nvm_rrtserver nvm_rrtclient nvm_userver)
+      nvm_client nvm_server)
 endif()
 
 foreach(prog ${apps} )
