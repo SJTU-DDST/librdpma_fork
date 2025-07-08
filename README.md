@@ -36,14 +36,9 @@ Parameter Explaination：
     * force_use_numa_node = 0, numa_type = 1, use_numa_node = 0: y= 2 * x 
     * force_use_numa_node = 0, numa_type = 1, use_numa_node = 1: y= 2 * x + 1  
     * force_use_numa_node = 0, numa_type = 1, use_numa_node = 2: y= x
-* threads, coros: 线程数和协程数
-* id: 编号，设为0即可
-* use_nix_idx: 使用的RDMA 网卡编号
-* use_true: true：测RDMA read, false: 测 RDMA write
-* payload: READ read/write payload的大小
-* add_sync: 是否doorbell batching
-* address_space: 必须 <= server端的nvm_sz, 单位是GB。
-* random: 读/写的远端地址是固定的，还是随机一个地址
+* use_read: true for RDMA read; false for RDMA write
+* add_sync: enable/disable doorbell batching
+* address_space:  <= server's nvm_sz (GB)
 
 * 两个后续加的特殊的参数，二者都有些词不达意，所以重点解释下：
     * 默认client的行为：根据use_read的真假不断执行payload 大小的 RDMA read/write, 其中每个coro一个QP
@@ -53,8 +48,6 @@ Parameter Explaination：
     * search/update: 为true时，模拟learned index的search和update行为
     * CAS：为true时，测试CAS的性能
     * To do：建议用bench=1,2,3,4,...来替代上面的选项
-
-* 运行脚本在./scripts/
 
 #### original
 
